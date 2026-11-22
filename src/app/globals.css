@@ -1,0 +1,172 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f5f6fa;
+  --card: #ffffff;
+  --card-2: #f0f2f8;
+  --ink: #0e1630;
+  --muted: #5b6478;
+  --line: #e3e6ef;
+  --brand: #4338ca;
+  --brand-2: #6366f1;
+  --brand-soft: #eceafe;
+  --brand-ink: #ffffff;
+  --accent: #f59e0b;
+  --groen: #15803d;
+  --groen-soft: #dcfce7;
+  --oranje: #c2410c;
+  --oranje-soft: #ffedd5;
+  --rood: #b91c1c;
+  --rood-soft: #fee2e2;
+  --c-huur: #6366f1;
+  --c-leef: #22a3c4;
+  --c-college: #f59e0b;
+  --c-boeken: #e05d8a;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0a0f1f;
+    --card: #121a30;
+    --card-2: #182241;
+    --ink: #e8ebf5;
+    --muted: #98a2bd;
+    --line: #243052;
+    --brand: #8b8cf8;
+    --brand-2: #a5b4fc;
+    --brand-soft: #1f2650;
+    --brand-ink: #0a0f1f;
+    --groen: #4ade80;
+    --groen-soft: #0f2e1d;
+    --oranje: #fb923c;
+    --oranje-soft: #36200f;
+    --rood: #f87171;
+    --rood-soft: #3a1515;
+    --c-huur: #818cf8;
+    --c-leef: #38bdf8;
+    --c-college: #fbbf24;
+    --c-boeken: #f472b6;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-card: var(--card);
+  --color-card-2: var(--card-2);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-brand: var(--brand);
+  --color-brand-2: var(--brand-2);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-ink: var(--brand-ink);
+  --color-accent: var(--accent);
+  --color-groen: var(--groen);
+  --color-groen-soft: var(--groen-soft);
+  --color-oranje: var(--oranje);
+  --color-oranje-soft: var(--oranje-soft);
+  --color-rood: var(--rood);
+  --color-rood-soft: var(--rood-soft);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-feature-settings: "ss01", "cv11";
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.kaart {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 1.25rem;
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* Leaflet: past de kaart aan het thema aan */
+.leaflet-container {
+  font-family: inherit;
+  background: var(--card-2);
+  border-radius: 1.25rem;
+}
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: var(--card);
+  color: var(--ink);
+}
+.leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.35);
+}
+.leaflet-container a.leaflet-popup-close-button {
+  color: var(--muted);
+}
+.stad-pin {
+  background: none;
+  border: none;
+}
+.stad-pin > div {
+  transform: translate(-50%, -50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  border-radius: 999px;
+  padding: 4px 9px;
+  font:
+    600 12px/1 var(--font-geist-sans),
+    system-ui,
+    sans-serif;
+  color: #fff;
+  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.45);
+  border: 2px solid #fff;
+  transition: transform 0.15s;
+}
+.stad-pin > div:hover {
+  z-index: 10;
+}
+.stad-pin.actief {
+  z-index: 1000 !important;
+}
+.stad-pin.actief > div {
+  transform: translate(-50%, -50%) scale(1.18);
+  outline: 3px solid var(--brand);
+}
+
+@keyframes binnenkomen {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.binnenkomen {
+  animation: binnenkomen 0.35s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .binnenkomen {
+    animation: none;
+  }
+}
+
+/* Grid-kolommen mogen smaller worden dan hun inhoud (voorkomt overlopen op mobiel) */
+.grid > * {
+  min-width: 0;
+}
