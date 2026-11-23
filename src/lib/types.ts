@@ -1,71 +1,92 @@
-export type Niveau = "hbo" | "wo";
-
-export const SECTOREN = [
-  "Economie",
-  "Gedrag en Maatschappij",
-  "Gezondheidszorg",
-  "Natuur",
-  "Onderwijs",
-  "Recht",
-  "Taal en Cultuur",
-  "Techniek",
+export const SECTOR_IDS = [
+  "techniek",
+  "ict",
+  "zorg",
+  "welzijn",
+  "onderwijs",
+  "economie",
+  "recht",
+  "natuur",
+  "beta",
+  "creatief",
+  "taal",
+  "horeca",
+  "sport",
+  "logistiek",
 ] as const;
-export type Sector = (typeof SECTOREN)[number];
+export type SectorId = (typeof SECTOR_IDS)[number];
 
-export interface Stad {
-  id: string;
+/** Onderwijssoort */
+export type Soort = "mbo" | "hbo" | "wo";
+/** Precies niveau: mbo 1–4, associate degree, hbo-bachelor, wo-bachelor */
+export type Niveau = "mbo1" | "mbo2" | "mbo3" | "mbo4" | "ad" | "hbo" | "wo";
+
+export interface Plaats {
   naam: string;
   provincie: string;
   lat: number;
   lng: number;
-  /** Gemiddelde kamerhuur per maand (€), indicatief – Kamernet Huurmonitor */
-  kamerhuur: number;
-  /** Reistijd met de trein vanaf de thuisstad, enkele reis (min), indicatief – NS */
-  reistijd: number;
-  overstappen: number;
+}
+
+export interface Instelling {
+  naam: string;
+  soort: Soort;
+  url: string | null;
 }
 
 export interface Opleiding {
   id: string;
   naam: string;
-  instelling: string;
+  /** Naam die de school zelf gebruikt, als die anders is */
+  eigenNaam: string | null;
+  instelling: Instelling;
   niveau: Niveau;
-  sector: Sector;
-  stadId: string;
-  /** Eerstejaars per jaar, indicatief – DUO */
-  instroom: number;
-  duur: number;
-  selectie: boolean;
-  website: string;
-  omschrijving: string;
+  soort: Soort;
+  sector: SectorId;
+  plaats: Plaats;
+  /** Eerstejaars in het laatste studiejaar (alleen hbo/wo) */
+  instroom: number | null;
+  /** Duur in jaren */
+  duur: number | null;
+  /** BOL, BBL of BBL/BOL (alleen mbo) */
+  leerwegen: string | null;
+  url: string | null;
+  /** CREBO- (mbo) of CROHO-code (hbo/wo) */
+  code: string;
 }
 
-export type OpenDagSoort = "Open dag" | "Meeloopdag" | "Proefstuderen";
-
-export interface OpenDag {
-  id: string;
-  opleidingId: string;
-  /** YYYY-MM-DD */
-  datum: string;
-  start: string;
-  eind: string;
-  soort: OpenDagSoort;
-  link: string;
+export interface Woonplaats {
+  naam: string;
+  gemeente: string;
+  lat: number;
+  lng: number;
 }
+
+export type Vooropleiding = "vmbo" | "havo" | "vwo" | "mbo4";
+export type Wonen = "thuis" | "kamer" | "allebei";
 
 export interface Profiel {
+  versie: 2;
   naam: string;
-  interesses: Sector[];
-  niveau: Niveau | "beide";
-  /** Maximaal budget per maand (€) */
+  woonplaats: Woonplaats;
+  /** Interesse per sector, 0 (niks) tot 1 (helemaal mijn ding). Komt uit de vragenlijst. */
+  interesse: Partial<Record<SectorId, number>>;
+  vooropleiding: Vooropleiding | null;
+  /** Welke soorten onderwijs je wilt zien */
+  soorten: Soort[];
+  /** 0 = liever doen (praktijk), 1 = liever theorie */
+  leerstijl: number;
+  wonen: Wonen;
   budget: number;
-  /** Maximale reistijd enkele reis (min) om thuis te blijven wonen */
   maxReistijd: number;
+  vragenlijstKlaar: boolean;
 }
 
 export interface Favoriet {
   opleidingId: string;
   toegevoegd: string;
+  /** Datum van de open dag die je wilt bezoeken (YYYY-MM-DD) */
+  openDag: string | null;
   bezocht: boolean;
   cijfer: number | null;
   notitie: string;

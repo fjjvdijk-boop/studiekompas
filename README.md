@@ -1,6 +1,6 @@
 # 🧭 StudieKompas
 
-**Zoek, vergelijk en bewaar opleidingen, en zie meteen wat studeren je per maand kost.**
+**Alle mbo-, hbo- en wo-opleidingen van Nederland, een studiekeuzetest, en meteen zien wat studeren je per maand kost.**
 
 StudieKompas is een web-app voor eindexamenleerlingen. De app koppelt open data over opleidingen (DUO), kamerhuur (Kamernet) en reistijd (NS) en maakt daar nieuwe informatie van: *wat kost studeren daar per maand, en kan ik thuis blijven wonen?*
 
@@ -12,54 +12,61 @@ Gemaakt voor de app-opdracht Informatica 6V.
 
 | Scherm | Wat je kunt doen |
 |---|---|
-| **Home** | Je beste matches, de eerstvolgende open dag van je favorieten en de goedkoopste studiesteden |
-| **Zoeken** | Opleidingen filteren op hbo/wo, sector, stad en reistijd, en sorteren op match, kosten, reistijd of grootte |
-| **Opleiding** | Maandlasten (op kamer of thuis), reistijd-stoplicht, uitleg van je match-score, open dagen, favoriet-knop, cijfer en notitie na de open dag |
-| **Studiesteden** | Kaart met je maandlasten per stad en de reistijd vanaf Wierden |
-| **Vergelijken** | Je favorieten naast elkaar in een tabel (beste waarde gemarkeerd) en een grafiek van de maandlasten |
-| **Open dagen** | Kalender met open dagen van je favorieten, die je met één tik in je agenda zet (.ics) |
-| **Mijn profiel** | Interesses, niveau, budget en maximale reistijd, en optioneel inloggen |
+| **Home** | Je beste matches, alle 14 richtingen, de voordeligste studentensteden en je volgende open dag |
+| **Studietest** | 42 stellingen over 14 interessegebieden, plus je diploma, hoe je leert, wonen en budget. Resultaat: je persoonlijke "kompas" (radargrafiek), niveau-advies en je beste matches |
+| **Zoeken** | Alle 10.538 opleidingen filteren op mbo/hbo/wo (en mbo-niveau 1–4 of Ad), richting, plaats en reistijd, en alleen tonen wat je met je diploma mag |
+| **Opleiding** | Maandlasten (op kamer of thuis), reistijd-stoplicht, uitleg van je match-score, studentenleven en studieverenigingen, links, open dag plannen, cijfer en notitie |
+| **Kaart** | Vectorkaart van Nederland met alle 154 studieplaatsen: grootte = aantal opleidingen, kleur = reistijd vanaf je woonplaats |
+| **Plaats** | Per stad: kosten, scholen, richtingen, je beste matches en studentenverenigingen met links |
+| **Mijn lijst** | Favorieten vergelijken (tabel en grafiek) en open dagen plannen in een kalender (ook als .ics in je agenda) |
+| **Profiel** | Woonplaats (alle 2.503 woonplaatsen), diploma, wonen, budget, reistijd en je interesses bijstellen |
 
 **Op de achtergrond:**
-- **Maandlasten:** kamerhuur + leefkosten + (collegegeld + boeken) ÷ 12, of de goedkopere variant als je thuis kunt blijven wonen
-- **Match-score (0–100):** interesse 40, niveau 10, budget 25, reistijd 25 punten (zie `src/lib/bereken.ts`)
-- **Reistijd-stoplicht:** groen tot 45 min, oranje tot 75 min, daarboven rood
+- **Echte data:** alle opleidingen komen uit DUO Open Onderwijsdata (zie `scripts/bouw-data.py`)
+- **Maandlasten:** kamerhuur + leefkosten + collegegeld of lesgeld (2026/2027) + boeken ÷ 12
+- **Reistijd:** vanaf je eigen woonplaats; vanaf Wierden gecontroleerde treintijden, anders een schatting op basis van afstand
+- **Match-score (0–100):** interesse 45, niveau en leerstijl 15, budget 20, reistijd 20 punten (zie `src/lib/bereken.ts`)
+- **Toelating:** met vmbo naar het mbo, met havo naar mbo/hbo, met vwo overal heen
 - **Alleen eigen favorieten:** row level security in de database (`supabase/schema.sql`)
-- **E-mailherinnering:** elke dag om 18:00 krijg je een mail als een favoriet over 3 dagen een open dag heeft
-- Werkt op je telefoon, ook als app op je beginscherm (PWA), en in licht en donker thema
+- **E-mailherinnering:** 3 dagen voor een open dag die je hebt gepland
+- Werkt op je telefoon, ook als app op je beginscherm, en in licht en donker thema
 
 ---
 
 ## Techniek
 
-| Onderdeel | Gekozen | Waarom |
-|---|---|---|
-| Framework | [Next.js 15](https://nextjs.org) + React + TypeScript | Veelgebruikt, snel, elke pagina een eigen URL |
-| Opmaak | Tailwind CSS 4 | Snel een strak, eigen ontwerp |
-| Kaart | Leaflet + OpenStreetMap/CARTO | Gratis, geen API-sleutel nodig |
-| Grafiek | Recharts | Eenvoudige grafieken in React |
-| Database + inloggen | Supabase (optioneel) | Gratis PostgreSQL met inloggen via e-mail |
-| E-mail | Resend (optioneel) | Eenvoudige mail-API |
-| Hosting | Vercel | Koppelt aan GitHub, gratis |
+| Onderdeel | Gekozen |
+|---|---|
+| Framework | Next.js 15 + React + TypeScript |
+| Opmaak | Tailwind CSS 4, lettertypes Bricolage Grotesque en Geist |
+| Kaart | MapLibre GL met vectorkaarten van OpenFreeMap (gratis, geen sleutel) |
+| Grafieken | Recharts |
+| Data | Python-script dat DUO-bestanden omzet naar `public/data/*.json` |
+| Database + inloggen | Supabase (optioneel) |
+| E-mail | Resend (optioneel) |
+| Hosting | Vercel |
 
 ### Mappen
 
 ```
+scripts/bouw-data.py      Haalt de DUO-data op en maakt public/data/opleidingen.json
+public/data/              Alle opleidingen en woonplaatsen (gegenereerd)
 src/
   app/                    Pagina's (elke map = een URL)
-    page.tsx              Home
-    zoeken/               Zoeken
-    opleiding/[id]/       Detailpagina per opleiding
-    steden/               Kaart met studiesteden
+    vragenlijst/          De studietest
+    zoeken/               Zoeken en filteren
+    opleiding/[id]/       Pagina per opleiding
+    kaart/                De kaart
+    plaats/[slug]/        Pagina per studieplaats
     vergelijken/          Favorieten vergelijken
-    open-dagen/           Kalender
-    profiel/              Mijn profiel + inloggen
+    open-dagen/           Open dagen plannen
+    profiel/              Profiel en inloggen
     api/cron/herinnering/ Dagelijkse e-mailherinnering
-  components/             Herbruikbare onderdelen (kaartjes, kaart, grafiek)
-  data/                   De open data: opleidingen, steden, open dagen, instellingen
+  components/             Onderdelen (opleidingskaart, kaart, grafieken, …)
+  data/                   Sectoren, vragenlijst, verenigingen, kamerhuur, bedragen
   lib/
-    bereken.ts            Alle berekeningen (maandlasten, stoplicht, match-score)
-    bereken.test.ts       Tests voor de berekeningen
+    bereken.ts            Alle berekeningen (reistijd, maandlasten, match-score)
+    bereken.test.ts       Tests (draaien op de echte data)
     store.tsx             Opslag van profiel en favorieten (browser of Supabase)
 supabase/schema.sql       Database-tabellen en beveiliging
 ```
@@ -111,17 +118,26 @@ Hiermee staan je favorieten op al je apparaten, ziet iedereen alleen zijn eigen 
 
 ## De data
 
-De data staat in `src/data/`. Pas het daar aan, de rest van de app rekent automatisch mee.
-
-| Bestand | Bron | Status |
+| Wat | Bron | Status |
 |---|---|---|
-| `opleidingen.ts` | DUO Open Onderwijsdata | Opleidingen bestaan; **instroom is indicatief** |
-| `steden.ts` | Kamernet Huurmonitor, NS-reisplanner | **Kamerhuur en reistijd zijn indicatief** |
-| `opendagen.ts` | Websites van de instellingen | **Voorbeelddatums**, vervangen door echte |
-| `instellingen.ts` | duo.nl, Nibud | Collegegeld 2025-2026, leefkosten zijn een schatting |
+| Opleidingen mbo | DUO: `mbo_opleidingsaanbod` | Echt (alle kwalificaties met BOL/BBL per school en plaats) |
+| Opleidingen hbo/wo | DUO: eerstejaars per opleiding en gemeente | Echt (opleidingen met eerstejaars in de laatste 2 jaar) |
+| Websites | DUO | Waar DUO ze heeft; anders de site van de school |
+| Coördinaten | PDOK Locatieserver | Echt |
+| Collegegeld / lesgeld | duo.nl, rijksoverheid.nl | 2026/2027: € 2.694 / € 1.511 |
+| Kamerhuur | Kamernet Huurmonitor (orde van grootte) | **Indicatief**, per provincie geschat voor kleinere plaatsen |
+| Reistijd | NS (vanaf Wierden), anders afstand | **Indicatief** |
+| Verenigingen | Officiële sites van universiteiten en hogescholen | Alleen gecontroleerde namen, met links naar de officiële overzichten |
 
-### Uitbreiden
+### Data bijwerken
 
-- **Meer opleidingen:** voeg een regel toe in `opleidingen.ts` (nieuw ID, bijvoorbeeld `O41`).
-- **Meer steden:** voeg een stad toe in `steden.ts` met coördinaten, kamerhuur en reistijd.
-- **Andere woonplaats dan Wierden:** pas `THUISSTAD` en de reistijden in `steden.ts` aan.
+Als DUO nieuwe cijfers publiceert:
+
+```bash
+rm -rf .cache
+python3 scripts/bouw-data.py
+```
+
+Het script downloadt de bestanden opnieuw en schrijft `public/data/opleidingen.json`. Daarna commit en push je, en Vercel zet de nieuwe versie online.
+
+> Heb je Supabase al eerder ingesteld? Draai `supabase/schema.sql` dan nog een keer: er zijn kolommen bijgekomen (profiel en open-dagdatum).

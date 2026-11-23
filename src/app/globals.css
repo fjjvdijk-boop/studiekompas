@@ -1,52 +1,59 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #f5f6fa;
+  --bg: #f6f5fb;
   --card: #ffffff;
-  --card-2: #f0f2f8;
-  --ink: #0e1630;
-  --muted: #5b6478;
-  --line: #e3e6ef;
-  --brand: #4338ca;
-  --brand-2: #6366f1;
-  --brand-soft: #eceafe;
+  --card-2: #f1f0f8;
+  --ink: #120f2e;
+  --muted: #615d7a;
+  --line: #e6e3f1;
+  --brand: #4f39f6;
+  --brand-2: #7c6cff;
+  --brand-soft: #ecebff;
   --brand-ink: #ffffff;
-  --accent: #f59e0b;
-  --groen: #15803d;
-  --groen-soft: #dcfce7;
-  --oranje: #c2410c;
-  --oranje-soft: #ffedd5;
-  --rood: #b91c1c;
-  --rood-soft: #fee2e2;
-  --c-huur: #6366f1;
-  --c-leef: #22a3c4;
-  --c-college: #f59e0b;
-  --c-boeken: #e05d8a;
+  --accent: #ff9f1c;
+  --accent-soft: #fff1dc;
+  --groen: #0f9d58;
+  --groen-soft: #dcf7e8;
+  --oranje: #d9590b;
+  --oranje-soft: #ffeedd;
+  --rood: #d42a3c;
+  --rood-soft: #fde4e7;
+  --c-huur: #6d5dfc;
+  --c-leef: #18a6c9;
+  --c-college: #ff9f1c;
+  --c-boeken: #ec4899;
+  --schaduw: 0 1px 2px rgba(18, 15, 46, 0.04), 0 8px 24px -12px rgba(18, 15, 46, 0.12);
+  --schaduw-groot: 0 2px 4px rgba(18, 15, 46, 0.04), 0 24px 60px -24px rgba(79, 57, 246, 0.35);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #0a0f1f;
-    --card: #121a30;
-    --card-2: #182241;
-    --ink: #e8ebf5;
-    --muted: #98a2bd;
-    --line: #243052;
-    --brand: #8b8cf8;
-    --brand-2: #a5b4fc;
-    --brand-soft: #1f2650;
-    --brand-ink: #0a0f1f;
+    --bg: #0b0a1a;
+    --card: #14122b;
+    --card-2: #1c1a3a;
+    --ink: #ecebfa;
+    --muted: #a19dc0;
+    --line: #2a2750;
+    --brand: #8f80ff;
+    --brand-2: #b3a9ff;
+    --brand-soft: #241f55;
+    --brand-ink: #0b0a1a;
+    --accent: #ffb24d;
+    --accent-soft: #3a2a12;
     --groen: #4ade80;
-    --groen-soft: #0f2e1d;
+    --groen-soft: #0f2d1d;
     --oranje: #fb923c;
-    --oranje-soft: #36200f;
-    --rood: #f87171;
-    --rood-soft: #3a1515;
-    --c-huur: #818cf8;
+    --oranje-soft: #34200f;
+    --rood: #fb7185;
+    --rood-soft: #3a1520;
+    --c-huur: #8f80ff;
     --c-leef: #38bdf8;
-    --c-college: #fbbf24;
+    --c-college: #ffb24d;
     --c-boeken: #f472b6;
+    --schaduw: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+    --schaduw-groot: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 60px -24px rgba(143, 128, 255, 0.35);
     color-scheme: dark;
   }
 }
@@ -63,6 +70,7 @@
   --color-brand-soft: var(--brand-soft);
   --color-brand-ink: var(--brand-ink);
   --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
   --color-groen: var(--groen);
   --color-groen-soft: var(--groen-soft);
   --color-oranje: var(--oranje);
@@ -70,16 +78,37 @@
   --color-rood: var(--rood);
   --color-rood-soft: var(--rood-soft);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --shadow-zacht: var(--schaduw);
+  --shadow-groot: var(--schaduw-groot);
 }
 
 html {
   -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
-  font-feature-settings: "ss01", "cv11";
+}
+
+/* Zachte kleurvlekken op de achtergrond */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40rem 28rem at 8% -6%, color-mix(in oklab, var(--brand) 13%, transparent), transparent 70%),
+    radial-gradient(34rem 24rem at 100% 0%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-variation-settings: "wdth" 92;
+  letter-spacing: -0.025em;
 }
 
 .tabular {
@@ -89,7 +118,8 @@ body {
 .kaart {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 1.25rem;
+  border-radius: 1.5rem;
+  box-shadow: var(--schaduw);
 }
 
 .focus-ring:focus-visible {
@@ -97,60 +127,54 @@ body {
   outline-offset: 2px;
 }
 
-/* Leaflet: past de kaart aan het thema aan */
-.leaflet-container {
-  font-family: inherit;
-  background: var(--card-2);
-  border-radius: 1.25rem;
+.gradient-tekst {
+  background: linear-gradient(100deg, var(--brand) 10%, #c04cfd 55%, var(--accent) 95%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-.leaflet-popup-content-wrapper,
-.leaflet-popup-tip {
-  background: var(--card);
-  color: var(--ink);
+
+.scroll-x {
+  scrollbar-width: none;
 }
-.leaflet-popup-content-wrapper {
-  border-radius: 14px;
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.35);
+.scroll-x::-webkit-scrollbar {
+  display: none;
 }
-.leaflet-container a.leaflet-popup-close-button {
-  color: var(--muted);
+
+/* Grid-kolommen mogen smaller worden dan hun inhoud (voorkomt overlopen op mobiel) */
+.grid > * {
+  min-width: 0;
 }
-.stad-pin {
-  background: none;
-  border: none;
-}
-.stad-pin > div {
-  transform: translate(-50%, -50%);
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  white-space: nowrap;
+
+/* Schuifregelaar in de huisstijl */
+input[type="range"].schuif {
+  appearance: none;
+  height: 8px;
   border-radius: 999px;
-  padding: 4px 9px;
-  font:
-    600 12px/1 var(--font-geist-sans),
-    system-ui,
-    sans-serif;
-  color: #fff;
-  box-shadow: 0 4px 14px -4px rgba(0, 0, 0, 0.45);
-  border: 2px solid #fff;
-  transition: transform 0.15s;
+  background: linear-gradient(to right, var(--brand) var(--p, 50%), var(--line) var(--p, 50%));
+  cursor: pointer;
 }
-.stad-pin > div:hover {
-  z-index: 10;
+input[type="range"].schuif::-webkit-slider-thumb {
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 3px solid var(--brand);
+  box-shadow: 0 4px 12px -2px rgba(79, 57, 246, 0.45);
 }
-.stad-pin.actief {
-  z-index: 1000 !important;
-}
-.stad-pin.actief > div {
-  transform: translate(-50%, -50%) scale(1.18);
-  outline: 3px solid var(--brand);
+input[type="range"].schuif::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 3px solid var(--brand);
 }
 
 @keyframes binnenkomen {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -158,15 +182,60 @@ body {
   }
 }
 .binnenkomen {
-  animation: binnenkomen 0.35s ease-out both;
+  animation: binnenkomen 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes zweven {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--r, 0deg));
+  }
+  50% {
+    transform: translateY(-8px) rotate(var(--r, 0deg));
+  }
+}
+.zweven {
+  animation: zweven 6s ease-in-out infinite;
+}
+@keyframes draai {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes wiebel {
+  0%,
+  100% {
+    transform: rotate(-14deg);
+  }
+  50% {
+    transform: rotate(18deg);
+  }
+}
+.kompasnaald {
+  transform-origin: 50% 50%;
+  animation: wiebel 5s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
-  .binnenkomen {
+  .binnenkomen,
+  .zweven,
+  .kompasnaald {
     animation: none;
   }
 }
 
-/* Grid-kolommen mogen smaller worden dan hun inhoud (voorkomt overlopen op mobiel) */
-.grid > * {
-  min-width: 0;
+/* MapLibre in de huisstijl */
+.maplibregl-popup-content {
+  background: var(--card) !important;
+  color: var(--ink);
+  border-radius: 14px !important;
+  box-shadow: var(--schaduw-groot) !important;
+  padding: 10px 14px !important;
+  font-family: var(--font-sans);
+}
+.maplibregl-popup-tip {
+  border-top-color: var(--card) !important;
+  border-bottom-color: var(--card) !important;
+}
+.maplibregl-ctrl-group {
+  border-radius: 12px !important;
+  overflow: hidden;
 }

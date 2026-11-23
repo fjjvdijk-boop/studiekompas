@@ -1,25 +1,38 @@
+import type { Profiel } from "@/lib/types";
+
 /**
  * Rekenparameters. Pas deze aan als de bedragen veranderen.
- * Bronnen: duo.nl (collegegeld), Nibud Studentenonderzoek (leefkosten).
+ * Bronnen: duo.nl en rijksoverheid.nl (collegegeld en lesgeld 2026/2027), Nibud (leefkosten, schatting).
  */
 export const INSTELLINGEN = {
-  thuisstad: "Wierden",
-  /** Wettelijk collegegeld per jaar (2025-2026: €2.601) */
-  collegegeld: 2601,
-  boekenPerJaar: 600,
-  /** Leefkosten per maand zonder huur: eten, verzekering, telefoon, kleding, uitgaan */
+  studiejaar: "2026/2027",
+  /** Wettelijk collegegeld hbo/wo per jaar */
+  collegegeld: 2694,
+  /** Lesgeld mbo per jaar (alleen BOL en alleen als je 18 of ouder bent) */
+  lesgeldMbo: 1511,
+  boekenHo: 600,
+  boekenMbo: 400,
+  /** Leefkosten per maand zonder huur: eten, zorgverzekering, telefoon, kleding, uitgaan */
   leefUitwonend: 550,
-  /** Leefkosten per maand als je thuis woont (bijdrage, eten buiten de deur, telefoon) */
+  /** Leefkosten per maand als je thuis woont */
   leefThuis: 250,
   /** Stoplicht-grenzen in minuten (enkele reis) */
   groenTot: 45,
   oranjeTot: 75,
 } as const;
 
-export const STANDAARD_PROFIEL = {
+export const WIERDEN = { naam: "Wierden", gemeente: "Wierden", lat: 52.3592, lng: 6.5928 };
+
+export const STANDAARD_PROFIEL: Profiel = {
+  versie: 2,
   naam: "",
-  interesses: [],
-  niveau: "beide",
+  woonplaats: WIERDEN,
+  interesse: {},
+  vooropleiding: null,
+  soorten: ["mbo", "hbo", "wo"],
+  leerstijl: 0.5,
+  wonen: "allebei",
   budget: 800,
   maxReistijd: 45,
-} as const;
+  vragenlijstKlaar: false,
+};

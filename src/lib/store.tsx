@@ -4,9 +4,49 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { STANDAARD_PROFIEL } from "@/data/instellingen";
 import { vandaag } from "./bereken";
 import { supabase } from "./supabase";
-import type { Favoriet, Niveau, Profiel, Sector } from "./types";
+import type { Favoriet, Profiel, SectorId, Woonplaats } from "./types";
 
 const OPSLAG_SLEUTEL = "studiekompas:v1";
+
+/** Oude sectornamen (versie 1) naar de nieuwe indeling */
+const OUDE_SECTOREN: Record<string, SectorId> = {
+  Economie: "economie",
+  "Gedrag en Maatschappij": "welzijn",
+  Gezondheidszorg: "zorg",
+  Natuur: "beta",
+  Onderwijs: "onderwijs",
+  Recht: "recht",
+  "Taal en Cultuur": "taal",
+  Techniek: "techniek",
+};
+
+/** Zet een profiel uit een oudere versie om naar het huidige formaat */
+export function migreerProfiel(p: unknown): Profiel | null {
+  if (!p || typeof p !== "object") return null;
+  const o = p as Record<string, unknown>;
+  if (o.versie === 2) return { ...STANDAARD_PROFIEL, ...(o as Partial<Profiel>) } as Profiel;
+  const interesse: Partial<Record<SectorId, number>> = {};
+  if (Array.isArray(o.interesses))
+    for (const s of o.interesses) if (OUDE_SECTOREN[s]) interesse[OUDE_SECTOREN[s]] = 0.85;
+  const niveau = o.niveau as string | undefined;
+  return {
+    ...STANDAARD_PROFIEL,
+    naam: typeof o.naam === "string" ? o.naam : "",
+    interesse,
+    soorten: niveau === "hbo" ? ["hbo"] : niveau === "wo" ? ["wo"] : ["mbo", "hbo", "wo"],
+    budget: typeof o.budget === "number" ? o.budget : STANDAARD_PROFIEL.budget,
+    maxReistijd: typeof o.maxReistijd === "number" ? o.maxReistijd : STANDAARD_PROFIEL.maxReistijd,
+  };
+}
+
+const naarFavorietLokaal = (f: Partial<Favoriet> & { opleidingId: string }): Favoriet => ({
+  opleidingId: f.opleidingId,
+  toegevoegd: f.toegevoegd ?? vandaag(),
+  openDag: f.openDag ?? null,
+  bezocht: f.bezocht ?? false,
+  cijfer: f.cijfer ?? null,
+  notitie: f.notitie ?? "",
+});
 
 interface Opslag {
   profiel: Profiel | null;
@@ -30,6 +70,7 @@ interface StoreWaarde {
   slaProfielOp: (p: Profiel) => Promise<void>;
   wisselFavoriet: (opleidingId: string) => Promise<void>;
   werkFavorietBij: (opleidingId: string, wijziging: Partial<Omit<Favoriet, "opleidingId">>) => Promise<void>;
+  zetWoonplaats: (w: Woonplaats) => Promise<void>;
   stuurInloglink: (email: string) => Promise<{ fout?: string }>;
   logUit: () => Promise<void>;
 }
@@ -41,7 +82,10 @@ function leesLokaal(): Opslag {
     const ruw = localStorage.getItem(OPSLAG_SLEUTEL);
     if (ruw) {
       const data = JSON.parse(ruw) as Opslag;
-      return { profiel: data.profiel ?? null, favorieten: Array.isArray(data.favorieten) ? data.favorieten : [] };
+      return {
+        profiel: migreerProfiel(data.profiel),
+        favorieten: Array.isArray(data.favorieten) ? data.favorieten.map(naarFavorietLokaal) : [],
+      };
     }
   } catch {
     /* geen toegang tot opslag (privévenster): gewoon leeg beginnen */
@@ -63,10 +107,7 @@ interface ProfielRij {
   id: string;
   email: string;
   naam: string;
-  interesses: string[];
-  niveau: string;
-  budget: number;
-  max_reistijd: number;
+  data: Profiel | null;
 }
 
 interface FavorietRij {
@@ -76,15 +117,10 @@ interface FavorietRij {
   bezocht: boolean;
   cijfer: number | null;
   notitie: string | null;
+  open_dag: string | null;
 }
 
-const naarProfiel = (r: ProfielRij): Profiel => ({
-  naam: r.naam ?? "",
-  interesses: (r.interesses ?? []) as Sector[],
-  niveau: (r.niveau ?? "beide") as Niveau | "beide",
-  budget: r.budget,
-  maxReistijd: r.max_reistijd,
-});
+const naarProfiel = (r: ProfielRij): Profiel | null => migreerProfiel(r.data ?? { naam: r.naam });
 
 const naarFavoriet = (r: FavorietRij): Favoriet => ({
   opleidingId: r.opleiding_id,
@@ -92,16 +128,14 @@ const naarFavoriet = (r: FavorietRij): Favoriet => ({
   bezocht: r.bezocht,
   cijfer: r.cijfer,
   notitie: r.notitie ?? "",
+  openDag: r.open_dag,
 });
 
 const profielRij = (g: Gebruiker, p: Profiel): ProfielRij => ({
   id: g.id,
   email: g.email,
   naam: p.naam,
-  interesses: p.interesses,
-  niveau: p.niveau,
-  budget: p.budget,
-  max_reistijd: p.maxReistijd,
+  data: p,
 });
 
 const favorietRij = (g: Gebruiker, f: Favoriet): FavorietRij => ({
@@ -111,6 +145,7 @@ const favorietRij = (g: Gebruiker, f: Favoriet): FavorietRij => ({
   bezocht: f.bezocht,
   cijfer: f.cijfer,
   notitie: f.notitie,
+  open_dag: f.openDag,
 });
 
 async function laadUitCloud(g: Gebruiker): Promise<Opslag> {
@@ -198,7 +233,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (gebruiker && supabase)
           await supabase.from("favorieten").delete().eq("user_id", gebruiker.id).eq("opleiding_id", opleidingId);
       } else {
-        const fav: Favoriet = { opleidingId, toegevoegd: vandaag(), bezocht: false, cijfer: null, notitie: "" };
+        const fav = naarFavorietLokaal({ opleidingId });
         bewaar({ ...huidig, favorieten: [...huidig.favorieten, fav] });
         if (gebruiker && supabase) await supabase.from("favorieten").upsert(favorietRij(gebruiker, fav));
       }
@@ -213,6 +248,15 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       bewaar({ ...huidig, favorieten });
       const fav = favorieten.find((f) => f.opleidingId === opleidingId);
       if (fav && gebruiker && supabase) await supabase.from("favorieten").upsert(favorietRij(gebruiker, fav));
+    },
+    [bewaar, gebruiker],
+  );
+
+  const zetWoonplaats = useCallback(
+    async (w: Woonplaats) => {
+      const p = { ...(dataRef.current.profiel ?? STANDAARD_PROFIEL), woonplaats: w };
+      bewaar({ ...dataRef.current, profiel: p });
+      if (gebruiker && supabase) await supabase.from("profielen").upsert(profielRij(gebruiker, p));
     },
     [bewaar, gebruiker],
   );
@@ -235,17 +279,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       geladen,
       cloud: !!supabase,
       gebruiker,
-      profiel: data.profiel ?? { ...STANDAARD_PROFIEL, interesses: [] },
+      profiel: data.profiel ?? STANDAARD_PROFIEL,
       heeftProfiel: !!data.profiel,
       favorieten: data.favorieten,
       isFavoriet: (id) => data.favorieten.some((f) => f.opleidingId === id),
       slaProfielOp,
       wisselFavoriet,
       werkFavorietBij,
+      zetWoonplaats,
       stuurInloglink,
       logUit,
     }),
-    [geladen, gebruiker, data, slaProfielOp, wisselFavoriet, werkFavorietBij, stuurInloglink, logUit],
+    [geladen, gebruiker, data, slaProfielOp, wisselFavoriet, werkFavorietBij, zetWoonplaats, stuurInloglink, logUit],
   );
 
   return <StoreContext.Provider value={waarde}>{children}</StoreContext.Provider>;

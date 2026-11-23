@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
-  BadgeCheck,
+  BookOpen,
   CalendarPlus,
   Clock,
   ExternalLink,
@@ -14,319 +14,539 @@ import {
   Star,
   TrainFront,
   Users,
+  Wallet,
 } from "lucide-react";
-import { OPLEIDINGEN } from "@/data/opleidingen";
-import { datumTekst, euro, opleidingVan, openDagenVan, reistijdTekst } from "@/lib/bereken";
+import { NIVEAU_LABEL, NIVEAU_UITLEG, SECTOR } from "@/data/sectoren";
+import {
+  LANDELIJK,
+  PER_STAD,
+  SOORT_LABEL,
+  STUDIEVERENIGING_OVERZICHT,
+  STUDIEVERENIGINGEN,
+  UU_OPLEIDING,
+} from "@/data/verenigingen";
+import {
+  bereken,
+  datumTekst,
+  duurTekst,
+  euro,
+  getal,
+  plaatsNaam,
+  plaatsSlug,
+  reistijdTekst,
+  vandaag,
+} from "@/lib/bereken";
 import { downloadIcs, maakIcs } from "@/lib/ics";
-import { bereken } from "@/lib/resultaten";
 import { useStore } from "@/lib/store";
-import { FavorietKnop, KostenBalk, NiveauChip, ScoreRing, StoplichtBadge, kostenDelen } from "@/components/ui";
+import type { Opleiding } from "@/lib/types";
+import { OpleidingKaart } from "@/components/OpleidingKaart";
+import {
+  FavorietKnop,
+  KostenBalk,
+  LICHT_LABEL,
+  NiveauChip,
+  ScoreRing,
+  SectorIcoon,
+  Segment,
+  kostenDelen,
+} from "@/components/ui";
 
-export function OpleidingDetail({ id }: { id: string }) {
+export function OpleidingDetail({
+  opleiding: o,
+  elders,
+  hier,
+}: {
+  opleiding: Opleiding;
+  elders: Opleiding[];
+  hier: Opleiding[];
+}) {
   const { profiel, heeftProfiel, favorieten, werkFavorietBij, geladen } = useStore();
-  const opleiding = opleidingVan(id)!;
-  const r = bereken(opleiding, profiel);
-  const { stad, kosten: k, match, licht } = r;
+  const r = useMemo(() => bereken(o, profiel), [o, profiel]);
+  const { kosten: k, match, licht } = r;
   const [thuis, setThuis] = useState(k.thuisMogelijk);
   useEffect(() => setThuis(k.thuisMogelijk), [k.thuisMogelijk]);
+  const fav = favorieten.find((f) => f.opleidingId === o.id);
+  const s = SECTOR[o.sector];
 
-  const dagen = openDagenVan(id);
-  const fav = favorieten.find((f) => f.opleidingId === id);
-  const elders = OPLEIDINGEN.filter((o) => o.naam === opleiding.naam && o.id !== id).map((o) => bereken(o, profiel));
+  const andere = useMemo(
+    () =>
+      elders
+        .map((e) => bereken(e, profiel))
+        .sort((a, b) => b.match.score - a.match.score || a.reistijd - b.reistijd)
+        .slice(0, 6),
+    [elders, profiel],
+  );
+  const verwant = useMemo(
+    () =>
+      hier
+        .map((e) => bereken(e, profiel))
+        .sort((a, b) => b.match.score - a.match.score)
+        .slice(0, 3),
+    [hier, profiel],
+  );
+
+  const stad = PER_STAD.get(o.plaats.naam);
+  const studieVer = STUDIEVERENIGINGEN.filter(
+    (v) => o.instelling.naam.includes(v.instelling) && v.opleiding.test(o.naam),
+  );
+  const studieOverzicht = STUDIEVERENIGING_OVERZICHT.find((x) => o.instelling.naam.includes(x.instelling));
+  const uuPagina = o.instelling.naam.includes("Universiteit Utrecht")
+    ? UU_OPLEIDING.find((x) => x.opleiding.test(o.naam))
+    : undefined;
+  const landelijk = LANDELIJK.filter((l) => (o.soort === "mbo" ? l.voor === "mbo" : l.voor === "ho"));
+
   const delen = kostenDelen(k, thuis);
   const totaal = thuis ? k.thuis : k.uitwonend;
+  const vergelijkSite =
+    o.soort === "mbo"
+      ? { label: "Kiesmbo.nl", url: "https://www.kiesmbo.nl" }
+      : { label: "Studiekeuze123", url: "https://www.studiekeuze123.nl" };
 
   return (
-    <div className="binnenkomen space-y-6">
+    <div className="space-y-6">
       <Link
         href="/zoeken"
-        className="focus-ring inline-flex items-center gap-1.5 rounded text-sm font-medium text-muted hover:text-ink"
+        className="focus-ring inline-flex items-center gap-1.5 rounded-full text-sm font-medium text-muted hover:text-ink"
       >
-        <ArrowLeft className="h-4 w-4" /> Terug naar zoeken
+        <ArrowLeft className="h-4 w-4" /> Alle opleidingen
       </Link>
 
-      <header className="kaart overflow-hidden">
-        <div className="h-2 bg-gradient-to-r from-[#4338ca] via-[#6366f1] to-[#f59e0b]" />
-        <div className="flex flex-col gap-6 p-5 sm:p-8 md:flex-row md:items-start">
+      {/* ---------- KOP ---------- */}
+      <header className="kaart binnenkomen relative overflow-hidden">
+        <div
+          className="pointer-events-none absolute -right-24 -top-24 h-72 w-72 rounded-full opacity-25 blur-3xl"
+          style={{ background: s.kleur }}
+        />
+        <div className="relative flex flex-col gap-8 p-6 sm:p-9 lg:flex-row lg:items-center">
           <div className="min-w-0 flex-1">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
-              <NiveauChip niveau={opleiding.niveau} />
-              <span className="text-sm text-muted">{opleiding.sector}</span>
-              {opleiding.selectie && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-oranje-soft px-2 py-0.5 text-xs font-medium text-oranje">
-                  <BadgeCheck className="h-3.5 w-3.5" /> Selectie / numerus fixus
+            <div className="flex items-center gap-4">
+              <SectorIcoon sector={o.sector} maat={60} />
+              <div className="flex flex-wrap items-center gap-2">
+                <NiveauChip niveau={o.niveau} />
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: `color-mix(in oklab, ${s.kleur} 75%, var(--ink))` }}
+                >
+                  {s.naam}
                 </span>
-              )}
+                {o.leerwegen && (
+                  <span className="rounded-md bg-card-2 px-1.5 py-0.5 text-xs font-semibold">{o.leerwegen}</span>
+                )}
+              </div>
             </div>
-            <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{opleiding.naam}</h1>
-            <p className="mt-1 flex items-center gap-1.5 text-muted">
-              <MapPin className="h-4 w-4" /> {opleiding.instelling} · {stad.naam}
+            <h1 className="display mt-5 text-4xl font-bold leading-[1.02] sm:text-5xl">{o.naam}</h1>
+            {o.eigenNaam && <p className="mt-2 text-lg text-muted">“{o.eigenNaam}”</p>}
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-muted">
+              <span className="inline-flex items-center gap-1.5">
+                <GraduationCap className="h-4 w-4" /> {o.instelling.naam}
+              </span>
+              <Link
+                href={`/plaats/${plaatsSlug(o.plaats.naam)}`}
+                className="inline-flex items-center gap-1.5 hover:text-brand"
+              >
+                <MapPin className="h-4 w-4" /> {plaatsNaam(o.plaats.naam)}, {o.plaats.provincie}
+              </Link>
             </p>
-            <p className="mt-4 max-w-2xl leading-relaxed">{opleiding.omschrijving}</p>
-            <div className="mt-6 flex flex-wrap gap-2">
-              <FavorietKnop opleidingId={id} groot />
+            <div className="mt-7 flex flex-wrap gap-2">
+              <FavorietKnop opleidingId={o.id} groot />
+              {(o.url ?? o.instelling.url) && (
+                <a
+                  href={(o.url ?? o.instelling.url)!}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="focus-ring inline-flex h-12 items-center gap-2 rounded-full bg-ink px-5 text-sm font-semibold text-bg hover:opacity-90"
+                >
+                  {o.url ? "Bekijk de opleiding" : "Website school"} <ExternalLink className="h-4 w-4" />
+                </a>
+              )}
               <a
-                href={opleiding.website}
+                href={vergelijkSite.url}
                 target="_blank"
                 rel="noreferrer"
-                className="focus-ring inline-flex h-11 items-center gap-2 rounded-full border border-line px-5 text-sm font-medium hover:border-brand"
+                className="focus-ring inline-flex h-12 items-center gap-2 rounded-full border border-line px-5 text-sm font-semibold hover:border-brand"
               >
-                Website <ExternalLink className="h-4 w-4" />
+                {vergelijkSite.label} <ExternalLink className="h-4 w-4" />
               </a>
             </div>
           </div>
-          <div className="flex items-center gap-4 rounded-2xl bg-card-2 p-4 md:w-60 md:flex-col md:items-start">
-            <ScoreRing score={match.score} maat={84} />
+          <div className="flex items-center gap-5 rounded-3xl bg-card-2 p-5 lg:w-72 lg:flex-col lg:items-start">
+            <ScoreRing score={match.score} maat={96} dik={7} />
             <div>
-              <p className="font-semibold">Match-score</p>
+              <p className="display text-lg font-bold">Match-score</p>
               <p className="text-sm text-muted">
-                {heeftProfiel
-                  ? "Hoe goed deze opleiding bij jouw profiel past"
-                  : "Vul je profiel in voor een persoonlijke score"}
+                {heeftProfiel && profiel.vragenlijstKlaar
+                  ? "Hoe goed dit bij jou past"
+                  : "Doe de studietest voor een persoonlijke score"}
               </p>
             </div>
           </div>
         </div>
       </header>
 
+      {!match.toelaatbaar && (
+        <div className="rounded-2xl border border-oranje/30 bg-oranje-soft p-4 text-sm text-oranje">
+          <strong>Let op:</strong> {match.onderdelen[1].uitleg}. Soms kan het wel via een vooropleiding, schakeljaar of
+          toelatingstoets: check de website van de school.
+        </div>
+      )}
+
+      {/* ---------- FEITEN ---------- */}
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Stat
-          icoon={<HomeIcon className="h-4 w-4" />}
-          label="Maandlasten"
+        <Feit
+          icoon={<Wallet className="h-4 w-4" />}
+          label="Per maand"
           waarde={euro(k.advies)}
-          sub={k.thuisMogelijk ? "thuis wonend" : "op kamer"}
+          sub={k.thuisMogelijk ? "als je thuis woont" : "op kamer"}
         />
-        <Stat
+        <Feit
           icoon={<TrainFront className="h-4 w-4" />}
-          label="Reistijd vanaf Wierden"
-          waarde={reistijdTekst(stad.reistijd)}
+          label={`Reistijd vanaf ${profiel.woonplaats.naam}`}
+          waarde={`${r.reistijdSchatting ? "± " : ""}${reistijdTekst(r.reistijd)}`}
           sub={
             <span
-              className={`inline-flex items-center gap-1.5 font-medium ${licht === "groen" ? "text-groen" : licht === "oranje" ? "text-oranje" : "text-rood"}`}
+              className={`font-semibold ${licht === "groen" ? "text-groen" : licht === "oranje" ? "text-oranje" : "text-rood"}`}
             >
-              <span className="h-2 w-2 rounded-full bg-current" />
-              {licht === "groen"
-                ? "Goed te reizen"
-                : licht === "oranje"
-                  ? "Pittige reis"
-                  : "Te ver om dagelijks te reizen"}
-              {stad.overstappen ? ` · ${stad.overstappen}× overstap` : " · direct"}
+              ● {LICHT_LABEL[licht]}
             </span>
           }
         />
-        <Stat
-          icoon={<Users className="h-4 w-4" />}
-          label="Eerstejaars per jaar"
-          waarde={`± ${opleiding.instroom}`}
-          sub="indicatief, DUO"
-        />
-        <Stat
-          icoon={<GraduationCap className="h-4 w-4" />}
+        <Feit
+          icoon={<Clock className="h-4 w-4" />}
           label="Duur"
-          waarde={`${opleiding.duur} jaar`}
-          sub={
-            opleiding.niveau === "wo" && opleiding.duur === 3
-              ? "+ master"
-              : opleiding.niveau === "hbo"
-                ? "bachelor"
-                : "bachelor + master"
-          }
+          waarde={duurTekst(o.duur)}
+          sub={NIVEAU_UITLEG[o.niveau]}
         />
+        {o.instroom !== null ? (
+          <Feit
+            icoon={<Users className="h-4 w-4" />}
+            label="Eerstejaars"
+            waarde={getal(o.instroom)}
+            sub="vorig studiejaar (DUO)"
+          />
+        ) : (
+          <Feit
+            icoon={<BookOpen className="h-4 w-4" />}
+            label="Leerweg"
+            waarde={o.leerwegen ?? "–"}
+            sub={
+              o.leerwegen?.includes("BBL") ? "BBL: werken en leren, je verdient salaris" : "BOL: naar school met stages"
+            }
+          />
+        )}
       </dl>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <section className="kaart p-5 sm:p-6">
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+      {/* ---------- KOSTEN + SCORE ---------- */}
+      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+        <section className="kaart p-6 sm:p-7">
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold">Wat kost het per maand?</h2>
-              <p className="text-sm text-muted">Collegegeld en boeken zijn omgerekend naar per maand.</p>
+              <h2 className="display text-2xl font-bold">Wat kost het per maand?</h2>
+              <p className="text-sm text-muted">Bedragen van {"2026/2027"}; per jaar omgerekend naar per maand.</p>
             </div>
-            <div className="grid grid-cols-2 gap-1 rounded-full bg-card-2 p-1 text-sm">
-              {[
-                [false, "Op kamer"],
-                [true, "Thuis wonen"],
-              ].map(([w, label]) => (
-                <button
-                  key={String(w)}
-                  type="button"
-                  aria-pressed={thuis === w}
-                  onClick={() => setThuis(w as boolean)}
-                  className={`focus-ring rounded-full px-3 py-1.5 font-medium transition-colors ${
-                    thuis === w ? "bg-card text-ink shadow-sm" : "text-muted"
-                  }`}
-                >
-                  {label as string}
-                </button>
-              ))}
-            </div>
+            <Segment
+              waarde={thuis ? "thuis" : "kamer"}
+              kies={(w) => setThuis(w === "thuis")}
+              opties={[
+                { waarde: "kamer", label: "Op kamer" },
+                { waarde: "thuis", label: "Thuis" },
+              ]}
+            />
           </div>
-          <p className="mb-3 text-4xl font-semibold tracking-tight tabular">
-            {euro(totaal)} <span className="text-base font-normal text-muted">per maand</span>
+          <p className="display mb-4 text-5xl font-bold tabular">
+            {euro(totaal)} <span className="font-sans text-base font-normal text-muted">per maand</span>
           </p>
           <KostenBalk kosten={k} thuis={thuis} />
-          <ul className="mt-5 space-y-2.5">
+          <ul className="mt-6 grid gap-3 sm:grid-cols-2">
             {delen.map((d) => (
-              <li key={d.naam} className="flex items-center gap-3 text-sm">
-                <span className="h-3 w-3 rounded-sm" style={{ background: d.kleur }} />
+              <li key={d.naam} className="flex items-center gap-3 rounded-2xl bg-card-2 px-4 py-3 text-sm">
+                <span className="h-3 w-3 rounded-full" style={{ background: d.kleur }} />
                 <span className="flex-1">{d.naam}</span>
-                <span className="font-medium tabular">{euro(d.bedrag)}</span>
+                <span className="font-semibold tabular">{euro(d.bedrag)}</span>
               </li>
             ))}
           </ul>
           <div
-            className={`mt-5 rounded-xl p-3.5 text-sm ${k.thuisMogelijk ? "bg-groen-soft text-groen" : "bg-card-2 text-muted"}`}
+            className={`mt-5 flex gap-3 rounded-2xl p-4 text-sm ${k.thuisMogelijk ? "bg-groen-soft text-groen" : "bg-card-2 text-muted"}`}
           >
-            {k.thuisMogelijk
-              ? `Met ${reistijdTekst(stad.reistijd)} reizen (jouw maximum is ${profiel.maxReistijd} min) kun je thuis blijven wonen. Dat scheelt ${euro(k.uitwonend - k.thuis)} per maand.`
-              : `${reistijdTekst(stad.reistijd)} enkele reis is meer dan jouw maximum van ${profiel.maxReistijd} min. Reken op een kamer in ${stad.naam}.`}
-            <span className="mt-1 block text-xs opacity-80">
-              Met je studentenreisproduct reis je doordeweeks gratis met de trein.
-            </span>
+            <HomeIcon className="mt-0.5 h-4 w-4 shrink-0" />
+            <p>
+              {k.thuisMogelijk
+                ? `Met ${reistijdTekst(r.reistijd)} reizen kun je thuis blijven wonen. Dat scheelt ${euro(k.uitwonend - k.thuis)} per maand.`
+                : `${reistijdTekst(r.reistijd)} enkele reis is meer dan je maximum van ${profiel.maxReistijd} min. Reken op een kamer in ${plaatsNaam(o.plaats.naam)}.`}
+              <span className="mt-1 block text-xs opacity-80">
+                {o.soort === "mbo"
+                  ? "Ben je 18 of ouder? Dan krijg je als mbo-student een studentenreisproduct."
+                  : "Met je studentenreisproduct reis je doordeweeks gratis met het OV."}
+              </span>
+            </p>
           </div>
         </section>
 
-        <section className="kaart p-5 sm:p-6">
-          <h2 className="text-lg font-semibold">Waarom deze score?</h2>
-          <p className="mb-5 text-sm text-muted">
-            {heeftProfiel ? (
-              "Op basis van je profiel."
+        <section className="kaart p-6 sm:p-7">
+          <h2 className="display text-2xl font-bold">Waarom deze score?</h2>
+          <p className="mb-6 text-sm text-muted">
+            {profiel.vragenlijstKlaar ? (
+              "Op basis van je studietest en profiel."
             ) : (
               <>
-                <Link href="/profiel" className="font-medium text-brand hover:underline">
-                  Vul je profiel in
+                <Link href="/vragenlijst" className="font-semibold text-brand hover:underline">
+                  Doe de studietest
                 </Link>{" "}
                 voor een eerlijke score.
               </>
             )}
           </p>
-          <ul className="space-y-4">
-            {match.onderdelen.map((o) => (
-              <li key={o.label}>
+          <ul className="space-y-5">
+            {match.onderdelen.map((x) => (
+              <li key={x.label}>
                 <div className="mb-1.5 flex justify-between text-sm">
-                  <span className="font-medium">{o.label}</span>
+                  <span className="font-semibold">{x.label}</span>
                   <span className="text-muted tabular">
-                    {o.punten}/{o.max}
+                    {x.punten}/{x.max}
                   </span>
                 </div>
-                <div className="h-2 overflow-hidden rounded-full bg-card-2">
+                <div className="h-2.5 overflow-hidden rounded-full bg-card-2">
                   <div
-                    className="h-full rounded-full transition-[width] duration-500"
+                    className="h-full rounded-full transition-[width] duration-700"
                     style={{
-                      width: `${(o.punten / o.max) * 100}%`,
-                      background: o.punten === o.max ? "var(--groen)" : "var(--brand)",
+                      width: `${(x.punten / x.max) * 100}%`,
+                      background: x.punten >= x.max * 0.8 ? "var(--groen)" : "var(--brand)",
                     }}
                   />
                 </div>
-                <p className="mt-1 text-xs text-muted">{o.uitleg}</p>
+                <p className="mt-1.5 text-xs text-muted">{x.uitleg}</p>
               </li>
             ))}
           </ul>
         </section>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section className="kaart p-5 sm:p-6">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <h2 className="text-lg font-semibold">Open dagen</h2>
-            {dagen.length > 1 && (
-              <button
-                type="button"
-                onClick={() =>
-                  downloadIcs(`open-dagen-${opleiding.naam}.ics`, maakIcs(dagen.map((dag) => ({ dag, opleiding }))))
-                }
-                className="focus-ring inline-flex items-center gap-1.5 rounded text-sm font-medium text-brand"
-              >
-                <CalendarPlus className="h-4 w-4" /> Alles in agenda
-              </button>
+      {/* ---------- STUDENTENLEVEN ---------- */}
+      <section className="kaart overflow-hidden">
+        <div className="border-b border-line p-6 sm:p-7">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">Studentenleven</p>
+          <h2 className="display mt-1 text-2xl font-bold">Verenigingen in {plaatsNaam(o.plaats.naam)}</h2>
+          {stad && <p className="mt-1 max-w-2xl text-sm text-muted">{stad.intro}</p>}
+        </div>
+        <div className="grid gap-6 p-6 sm:p-7 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            {stad ? (
+              <ul className="grid gap-2.5 sm:grid-cols-2">
+                {stad.verenigingen.map((v) => (
+                  <li key={v.naam} className="rounded-2xl bg-card-2 p-4">
+                    <p className="text-xs font-semibold text-muted">
+                      {SOORT_LABEL[v.soort].emoji} {SOORT_LABEL[v.soort].label}
+                    </p>
+                    <p className="mt-0.5 font-semibold">
+                      {v.url ? (
+                        <a
+                          href={v.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 hover:text-brand"
+                        >
+                          {v.naam} <ExternalLink className="h-3 w-3" />
+                        </a>
+                      ) : (
+                        v.naam
+                      )}
+                    </p>
+                    <p className="mt-1 text-sm text-muted">{v.tekst}</p>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="rounded-2xl bg-card-2 p-4 text-sm text-muted">
+                Voor {plaatsNaam(o.plaats.naam)} hebben we nog geen verenigingen verzameld. Vraag op de open dag naar
+                het studentenleven, of kijk op de site van de school.
+              </p>
+            )}
+            {stad && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {stad.overzichten.map((x) => (
+                  <a
+                    key={x.url}
+                    href={x.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-1.5 text-sm font-medium hover:border-brand"
+                  >
+                    {x.label} <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                ))}
+              </div>
             )}
           </div>
-          {dagen.length ? (
-            <ul className="space-y-2">
-              {dagen.map((d) => (
-                <li key={d.id} className="flex items-center gap-4 rounded-xl bg-card-2 p-3">
-                  <div className="flex h-12 w-12 shrink-0 flex-col items-center justify-center rounded-xl bg-card text-brand">
-                    <span className="text-[10px] font-semibold uppercase">
-                      {datumTekst(d.datum, { month: "short" }).replace(".", "")}
-                    </span>
-                    <span className="text-lg font-semibold leading-none tabular">
-                      {datumTekst(d.datum, { day: "numeric" })}
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium">{d.soort}</p>
-                    <p className="flex items-center gap-1 text-sm capitalize text-muted">
-                      <Clock className="h-3.5 w-3.5" /> {datumTekst(d.datum, { weekday: "long" })} · {d.start}–{d.eind}
-                    </p>
-                  </div>
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-line p-5">
+              <h3 className="font-semibold">Studievereniging</h3>
+              {studieVer.length ? (
+                <ul className="mt-2 space-y-2">
+                  {studieVer.map((v) => (
+                    <li key={v.naam}>
+                      <p className="font-semibold text-brand">
+                        {v.url ? (
+                          <a
+                            href={v.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 hover:underline"
+                          >
+                            {v.naam} <ExternalLink className="h-3 w-3" />
+                          </a>
+                        ) : (
+                          v.naam
+                        )}
+                      </p>
+                      <p className="text-sm text-muted">{v.tekst}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="mt-1 text-sm text-muted">
+                  {o.soort === "mbo"
+                    ? "Op het mbo heb je meestal geen studievereniging, maar wel een studentenraad en activiteiten op school."
+                    : "Bijna elke opleiding heeft een studievereniging met borrels, excursies en een boekenverkoop."}
+                </p>
+              )}
+              {(uuPagina || studieOverzicht) && (
+                <a
+                  href={(uuPagina ?? studieOverzicht)!.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-3 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
+                >
+                  {uuPagina ? "Studieverenigingen van deze opleiding" : studieOverzicht!.label}{" "}
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </a>
+              )}
+            </div>
+            <div className="rounded-2xl border border-line p-5">
+              <h3 className="font-semibold">Voor alle {o.soort === "mbo" ? "mbo-" : ""}studenten</h3>
+              <ul className="mt-2 space-y-2 text-sm">
+                {landelijk.map((l) => (
+                  <li key={l.naam}>
+                    <a
+                      href={l.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1 font-semibold text-brand hover:underline"
+                    >
+                      {l.naam} <ExternalLink className="h-3 w-3" />
+                    </a>
+                    <span className="text-muted"> · {l.tekst}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ---------- OPEN DAG + BEOORDELING ---------- */}
+      <section className="kaart p-6 sm:p-7">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-brand">Open dag</p>
+            <h2 className="display mt-1 text-2xl font-bold">Plan je bezoek</h2>
+            <p className="mt-1 max-w-xl text-sm text-muted">
+              Zoek de datum op de site van {o.instelling.naam} en zet hem hier. Dan staat hij in je kalender en krijg je
+              (als je bent ingelogd) 3 dagen van tevoren een mail.
+            </p>
+          </div>
+          {(o.url ?? o.instelling.url) && (
+            <a
+              href={(o.url ?? o.instelling.url)!}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-sm font-semibold hover:border-brand"
+            >
+              Open dagen op de site <ExternalLink className="h-3.5 w-3.5" />
+            </a>
+          )}
+        </div>
+        {!geladen ? null : fav ? (
+          <div className="mt-6 grid gap-6 lg:grid-cols-2">
+            <div className="rounded-2xl bg-card-2 p-5">
+              <label className="block">
+                <span className="mb-2 block text-sm font-semibold">Datum open dag</span>
+                <input
+                  type="date"
+                  value={fav.openDag ?? ""}
+                  min={vandaag()}
+                  onChange={(e) => void werkFavorietBij(o.id, { openDag: e.target.value || null })}
+                  className="focus-ring w-full rounded-xl border border-line bg-card px-3 py-2.5"
+                />
+              </label>
+              {fav.openDag && (
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-sm font-medium capitalize">{datumTekst(fav.openDag)}</p>
                   <button
                     type="button"
-                    onClick={() => downloadIcs(`${d.soort}-${opleiding.naam}.ics`, maakIcs([{ dag: d, opleiding }]))}
-                    aria-label="Zet in je agenda"
-                    title="Zet in je agenda"
-                    className="focus-ring rounded-full p-2 text-muted hover:bg-card hover:text-brand"
+                    onClick={() =>
+                      downloadIcs(`open-dag-${o.naam}.ics`, maakIcs([{ datum: fav.openDag!, opleiding: o }]))
+                    }
+                    className="inline-flex items-center gap-1.5 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg"
                   >
-                    <CalendarPlus className="h-5 w-5" />
+                    <CalendarPlus className="h-4 w-4" /> In mijn agenda
                   </button>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="text-sm text-muted">
-              Nog geen open dagen bekend. Kijk op de website van {opleiding.instelling}.
-            </p>
-          )}
-          <p className="mt-3 text-xs text-muted">Datums zijn voorbeelden. Check altijd de website van de instelling.</p>
-        </section>
-
-        <section className="kaart p-5 sm:p-6">
-          <h2 className="text-lg font-semibold">Mijn beoordeling</h2>
-          {!geladen ? null : fav ? (
+                </div>
+              )}
+            </div>
             <Beoordeling
-              key={id}
+              key={o.id}
               bezocht={fav.bezocht}
               cijfer={fav.cijfer}
               notitie={fav.notitie}
-              opslaan={(w) => werkFavorietBij(id, w)}
+              opslaan={(w) => werkFavorietBij(o.id, w)}
             />
-          ) : (
-            <div className="mt-2 text-sm text-muted">
-              <p>Bewaar deze opleiding als favoriet. Daarna kun je na de open dag een cijfer en notitie geven.</p>
-              <div className="mt-4">
-                <FavorietKnop opleidingId={id} groot />
-              </div>
-            </div>
-          )}
-        </section>
-      </div>
+          </div>
+        ) : (
+          <div className="mt-6 flex flex-wrap items-center gap-4 rounded-2xl bg-card-2 p-5">
+            <p className="flex-1 text-sm text-muted">
+              Bewaar deze opleiding eerst als favoriet. Daarna kun je een datum plannen en na de open dag een cijfer en
+              notitie geven.
+            </p>
+            <FavorietKnop opleidingId={o.id} groot />
+          </div>
+        )}
+      </section>
 
-      {elders.length > 0 && (
+      {/* ---------- MEER ---------- */}
+      {andere.length > 0 && (
         <section>
-          <h2 className="mb-3 text-lg font-semibold">{opleiding.naam} in andere steden</h2>
-          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {elders.map((e) => (
-              <li key={e.opleiding.id}>
-                <Link
-                  href={`/opleiding/${e.opleiding.id}`}
-                  className="kaart focus-ring flex items-center gap-3 p-4 transition-colors hover:border-brand/40"
-                >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{e.opleiding.instelling}</p>
-                    <p className="text-sm text-muted">
-                      {e.stad.naam} · {euro(e.kosten.advies)}/mnd
-                    </p>
-                  </div>
-                  <StoplichtBadge licht={e.licht} minuten={e.stad.reistijd} />
-                </Link>
-              </li>
+          <h2 className="display mb-1 text-2xl font-bold">{o.naam} op andere plekken</h2>
+          <p className="mb-4 text-sm text-muted">
+            {getal(elders.length)} andere scholen; dit zijn de beste matches voor jou.
+          </p>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {andere.map((x, i) => (
+              <OpleidingKaart key={x.opleiding.id} r={x} index={i} />
             ))}
-          </ul>
+          </div>
         </section>
       )}
+      {verwant.length > 0 && (
+        <section>
+          <h2 className="display mb-4 text-2xl font-bold">
+            Meer {s.kort.toLowerCase()} in {plaatsNaam(o.plaats.naam)}
+          </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {verwant.map((x, i) => (
+              <OpleidingKaart key={x.opleiding.id} r={x} index={i} />
+            ))}
+          </div>
+        </section>
+      )}
+      <p className="text-xs text-muted">
+        Bron: DUO Open Onderwijsdata ({o.soort === "mbo" ? "crebo" : "croho"} {o.code}). {NIVEAU_LABEL[o.niveau]}.
+        Kamerhuur en reistijd zijn schattingen.
+      </p>
     </div>
   );
 }
 
-function Stat({
+function Feit({
   icoon,
   label,
   waarde,
@@ -338,12 +558,12 @@ function Stat({
   sub: React.ReactNode;
 }) {
   return (
-    <div className="kaart p-4">
-      <dt className="flex items-center gap-1.5 text-xs font-medium text-muted">
+    <div className="kaart p-4 sm:p-5">
+      <dt className="flex items-center gap-1.5 text-xs font-semibold text-muted">
         {icoon}
-        {label}
+        <span className="truncate">{label}</span>
       </dt>
-      <dd className="mt-2 text-xl font-semibold tracking-tight tabular">{waarde}</dd>
+      <dd className="display mt-2 text-2xl font-bold tabular">{waarde}</dd>
       <dd className="mt-1 text-xs text-muted">{sub}</dd>
     </div>
   );
@@ -362,13 +582,12 @@ function Beoordeling({
 }) {
   const [tekst, setTekst] = useState(notitie);
   const [bewaard, setBewaard] = useState(false);
-
   return (
-    <div className="mt-4 space-y-5">
+    <div className="space-y-5 rounded-2xl bg-card-2 p-5">
       <label className="flex cursor-pointer items-center justify-between gap-4">
         <span>
-          <span className="block font-medium">Ik ben naar de open dag geweest</span>
-          <span className="text-sm text-muted">Daarna kun je een cijfer en notitie geven</span>
+          <span className="block font-semibold">Ik ben er geweest</span>
+          <span className="text-sm text-muted">Geef daarna een cijfer en notitie</span>
         </span>
         <input
           type="checkbox"
@@ -376,13 +595,12 @@ function Beoordeling({
           onChange={(e) => void opslaan({ bezocht: e.target.checked })}
           className="peer sr-only"
         />
-        <span className="relative h-7 w-12 shrink-0 rounded-full bg-line transition-colors peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-brand after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:after:translate-x-5" />
+        <span className="relative h-7 w-12 shrink-0 rounded-full bg-line transition-colors after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:bg-brand peer-checked:after:translate-x-5" />
       </label>
-
       {bezocht && (
         <>
           <fieldset>
-            <legend className="mb-2 text-sm font-medium">Cijfer</legend>
+            <legend className="mb-2 text-sm font-semibold">Cijfer</legend>
             <div className="grid grid-cols-10 gap-1">
               {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
                 <button
@@ -390,14 +608,14 @@ function Beoordeling({
                   type="button"
                   aria-pressed={cijfer === n}
                   onClick={() => void opslaan({ cijfer: cijfer === n ? null : n })}
-                  className={`focus-ring aspect-square rounded-lg text-sm font-semibold tabular transition-colors ${
+                  className={`aspect-square rounded-xl text-sm font-bold tabular transition-all ${
                     cijfer !== null && n <= cijfer
                       ? n >= 7
                         ? "bg-groen text-white"
                         : n >= 5
-                          ? "bg-[var(--accent)] text-white"
+                          ? "bg-accent text-white"
                           : "bg-rood text-white"
-                      : "bg-card-2 text-muted hover:text-ink"
+                      : "bg-card text-muted hover:text-ink"
                   }`}
                 >
                   {n}
@@ -406,14 +624,13 @@ function Beoordeling({
             </div>
             {cijfer !== null && (
               <p className="mt-2 flex items-center gap-1 text-sm text-muted">
-                <Star className="h-4 w-4 fill-[var(--accent)] text-[var(--accent)]" /> Je gaf een {cijfer}
+                <Star className="h-4 w-4 fill-accent text-accent" /> Je gaf een {cijfer}
               </p>
             )}
           </fieldset>
           <label className="block">
-            <span className="mb-2 flex justify-between text-sm font-medium">
-              Notitie
-              {bewaard && <span className="font-normal text-groen">Opgeslagen</span>}
+            <span className="mb-2 flex justify-between text-sm font-semibold">
+              Notitie {bewaard && <span className="font-normal text-groen">Opgeslagen ✓</span>}
             </span>
             <textarea
               value={tekst}
@@ -427,8 +644,8 @@ function Beoordeling({
                   setBewaard(true);
                 }
               }}
-              rows={4}
-              placeholder="Wat viel je op? Sfeer, vakken, studenten, gebouw…"
+              rows={3}
+              placeholder="Sfeer, vakken, studenten, gebouw…"
               className="focus-ring w-full resize-y rounded-xl border border-line bg-card p-3 text-sm placeholder:text-muted"
             />
           </label>
