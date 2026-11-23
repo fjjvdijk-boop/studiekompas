@@ -29,7 +29,11 @@ Gemaakt voor de app-opdracht Informatica 6V.
 - **Toelating:** met vmbo naar het mbo, met havo naar mbo/hbo, met vwo overal heen
 - **Alleen eigen favorieten:** row level security in de database (`supabase/schema.sql`)
 - **E-mailherinnering:** 3 dagen voor een open dag die je hebt gepland
-- Werkt op je telefoon, ook als app op je beginscherm, en in licht en donker thema
+- Werkt op je telefoon, ook als app op je beginscherm (met eigen icoon)
+- Thema-knop: licht, donker of zoals je apparaat
+- Zoeken groepeert dezelfde opleiding op meerdere plekken ("+ 33 plekken") en vindt ook verwante woorden
+- Studietest: tussenstand blijft bewaard, toetsen 1–5 om snel te antwoorden, en je kunt je kompas delen
+- Mooie preview-afbeelding als je een link deelt (WhatsApp, Instagram …), sitemap voor zoekmachines
 
 ---
 

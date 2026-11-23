@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl, { type GeoJSONSource, type Map as MLMap } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import type { Stoplicht } from "@/lib/bereken";
+import { useDonker } from "@/lib/thema";
 
 export interface KaartPunt {
   naam: string;
@@ -16,18 +17,6 @@ export interface KaartPunt {
 }
 
 const KLEUR: Record<Stoplicht, string> = { groen: "#12a660", oranje: "#f07c1b", rood: "#e0344a" };
-
-function useDonker() {
-  const [donker, setDonker] = useState(false);
-  useEffect(() => {
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    setDonker(mq.matches);
-    const f = (e: MediaQueryListEvent) => setDonker(e.matches);
-    mq.addEventListener("change", f);
-    return () => mq.removeEventListener("change", f);
-  }, []);
-  return donker;
-}
 
 function geojson(punten: KaartPunt[]): GeoJSON.FeatureCollection {
   return {

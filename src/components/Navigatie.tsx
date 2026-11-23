@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { CalendarDays, Heart, Home, Map, Search, Sparkles, UserRound } from "lucide-react";
 import { Logo } from "./Logo";
 import { useStore } from "@/lib/store";
+import { ThemaKnop } from "./ThemaKnop";
 
 const DESKTOP = [
   { href: "/", label: "Home" },
@@ -69,6 +70,7 @@ export function Navigatie() {
             ))}
           </nav>
           <div className="ml-auto flex items-center gap-2">
+            <ThemaKnop />
             <Link
               href="/open-dagen"
               aria-label="Open dagen"

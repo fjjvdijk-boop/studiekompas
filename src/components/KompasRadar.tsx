@@ -18,7 +18,7 @@ export default function KompasRadar({
   }));
   return (
     <ResponsiveContainer width="100%" height={hoogte}>
-      <RadarChart data={data} outerRadius="72%" margin={{ top: 8, right: 24, bottom: 8, left: 24 }}>
+      <RadarChart data={data} outerRadius="68%" margin={{ top: 8, right: 34, bottom: 8, left: 34 }}>
         <defs>
           <linearGradient id="radar-vulling" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="#7c6cff" stopOpacity={0.55} />

@@ -77,9 +77,9 @@ export function ScoreRing({ score, maat = 52, dik = 5 }: { score: number; maat?:
 }
 
 const NIVEAU_STIJL: Record<string, string> = {
-  mbo: "bg-[#fff1dc] text-[#b45309] dark:bg-[#3a2a12] dark:text-[#ffb24d]",
-  hbo: "bg-[#e0f2fe] text-[#0369a1] dark:bg-[#0c2a3d] dark:text-[#7dd3fc]",
-  ad: "bg-[#e0f2fe] text-[#0369a1] dark:bg-[#0c2a3d] dark:text-[#7dd3fc]",
+  mbo: "bg-[var(--mbo-bg)] text-[var(--mbo-ink)]",
+  hbo: "bg-[var(--hbo-bg)] text-[var(--hbo-ink)]",
+  ad: "bg-[var(--hbo-bg)] text-[var(--hbo-ink)]",
   wo: "bg-brand-soft text-brand",
 };
 
@@ -118,7 +118,7 @@ export function SectorLabel({ sector }: { sector: SectorId }) {
   return (
     <span
       className="inline-flex items-center gap-1 text-xs font-medium"
-      style={{ color: `color-mix(in oklab, ${s.kleur} 75%, var(--ink))` }}
+      style={{ color: `color-mix(in oklab, ${s.kleur} 55%, var(--ink))` }}
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.kleur }} />
       {s.kort}
@@ -184,18 +184,33 @@ export function PaginaKop({
   sub,
   label,
   children,
+  compact = false,
 }: {
   titel: React.ReactNode;
   sub?: React.ReactNode;
   label?: string;
   children?: React.ReactNode;
+  /** Op mobiel kleiner, zodat de inhoud sneller in beeld is */
+  compact?: boolean;
 }) {
   return (
-    <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+    <div className={`flex flex-wrap items-end justify-between gap-4 ${compact ? "mb-3 sm:mb-7" : "mb-7"}`}>
       <div className="binnenkomen">
-        {label && <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-brand">{label}</p>}
-        <h1 className="display text-[34px] font-bold leading-[1.05] sm:text-5xl">{titel}</h1>
-        {sub && <p className="mt-2 max-w-2xl text-[15px] text-muted sm:text-base">{sub}</p>}
+        {label && (
+          <p
+            className={`mb-2 text-xs font-bold uppercase tracking-[0.14em] text-brand ${compact ? "hidden sm:block" : ""}`}
+          >
+            {label}
+          </p>
+        )}
+        <h1 className={`display font-bold leading-[1.05] sm:text-5xl ${compact ? "text-[28px]" : "text-[34px]"}`}>
+          {titel}
+        </h1>
+        {sub && (
+          <p className={`mt-2 max-w-2xl text-[15px] text-muted sm:text-base ${compact ? "hidden sm:block" : ""}`}>
+            {sub}
+          </p>
+        )}
       </div>
       {children}
     </div>

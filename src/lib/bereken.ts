@@ -149,48 +149,76 @@ const clamp = (x: number) => Math.max(0, Math.min(1, x));
  *  - 20 punten: maandlasten binnen je budget
  *  - 20 punten: reistijd
  */
-export function matchScore(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Match {
-  const sector = SECTOR[o.sector];
+interface Punten {
+  affiniteit: number;
+  heeftInteresse: boolean;
+  toelaatbaar: boolean;
+  gekozen: boolean;
+  stijl: number;
+  teDuur: number;
+  reisPunten: number;
+  score: number;
+}
+
+/** Alleen de getallen: snel genoeg om voor alle 10.000+ opleidingen tegelijk uit te rekenen */
+function punten(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Punten {
   const heeftInteresse = Object.keys(profiel.interesse).length > 0;
   const affiniteit = heeftInteresse ? (profiel.interesse[o.sector] ?? 0) : 0.5;
-
   const toelaatbaar = !profiel.vooropleiding || TOELATING[profiel.vooropleiding].includes(o.soort);
   const gekozen = profiel.soorten.includes(o.soort);
   const stijl = 1 - Math.abs(profiel.leerstijl - LEERSTIJL_DOEL[o.soort]);
-
   const teDuur = Math.max(0, k.advies - profiel.budget);
   const reisPunten =
     profiel.wonen === "kamer" ? clamp(1 - (r - 120) / 120) : clamp(1 - Math.max(0, r - profiel.maxReistijd) / 90);
+  const totaal =
+    Math.round(45 * affiniteit) +
+    (toelaatbaar && gekozen ? Math.round(8 + 7 * stijl) : 0) +
+    Math.round(20 * clamp(1 - teDuur / 300)) +
+    Math.round(20 * reisPunten);
+  return {
+    affiniteit,
+    heeftInteresse,
+    toelaatbaar,
+    gekozen,
+    stijl,
+    teDuur,
+    reisPunten,
+    score: toelaatbaar ? totaal : Math.min(totaal, 40),
+  };
+}
 
-  const onderdelen: ScoreOnderdeel[] = [
+/** De uitleg per onderdeel (alleen nodig op de detailpagina) */
+function onderdelen(o: Opleiding, profiel: Profiel, r: number, p: Punten): ScoreOnderdeel[] {
+  const sector = SECTOR[o.sector];
+  return [
     {
       label: "Interesse",
-      uitleg: !heeftInteresse
-        ? "Doe de vragenlijst voor een persoonlijke score"
-        : affiniteit >= 0.75
+      uitleg: !p.heeftInteresse
+        ? "Doe de studietest voor een persoonlijke score"
+        : p.affiniteit >= 0.75
           ? `${sector.naam} past heel goed bij jou`
-          : affiniteit >= 0.5
+          : p.affiniteit >= 0.5
             ? `${sector.naam} vind je best interessant`
             : `${sector.naam} is niet echt jouw ding`,
-      punten: Math.round(45 * affiniteit),
+      punten: Math.round(45 * p.affiniteit),
       max: 45,
     },
     {
       label: "Niveau",
-      uitleg: !toelaatbaar
+      uitleg: !p.toelaatbaar
         ? `Met ${VOOROPLEIDING_LABEL[profiel.vooropleiding!]} kun je niet direct naar het ${o.soort}`
-        : !gekozen
+        : !p.gekozen
           ? `Je zoekt nu niet naar ${o.soort}`
-          : stijl > 0.7
+          : p.stijl > 0.7
             ? `${o.soort.toUpperCase()} past bij hoe jij graag leert`
             : `${o.soort.toUpperCase()} is ${o.soort === "wo" ? "theoretischer" : "praktischer"} dan je voorkeur`,
-      punten: toelaatbaar && gekozen ? Math.round(8 + 7 * stijl) : 0,
+      punten: p.toelaatbaar && p.gekozen ? Math.round(8 + 7 * p.stijl) : 0,
       max: 15,
     },
     {
       label: "Budget",
-      uitleg: teDuur === 0 ? "Binnen je budget" : `${euro(teDuur)} per maand boven je budget`,
-      punten: Math.round(20 * clamp(1 - teDuur / 300)),
+      uitleg: p.teDuur === 0 ? "Binnen je budget" : `${euro(p.teDuur)} per maand boven je budget`,
+      punten: Math.round(20 * clamp(1 - p.teDuur / 300)),
       max: 20,
     },
     {
@@ -203,12 +231,23 @@ export function matchScore(o: Opleiding, profiel: Profiel, r: number, k: Kosten)
           : r <= profiel.maxReistijd
             ? "Je kunt thuis blijven wonen"
             : `${r - profiel.maxReistijd} min verder dan je maximum`,
-      punten: Math.round(20 * reisPunten),
+      punten: Math.round(20 * p.reisPunten),
       max: 20,
     },
   ];
-  const totaal = onderdelen.reduce((s, x) => s + x.punten, 0);
-  return { score: toelaatbaar ? totaal : Math.min(totaal, 40), onderdelen, toelaatbaar };
+}
+
+/**
+ * Match-score van 0 tot 100:
+ *  - 45 punten: hoe goed de sector past bij je antwoorden in de studietest
+ *  - 15 punten: soort onderwijs (mbo/hbo/wo) en of het past bij hoe je graag leert
+ *  - 20 punten: maandlasten binnen je budget
+ *  - 20 punten: reistijd
+ * Opleidingen waar je met je diploma niet direct heen kunt, krijgen maximaal 40 punten.
+ */
+export function matchScore(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Match {
+  const p = punten(o, profiel, r, k);
+  return { score: p.score, toelaatbaar: p.toelaatbaar, onderdelen: onderdelen(o, profiel, r, p) };
 }
 
 // ------------------------------------------------------------ alles samen
@@ -222,16 +261,35 @@ export interface Resultaat {
   match: Match;
 }
 
+/** Reistijd en kosten hangen alleen af van plaats en soort: die rekenen we per profiel één keer uit. */
+const tussen = new WeakMap<Profiel, Map<string, { r: { minuten: number; schatting: boolean }; k: Kosten }>>();
+
 export function bereken(o: Opleiding, profiel: Profiel): Resultaat {
-  const r = reistijd(profiel.woonplaats, o.plaats);
-  const k = kosten(o, o.plaats, r.minuten, profiel);
+  let cache = tussen.get(profiel);
+  if (!cache) tussen.set(profiel, (cache = new Map()));
+  const sleutel = `${o.plaats.naam}|${o.soort}|${o.leerwegen === "BBL" ? "BBL" : ""}`;
+  let rk = cache.get(sleutel);
+  if (!rk) {
+    const r = reistijd(profiel.woonplaats, o.plaats);
+    rk = { r, k: kosten(o, o.plaats, r.minuten, profiel) };
+    cache.set(sleutel, rk);
+  }
+  const p = punten(o, profiel, rk.r.minuten, rk.k);
+  let uitleg: ScoreOnderdeel[] | null = null;
+  const minuten = rk.r.minuten;
   return {
     opleiding: o,
-    reistijd: r.minuten,
-    reistijdSchatting: r.schatting,
-    licht: stoplicht(r.minuten),
-    kosten: k,
-    match: matchScore(o, profiel, r.minuten, k),
+    reistijd: minuten,
+    reistijdSchatting: rk.r.schatting,
+    licht: stoplicht(minuten),
+    kosten: rk.k,
+    match: {
+      score: p.score,
+      toelaatbaar: p.toelaatbaar,
+      get onderdelen() {
+        return (uitleg ??= onderdelen(o, profiel, minuten, p));
+      },
+    },
   };
 }
 

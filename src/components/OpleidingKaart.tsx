@@ -10,10 +10,13 @@ export function OpleidingKaart({
   r,
   toonScore = true,
   index = 0,
+  extra = 0,
 }: {
   r: Resultaat;
   toonScore?: boolean;
   index?: number;
+  /** Aantal andere plekken waar je deze opleiding ook kunt doen */
+  extra?: number;
 }) {
   const { opleiding: o, kosten: k, match, licht, reistijd, reistijdSchatting } = r;
   return (
@@ -42,6 +45,11 @@ export function OpleidingKaart({
           <MapPin className="h-3.5 w-3.5 shrink-0" />
           {plaatsNaam(o.plaats.naam)}
           {o.leerwegen && <span className="text-xs opacity-75">· {o.leerwegen}</span>}
+          {extra > 0 && (
+            <span className="ml-auto shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand">
+              + {extra} {extra === 1 ? "plek" : "plekken"}
+            </span>
+          )}
         </p>
       </div>
       <div className="mt-auto flex items-center gap-2 border-t border-line pt-3">

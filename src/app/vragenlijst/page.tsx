@@ -3,7 +3,17 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, Clock, Home as HomeIcon, RotateCcw, Sparkles, Wallet } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Clock,
+  Home as HomeIcon,
+  RotateCcw,
+  Share2,
+  Sparkles,
+  Wallet,
+} from "lucide-react";
 import { SECTOR } from "@/data/sectoren";
 import { ANTWOORDEN, STELLINGEN, VOLGORDE, interesseUitAntwoorden } from "@/data/vragenlijst";
 import { bereken, euro, reistijdTekst, TOELATING } from "@/lib/bereken";
@@ -34,6 +44,7 @@ const STAPPEN: Stap[] = [
 const VRAGEN_STAPPEN = STAPPEN.length - 2; // zonder intro en resultaat
 
 type Antwoorden = Partial<Record<SectorId, (number | null)[]>>;
+const TUSSENSTAND = "studiekompas:test-tussenstand";
 
 /** Zet bestaande interesse terug naar ongeveer dezelfde antwoorden, zodat je de test kunt aanpassen */
 function antwoordenUitProfiel(p: Profiel): Antwoorden {
@@ -75,17 +86,68 @@ export default function Vragenlijst() {
     const p: Profiel = { ...concept, interesse: interesseUitAntwoorden(antwoorden), vragenlijstKlaar: true };
     setConcept(p);
     await slaProfielOp(p);
+    try {
+      sessionStorage.removeItem(TUSSENSTAND);
+    } catch {}
     ga(STAPPEN.length - 1);
   };
+
+  const sector = stap.startsWith("s:") ? (stap.slice(2) as SectorId) : null;
+  const vragen = sector ? (antwoorden[sector] ?? [null, null, null]) : [];
+  const magDoor = stap === "school" ? concept.vooropleiding !== null : sector ? vragen.every((v) => v !== null) : true;
+
+  const beantwoord = (i: number, w: number) => {
+    if (!sector) return;
+    const nieuw = [...vragen];
+    nieuw[i] = w;
+    setAntwoorden((a) => ({ ...a, [sector]: nieuw }));
+    if (nieuw.every((v) => v !== null) && vragen.some((v) => v === null)) setTimeout(volgende, 380);
+  };
+
+  // Tussenstand bewaren, zodat je verder kunt na per ongeluk verversen
+  const [hersteld, setHersteld] = useState(false);
+  useEffect(() => {
+    if (!geladen || hersteld) return;
+    setHersteld(true);
+    try {
+      const t = JSON.parse(sessionStorage.getItem(TUSSENSTAND) ?? "null") as {
+        stap: Stap;
+        concept: Profiel;
+        antwoorden: Antwoorden;
+      } | null;
+      if (t && STAPPEN.includes(t.stap)) {
+        setConcept(t.concept);
+        setAntwoorden(t.antwoorden);
+        setStap(t.stap);
+      }
+    } catch {}
+  }, [geladen, hersteld]);
+  useEffect(() => {
+    if (!hersteld || stap === "intro" || stap === "resultaat") return;
+    try {
+      sessionStorage.setItem(TUSSENSTAND, JSON.stringify({ stap, concept, antwoorden }));
+    } catch {}
+  }, [hersteld, stap, concept, antwoorden]);
+
+  // Toetsenbord: 1–5 beantwoordt de volgende stelling, Enter gaat door
+  useEffect(() => {
+    const toets = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+      if (sector && /^[1-5]$/.test(e.key)) {
+        const i = vragen.findIndex((v) => v === null);
+        beantwoord(i === -1 ? 2 : i, Number(e.key) - 1);
+      } else if (e.key === "Enter" && magDoor && stap !== "intro" && stap !== "resultaat" && stap !== "geld")
+        volgende();
+    };
+    window.addEventListener("keydown", toets);
+    return () => window.removeEventListener("keydown", toets);
+  });
 
   if (stap === "intro")
     return <Intro start={volgende} opnieuw={profiel.vragenlijstKlaar} naarResultaat={() => ga(STAPPEN.length - 1)} />;
   if (stap === "resultaat") return <Resultaat profiel={concept} opnieuw={() => ga(1)} />;
 
-  const sector = stap.startsWith("s:") ? (stap.slice(2) as SectorId) : null;
   const kleur = sector ? SECTOR[sector].kleur : "#4f39f6";
-  const vragen = sector ? (antwoorden[sector] ?? [null, null, null]) : [];
-  const magDoor = stap === "school" ? concept.vooropleiding !== null : sector ? vragen.every((v) => v !== null) : true;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -166,17 +228,7 @@ export default function Vragenlijst() {
         )}
 
         {sector && (
-          <SectorVraag
-            sector={sector}
-            nr={VOLGORDE.indexOf(sector) + 1}
-            antwoorden={vragen}
-            kies={(i, w) => {
-              const nieuw = [...vragen];
-              nieuw[i] = w;
-              setAntwoorden((a) => ({ ...a, [sector]: nieuw }));
-              if (nieuw.every((v) => v !== null) && vragen.some((v) => v === null)) setTimeout(volgende, 380);
-            }}
-          />
+          <SectorVraag sector={sector} nr={VOLGORDE.indexOf(sector) + 1} antwoorden={vragen} kies={beantwoord} />
         )}
 
         {stap === "leren" && (
@@ -441,6 +493,9 @@ function SectorVraag({
           </li>
         ))}
       </ol>
+      <p className="mt-4 hidden text-center text-xs text-muted sm:block">
+        Tip: gebruik de toetsen 1 t/m 5 om snel te antwoorden.
+      </p>
     </section>
   );
 }
@@ -576,13 +631,16 @@ function Resultaat({ profiel, opnieuw }: { profiel: Profiel; opnieuw: () => void
               <Wallet className="h-4 w-4 text-brand" /> Budget {euro(profiel.budget)} per maand
             </p>
           </div>
-          <button
-            type="button"
-            onClick={opnieuw}
-            className="focus-ring inline-flex items-center gap-2 self-start rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-brand"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> Antwoorden aanpassen
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <DeelKnop profiel={profiel} />
+            <button
+              type="button"
+              onClick={opnieuw}
+              className="focus-ring inline-flex items-center gap-2 rounded-full border border-line px-4 py-2 text-sm font-medium hover:border-brand"
+            >
+              <RotateCcw className="h-3.5 w-3.5" /> Aanpassen
+            </button>
+          </div>
         </div>
       </section>
 
@@ -606,5 +664,34 @@ function Resultaat({ profiel, opnieuw }: { profiel: Profiel; opnieuw: () => void
         </div>
       </section>
     </div>
+  );
+}
+
+function DeelKnop({ profiel }: { profiel: Profiel }) {
+  const [gekopieerd, setGekopieerd] = useState(false);
+  const deel = async () => {
+    const top = (Object.entries(profiel.interesse) as [SectorId, number][]).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const tekst = `Mijn StudieKompas 🧭\n${top.map(([s, w], i) => `${i + 1}. ${SECTOR[s].emoji} ${SECTOR[s].naam}: ${Math.round(w * 100)}%`).join("\n")}\nDoe de studietest ook:`;
+    const url = `${window.location.origin}/vragenlijst`;
+    try {
+      if (navigator.share) await navigator.share({ title: "Mijn StudieKompas", text: tekst, url });
+      else {
+        await navigator.clipboard.writeText(`${tekst} ${url}`);
+        setGekopieerd(true);
+        setTimeout(() => setGekopieerd(false), 2500);
+      }
+    } catch {
+      /* delen geannuleerd */
+    }
+  };
+  return (
+    <button
+      type="button"
+      onClick={deel}
+      className="focus-ring inline-flex items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg hover:opacity-90"
+    >
+      {gekopieerd ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
+      {gekopieerd ? "Gekopieerd!" : "Deel je kompas"}
+    </button>
   );
 }

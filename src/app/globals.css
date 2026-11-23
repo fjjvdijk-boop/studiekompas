@@ -5,7 +5,7 @@
   --card: #ffffff;
   --card-2: #f1f0f8;
   --ink: #120f2e;
-  --muted: #615d7a;
+  --muted: #5a5673;
   --line: #e6e3f1;
   --brand: #4f39f6;
   --brand-2: #7c6cff;
@@ -13,23 +13,27 @@
   --brand-ink: #ffffff;
   --accent: #ff9f1c;
   --accent-soft: #fff1dc;
-  --groen: #0f9d58;
+  --groen: #067a42;
   --groen-soft: #dcf7e8;
-  --oranje: #d9590b;
+  --oranje: #b4470a;
   --oranje-soft: #ffeedd;
-  --rood: #d42a3c;
+  --rood: #c01b30;
   --rood-soft: #fde4e7;
   --c-huur: #6d5dfc;
   --c-leef: #18a6c9;
   --c-college: #ff9f1c;
   --c-boeken: #ec4899;
+  --mbo-bg: #fff1dc;
+  --mbo-ink: #9a4a05;
+  --hbo-bg: #e0f2fe;
+  --hbo-ink: #075985;
   --schaduw: 0 1px 2px rgba(18, 15, 46, 0.04), 0 8px 24px -12px rgba(18, 15, 46, 0.12);
   --schaduw-groot: 0 2px 4px rgba(18, 15, 46, 0.04), 0 24px 60px -24px rgba(79, 57, 246, 0.35);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #0b0a1a;
     --card: #14122b;
     --card-2: #1c1a3a;
@@ -52,10 +56,46 @@
     --c-leef: #38bdf8;
     --c-college: #ffb24d;
     --c-boeken: #f472b6;
+    --mbo-bg: #3a2a12;
+    --mbo-ink: #ffb24d;
+    --hbo-bg: #0c2a3d;
+    --hbo-ink: #7dd3fc;
     --schaduw: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
     --schaduw-groot: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 60px -24px rgba(143, 128, 255, 0.35);
     color-scheme: dark;
   }
+}
+
+:root[data-theme="dark"] {
+  --bg: #0b0a1a;
+  --card: #14122b;
+  --card-2: #1c1a3a;
+  --ink: #ecebfa;
+  --muted: #a19dc0;
+  --line: #2a2750;
+  --brand: #8f80ff;
+  --brand-2: #b3a9ff;
+  --brand-soft: #241f55;
+  --brand-ink: #0b0a1a;
+  --accent: #ffb24d;
+  --accent-soft: #3a2a12;
+  --groen: #4ade80;
+  --groen-soft: #0f2d1d;
+  --oranje: #fb923c;
+  --oranje-soft: #34200f;
+  --rood: #fb7185;
+  --rood-soft: #3a1520;
+  --c-huur: #8f80ff;
+  --c-leef: #38bdf8;
+  --c-college: #ffb24d;
+  --c-boeken: #f472b6;
+  --mbo-bg: #3a2a12;
+  --mbo-ink: #ffb24d;
+  --hbo-bg: #0c2a3d;
+  --hbo-ink: #7dd3fc;
+  --schaduw: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
+  --schaduw-groot: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 60px -24px rgba(143, 128, 255, 0.35);
+  color-scheme: dark;
 }
 
 @theme inline {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import { statistiek } from "@/lib/statistiek";
 import { Zoeken } from "./Zoeken";
 
 export const metadata: Metadata = {
@@ -9,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function Pagina() {
   return (
-    <Suspense>
-      <Zoeken />
+    <Suspense fallback={<div className="min-h-[150dvh]" aria-busy />}>
+      <Zoeken totaal={statistiek().totaal} />
     </Suspense>
   );
 }

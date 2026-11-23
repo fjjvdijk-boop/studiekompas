@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { SECTOREN } from "@/data/sectoren";
 import { euro, getal, plaatsNaam } from "@/lib/bereken";
@@ -23,6 +23,12 @@ export default function KaartPagina() {
   const [soort, setSoort] = useState<Soort | "alle">("alle");
   const [sector, setSector] = useState<SectorId | null>(null);
   const [gekozen, setGekozen] = useState<string | null>(null);
+  const paneel = useRef<HTMLElement>(null);
+  // Op mobiel staat het paneel onder de kaart: scroll ernaartoe als je een plaats kiest
+  useEffect(() => {
+    if (gekozen && window.innerWidth < 1024)
+      setTimeout(() => paneel.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 250);
+  }, [gekozen]);
 
   const plaatsen = useMemo(
     () =>
@@ -118,7 +124,7 @@ export default function KaartPagina() {
           </div>
         </div>
 
-        <aside className="kaart h-fit p-5 sm:p-6">
+        <aside ref={paneel} className="kaart h-fit scroll-mt-20 p-5 sm:p-6">
           {info ? (
             <PlaatsPaneel info={info} sluit={() => setGekozen(null)} />
           ) : (

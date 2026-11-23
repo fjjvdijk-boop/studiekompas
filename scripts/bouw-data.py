@@ -276,7 +276,7 @@ def main():
         if r["KWALIFICATIEDOSSIER"] == "Entree":
             dom = dom or "Entree"
         standaard = MBO_DOMEIN.get(dom, "economie")
-        naam = r["OPLEIDINGSEENHEID_NAAM"].strip()
+        naam = re.sub(r"^Mbo-\s+", "Mbo-", r["OPLEIDINGSEENHEID_NAAM"].strip())
         sector = mbo_sector(naam, r["EIGENNAAM"], dom, standaard, r["KWALIFICATIEDOSSIER"])
 
         schoolnaam = r["NAAM"].strip()

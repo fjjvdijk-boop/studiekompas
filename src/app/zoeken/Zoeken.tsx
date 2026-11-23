@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
+import { Layers, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
 import { NIVEAU_LABEL, SECTOR, SECTOREN } from "@/data/sectoren";
 import { getal, plaatsNaam, reistijdTekst } from "@/lib/bereken";
 import { useData } from "@/lib/data-client";
@@ -22,6 +22,7 @@ interface Filters {
   plaats: string;
   maxReistijd: number;
   toelaatbaar: boolean;
+  groeperen: boolean;
   sort: Sortering;
 }
 
@@ -35,6 +36,7 @@ const LEEG: Filters = {
   plaats: "",
   maxReistijd: GEEN_LIMIET,
   toelaatbaar: true,
+  groeperen: true,
   sort: "match",
 };
 const MBO_NIVEAUS: Niveau[] = ["mbo1", "mbo2", "mbo3", "mbo4"];
@@ -51,10 +53,11 @@ function uitUrl(p: URLSearchParams): Filters {
     soort: soort === "mbo" || soort === "hbo" || soort === "wo" ? soort : "alle",
     sectoren,
     plaats: p.get("plaats") ?? "",
+    groeperen: p.get("alle") !== "1",
   };
 }
 
-export function Zoeken() {
+export function Zoeken({ totaal }: { totaal: number }) {
   const params = useSearchParams();
   const router = useRouter();
   const data = useData();
@@ -72,6 +75,7 @@ export function Zoeken() {
     if (f.soort !== "alle") p.set("soort", f.soort);
     if (f.sectoren.length) p.set("sector", f.sectoren.join(","));
     if (f.plaats) p.set("plaats", f.plaats);
+    if (!f.groeperen) p.set("alle", "1");
     const nieuw = p.toString();
     if (nieuw !== params.toString()) router.replace(nieuw ? `/zoeken?${nieuw}` : "/zoeken", { scroll: false });
     setAantal(PER_PAGINA);
@@ -102,7 +106,8 @@ export function Zoeken() {
         const tekst = normaal(
           `${o.naam} ${o.eigenNaam ?? ""} ${o.instelling.naam} ${plaatsNaam(o.plaats.naam)} ${o.plaats.naam} ${SECTOR[o.sector].naam}`,
         );
-        if (!woorden.every((w) => tekst.includes(w))) return false;
+        // Soepel zoeken: "verpleegkunde" vindt ook "verpleegkundige"
+        if (!woorden.every((w) => tekst.includes(w) || (w.length > 6 && tekst.includes(w.slice(0, -3))))) return false;
       }
       return true;
     });
@@ -113,7 +118,17 @@ export function Zoeken() {
       instroom: (a, b) => (b.opleiding.instroom ?? -1) - (a.opleiding.instroom ?? -1),
       naam: (a, b) => a.opleiding.naam.localeCompare(b.opleiding.naam, "nl"),
     };
-    return lijst.sort(sorteer[f.sort]);
+    lijst.sort(sorteer[f.sort]);
+    if (!f.groeperen) return { items: lijst.map((r) => ({ r, extra: 0 })), plekken: lijst.length };
+    // Eén kaart per opleiding: de beste plek blijft staan, de rest telt mee als "ook op X andere plekken"
+    const groepen = new Map<string, { r: Resultaat; extra: number }>();
+    for (const r of lijst) {
+      const sleutel = `${r.opleiding.naam.toLowerCase()}|${r.opleiding.niveau}`;
+      const g = groepen.get(sleutel);
+      if (g) g.extra++;
+      else groepen.set(sleutel, { r, extra: 0 });
+    }
+    return { items: [...groepen.values()], plekken: lijst.length };
   }, [resultaten, f]);
 
   // Meer laden als je onderaan bent
@@ -263,7 +278,7 @@ export function Zoeken() {
       {actieveFilters.length > 0 && (
         <button
           type="button"
-          onClick={() => setF({ ...LEEG, q: f.q, sort: f.sort })}
+          onClick={() => setF({ ...LEEG, q: f.q, sort: f.sort, groeperen: f.groeperen })}
           className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
         >
           <RotateCcw className="h-3.5 w-3.5" /> Alle filters wissen
@@ -275,9 +290,10 @@ export function Zoeken() {
   return (
     <>
       <PaginaKop
+        compact
         label="Zoeken"
         titel="Alle opleidingen"
-        sub={`${data ? getal(data.opleidingen.length) : "Ruim 10.000"} mbo-, hbo- en wo-opleidingen. Gesorteerd op hoe goed ze bij jou passen.`}
+        sub={`${getal(totaal)} mbo-, hbo- en wo-opleidingen. Gesorteerd op hoe goed ze bij jou passen.`}
       />
 
       <div className="sticky top-16 z-30 -mx-4 mb-5 bg-bg/85 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6">
@@ -296,6 +312,7 @@ export function Zoeken() {
           <button
             type="button"
             onClick={() => setPaneel(true)}
+            aria-label="Filters"
             className="focus-ring relative inline-flex items-center gap-2 rounded-full border border-line bg-card px-4 font-semibold shadow-zacht lg:hidden"
           >
             <SlidersHorizontal className="h-4 w-4" />
@@ -314,28 +331,45 @@ export function Zoeken() {
           {filterPaneel}
         </aside>
 
-        <section>
-          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted" aria-live="polite">
+        <section className="min-h-[100dvh]">
+          <h2 className="sr-only">Resultaten</h2>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <p className="whitespace-nowrap text-sm text-muted" aria-live="polite">
               <span className="display text-lg font-bold text-ink tabular">
-                {gefilterd ? getal(gefilterd.length) : "…"}
+                {gefilterd ? getal(gefilterd.items.length) : "…"}
               </span>{" "}
               opleidingen
+              {gefilterd && f.groeperen && gefilterd.plekken > gefilterd.items.length && (
+                <span className="hidden sm:inline"> op {getal(gefilterd.plekken)} plekken</span>
+              )}
             </p>
-            <label className="flex items-center gap-2 text-sm">
-              <span className="text-muted">Sorteer op</span>
-              <select
-                value={f.sort}
-                onChange={(e) => zet("sort", e.target.value as Sortering)}
-                className="focus-ring rounded-full border border-line bg-card px-3 py-1.5 font-medium"
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                aria-pressed={f.groeperen}
+                aria-label="Groepeer per opleiding"
+                onClick={() => zet("groeperen", !f.groeperen)}
+                title="Toon elke opleiding één keer, of elke plek apart"
+                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${f.groeperen ? "border-ink bg-ink text-bg" : "border-line bg-card"}`}
               >
-                <option value="match">Beste match</option>
-                <option value="kosten">Laagste maandlasten</option>
-                <option value="reistijd">Kortste reistijd</option>
-                <option value="instroom">Meeste eerstejaars</option>
-                <option value="naam">Naam (A–Z)</option>
-              </select>
-            </label>
+                <Layers className="h-4 w-4" />
+                <span className="hidden sm:inline">{f.groeperen ? "Per opleiding" : "Alle plekken"}</span>
+              </button>
+              <label className="flex items-center gap-2 text-sm">
+                <span className="sr-only sm:not-sr-only sm:text-muted">Sorteer op</span>
+                <select
+                  value={f.sort}
+                  onChange={(e) => zet("sort", e.target.value as Sortering)}
+                  className="focus-ring rounded-full border border-line bg-card px-3 py-1.5 font-medium"
+                >
+                  <option value="match">Beste match</option>
+                  <option value="kosten">Laagste maandlasten</option>
+                  <option value="reistijd">Kortste reistijd</option>
+                  <option value="instroom">Meeste eerstejaars</option>
+                  <option value="naam">Naam (A–Z)</option>
+                </select>
+              </label>
+            </div>
           </div>
           {actieveFilters.length > 0 && (
             <div className="mb-4 flex flex-wrap gap-1.5">
@@ -356,22 +390,22 @@ export function Zoeken() {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               <KaartSkelet />
             </div>
-          ) : gefilterd.length ? (
+          ) : gefilterd.items.length ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {gefilterd.slice(0, aantal).map((r, i) => (
-                  <OpleidingKaart key={r.opleiding.id} r={r} index={i % PER_PAGINA} />
+                {gefilterd.items.slice(0, aantal).map(({ r, extra }, i) => (
+                  <OpleidingKaart key={r.opleiding.id} r={r} index={i % PER_PAGINA} extra={extra} />
                 ))}
               </div>
               <div ref={einde} className="h-10" />
-              {aantal < gefilterd.length && (
+              {aantal < gefilterd.items.length && (
                 <div className="mt-2 text-center">
                   <button
                     type="button"
                     onClick={() => setAantal((a) => a + PER_PAGINA)}
                     className="rounded-full border border-line bg-card px-5 py-2.5 text-sm font-semibold hover:border-brand"
                   >
-                    Toon meer ({getal(gefilterd.length - aantal)} over)
+                    Toon meer ({getal(gefilterd.items.length - aantal)} over)
                   </button>
                 </div>
               )}
@@ -415,7 +449,7 @@ export function Zoeken() {
               onClick={() => setPaneel(false)}
               className="mt-7 w-full rounded-full bg-ink py-4 font-semibold text-bg"
             >
-              Toon {gefilterd ? getal(gefilterd.length) : ""} opleidingen
+              Toon {gefilterd ? getal(gefilterd.items.length) : ""} opleidingen
             </button>
           </div>
         </div>
