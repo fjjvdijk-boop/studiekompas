@@ -39,7 +39,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <StoreProvider>
           <Navigatie />
           <DataFout />
-          <main className="mx-auto min-h-[100dvh] w-full max-w-7xl px-4 pb-32 pt-5 sm:px-6 md:pb-20 md:pt-8">{children}</main>
+          <main className="mx-auto min-h-[100dvh] w-full max-w-7xl px-4 pb-32 pt-5 sm:px-6 md:pb-20 md:pt-8">
+            {children}
+          </main>
           <Voettekst />
         </StoreProvider>
       </body>

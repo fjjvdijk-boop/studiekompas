@@ -26,7 +26,7 @@ Gemaakt voor de app-opdracht Informatica 6V.
 - **Maandlasten:** kamerhuur + leefkosten + collegegeld of lesgeld (2026/2027) + boeken ÷ 12
 - **Reistijd:** vanaf je eigen woonplaats; vanaf Wierden gecontroleerde treintijden, anders een schatting op basis van afstand
 - **Match-score (0–100):** interesse 45, niveau en leerstijl 15, budget 20, reistijd 20 punten (zie `src/lib/bereken.ts`)
-- **Toelating:** met vmbo naar het mbo, met havo naar mbo/hbo, met vwo overal heen
+- **Toelatingseisen:** je geeft je diploma op, en bij vmbo je leerweg, bij havo/vwo je profiel en vakken. Per opleiding checkt de app de landelijke profielvereisten (bijvoorbeeld wiskunde B + natuurkunde voor techniek aan de universiteit, biologie voor hbo-zorg met een EM/CM-profiel). Je ziet "✅ toelaatbaar", "⚠️ je mist natuurkunde" (een deficiëntie die je vaak kunt wegwerken) of "⛔ niet direct". Ook toelatingsexamens (kunst), sporttests (ALO), toetsen voor de pabo en numerus fixus worden genoemd. Zie `src/lib/toelating.ts`. Dit is een vereenvoudiging: scholen kunnen afwijken.
 - **Alleen eigen favorieten:** row level security in de database (`supabase/schema.sql`)
 - **E-mailherinnering:** 3 dagen voor een open dag die je hebt gepland
 - Werkt op je telefoon, ook als app op je beginscherm (met eigen icoon)

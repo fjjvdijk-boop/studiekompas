@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Check, Cloud, HardDrive, LogOut, Mail, Sparkles } from "lucide-react";
 import { SECTOREN } from "@/data/sectoren";
-import { euro, reistijdTekst, TOELATING, VOOROPLEIDING_LABEL } from "@/lib/bereken";
+import { euro, reistijdTekst, TOELATING } from "@/lib/bereken";
 import { useStore } from "@/lib/store";
-import type { Profiel, Soort, Vooropleiding, Wonen } from "@/lib/types";
+import type { Profiel, Soort, Wonen } from "@/lib/types";
 import { PaginaKop, Schuif, Segment } from "@/components/ui";
+import { DiplomaKiezer } from "@/components/DiplomaKiezer";
 import { WoonplaatsKiezer } from "@/components/WoonplaatsKiezer";
 
 export default function ProfielPagina() {
@@ -61,14 +62,14 @@ export default function ProfielPagina() {
               </div>
             </div>
             <div>
-              <span className="mb-2 block text-sm font-semibold">Diploma</span>
-              <Segment
-                waarde={p.vooropleiding ?? ("" as Vooropleiding)}
-                kies={(v) => setP((o) => ({ ...o, vooropleiding: v, soorten: TOELATING[v] }))}
-                opties={(Object.keys(VOOROPLEIDING_LABEL) as Vooropleiding[]).map((v) => ({
-                  waarde: v,
-                  label: VOOROPLEIDING_LABEL[v],
-                }))}
+              <span className="mb-1 block text-sm font-semibold">Diploma, profiel en vakken</span>
+              <p className="mb-3 text-sm text-muted">Hiermee checken we per opleiding of je toelaatbaar bent.</p>
+              <DiplomaKiezer
+                waarde={p}
+                zet={(w) => {
+                  setP((o) => ({ ...o, ...w }));
+                  setOpgeslagen(false);
+                }}
               />
             </div>
             <div>
@@ -221,7 +222,8 @@ export default function ProfielPagina() {
                 <strong className="text-ink">45</strong> punten: past de richting bij je interesses?
               </li>
               <li>
-                <strong className="text-ink">15</strong> punten: mbo, hbo of wo, en past het bij hoe je leert?
+                <strong className="text-ink">15</strong> punten: mbo, hbo of wo, heb je de juiste vakken, en past het
+                bij hoe je leert?
               </li>
               <li>
                 <strong className="text-ink">20</strong> punten: blijf je binnen je budget?
@@ -231,7 +233,8 @@ export default function ProfielPagina() {
               </li>
             </ul>
             <p className="mt-3">
-              Opleidingen waar je met je diploma niet direct heen kunt, krijgen maximaal 40 punten.
+              Kun je er met je diploma niet heen, dan krijgt een opleiding maximaal 40 punten. Mis je een vak, maximaal
+              70.
             </p>
           </div>
         </aside>

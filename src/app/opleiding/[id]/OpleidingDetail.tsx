@@ -38,6 +38,7 @@ import {
 } from "@/lib/bereken";
 import { downloadIcs, maakIcs } from "@/lib/ics";
 import { useStore } from "@/lib/store";
+import type { Toelating } from "@/lib/toelating";
 import type { Opleiding } from "@/lib/types";
 import { OpleidingKaart } from "@/components/OpleidingKaart";
 import {
@@ -183,12 +184,7 @@ export function OpleidingDetail({
         </div>
       </header>
 
-      {!match.toelaatbaar && (
-        <div className="rounded-2xl border border-oranje/30 bg-oranje-soft p-4 text-sm text-oranje">
-          <strong>Let op:</strong> {match.onderdelen[1].uitleg}. Soms kan het wel via een vooropleiding, schakeljaar of
-          toelatingstoets: check de website van de school.
-        </div>
-      )}
+      <ToelatingBlok t={match.toelating} opleiding={o} />
 
       {/* ---------- FEITEN ---------- */}
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
@@ -652,5 +648,96 @@ function Beoordeling({
         </>
       )}
     </div>
+  );
+}
+
+const STATUS_STIJL = {
+  ja: { kleur: "text-groen", bg: "bg-groen-soft", icoon: "✅", titel: "Je kunt hier naartoe" },
+  deficientie: { kleur: "text-oranje", bg: "bg-oranje-soft", icoon: "⚠️", titel: "Je mist een vak" },
+  nee: { kleur: "text-rood", bg: "bg-rood-soft", icoon: "⛔", titel: "Niet direct toelaatbaar" },
+  onbekend: { kleur: "text-muted", bg: "bg-card-2", icoon: "❔", titel: "Check je toelating" },
+} as const;
+
+function ToelatingBlok({ t, opleiding: o }: { t: Toelating; opleiding: Opleiding }) {
+  const { profiel } = useStore();
+  const st = STATUS_STIJL[t.status];
+  const eisen = t.eisen;
+  const heeftEisen = !!eisen && (eisen.vakken.length > 0 || eisen.vrij.length > 0 || eisen.notities.length > 0);
+  if (t.status === "ja" && !heeftEisen) return null;
+  return (
+    <section className="kaart overflow-hidden">
+      <div className={`flex flex-wrap items-center gap-4 p-5 sm:p-6 ${st.bg}`}>
+        <span className="text-3xl" aria-hidden>
+          {st.icoon}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-muted">Toelating</p>
+          <h2 className={`display text-xl font-bold ${st.kleur}`}>{st.titel}</h2>
+          <p className="text-sm">{t.reden}</p>
+        </div>
+        {(t.status === "onbekend" || t.status === "deficientie") && (
+          <Link href="/profiel" className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg">
+            {t.status === "onbekend" ? "Vul je vakken in" : "Vakken aanpassen"}
+          </Link>
+        )}
+      </div>
+      {heeftEisen && (
+        <div className="grid gap-4 p-5 sm:grid-cols-2 sm:p-6">
+          {(eisen!.vakken.length > 0 || eisen!.vrij.length > 0) && (
+            <div>
+              <h3 className="mb-2 text-sm font-semibold">Wat heb je nodig?</h3>
+              {eisen!.vrij.length > 0 && eisen!.vrij.length < 4 && (
+                <p className="mb-2 text-sm">
+                  Met het profiel <strong>{eisen!.vrij.join(" of ")}</strong> kun je zonder meer naar binnen.
+                </p>
+              )}
+              {eisen!.vakken.length > 0 && (
+                <>
+                  <p className="mb-2 text-sm text-muted">
+                    {eisen!.vrij.length
+                      ? "Met een ander profiel heb je deze vakken nodig:"
+                      : "Deze vakken heb je nodig:"}
+                  </p>
+                  <ul className="flex flex-wrap gap-1.5">
+                    {eisen!.vakken.map((g) => {
+                      const tekst = g.join(" of ");
+                      const mist = !g.some((vak) => profiel.vakken.includes(vak));
+                      return (
+                        <li
+                          key={tekst}
+                          className={`rounded-full px-3 py-1 text-sm font-medium ${
+                            t.status === "deficientie" && mist ? "bg-oranje-soft text-oranje" : "bg-card-2"
+                          }`}
+                        >
+                          {t.status === "deficientie" ? (mist ? "✗ " : "✓ ") : ""}
+                          {tekst}
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </>
+              )}
+            </div>
+          )}
+          <div className="space-y-2 text-sm text-muted">
+            {eisen!.notities.map((n) => (
+              <p key={n} className="rounded-xl bg-card-2 p-3 text-ink">
+                📌 {n}
+              </p>
+            ))}
+            {t.status === "deficientie" && (
+              <p>
+                Een ontbrekend vak heet een <strong className="text-ink">deficiëntie</strong>. Vaak kun je die wegwerken
+                met een deficiëntietoets, een zomercursus of een vak extra in je examenjaar.
+              </p>
+            )}
+            <p className="text-xs">
+              Dit zijn de landelijke profieleisen{o.soort === "wo" ? " voor universiteiten" : " voor het hbo"}. Scholen
+              kunnen afwijken: check altijd de toelatingseisen op de site van de opleiding.
+            </p>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

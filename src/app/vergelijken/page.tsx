@@ -52,6 +52,22 @@ const CRITERIA: Criterium[] = [
     waarde: ({ r }) => <StoplichtBadge licht={r.licht} minuten={r.reistijd} schatting={r.reistijdSchatting} />,
     score: ({ r }) => -r.reistijd,
   },
+  {
+    label: "Toelating",
+    waarde: ({ r }) => {
+      const t = r.match.toelating;
+      return t.status === "ja" ? (
+        <span className="font-semibold text-groen">✓ Toelaatbaar</span>
+      ) : t.status === "deficientie" ? (
+        <span className="text-sm font-semibold text-oranje">⚠ Mist {t.mist.join(" en ")}</span>
+      ) : t.status === "nee" ? (
+        <span className="text-sm font-semibold text-rood">⛔ Niet direct</span>
+      ) : (
+        <span className="text-muted">?</span>
+      );
+    },
+    score: ({ r }) => ({ ja: 2, onbekend: 1, deficientie: 1, nee: 0 })[r.match.toelating.status],
+  },
   { label: "Duur", waarde: ({ r }) => duurTekst(r.opleiding.duur) },
   {
     label: "Eerstejaars",

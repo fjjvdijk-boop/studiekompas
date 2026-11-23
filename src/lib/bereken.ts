@@ -1,6 +1,7 @@
 import { INSTELLINGEN } from "@/data/instellingen";
 import { kamerhuurVan } from "@/data/kamerhuur";
 import { SECTOR } from "@/data/sectoren";
+import { toelating, type Toelating } from "./toelating";
 import type { Opleiding, Plaats, Profiel, Soort, Vooropleiding } from "./types";
 
 export type Stoplicht = "groen" | "oranje" | "rood";
@@ -136,7 +137,10 @@ export interface ScoreOnderdeel {
 export interface Match {
   score: number;
   onderdelen: ScoreOnderdeel[];
+  /** false = je kunt er (nog) niet heen met je diploma */
   toelaatbaar: boolean;
+  /** Details: ja, deficiëntie (vak ontbreekt), nee of onbekend */
+  toelating: Toelating;
 }
 
 const LEERSTIJL_DOEL: Record<Soort, number> = { mbo: 0.15, hbo: 0.5, wo: 0.85 };
@@ -145,7 +149,7 @@ const clamp = (x: number) => Math.max(0, Math.min(1, x));
 /**
  * Match-score van 0 tot 100:
  *  - 45 punten: hoe goed de sector past bij je antwoorden in de vragenlijst
- *  - 15 punten: soort onderwijs (mbo/hbo/wo) en of het past bij hoe je graag leert
+ *  - 15 punten: soort onderwijs (mbo/hbo/wo), je toelating (vakken) en of het past bij hoe je graag leert
  *  - 20 punten: maandlasten binnen je budget
  *  - 20 punten: reistijd
  */
@@ -153,6 +157,7 @@ interface Punten {
   affiniteit: number;
   heeftInteresse: boolean;
   toelaatbaar: boolean;
+  toelating: Toelating;
   gekozen: boolean;
   stijl: number;
   teDuur: number;
@@ -164,7 +169,9 @@ interface Punten {
 function punten(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Punten {
   const heeftInteresse = Object.keys(profiel.interesse).length > 0;
   const affiniteit = heeftInteresse ? (profiel.interesse[o.sector] ?? 0) : 0.5;
-  const toelaatbaar = !profiel.vooropleiding || TOELATING[profiel.vooropleiding].includes(o.soort);
+  const t = toelating(o, profiel);
+  const toelaatbaar = t.status !== "nee";
+  const deficientie = t.status === "deficientie";
   const gekozen = profiel.soorten.includes(o.soort);
   const stijl = 1 - Math.abs(profiel.leerstijl - LEERSTIJL_DOEL[o.soort]);
   const teDuur = Math.max(0, k.advies - profiel.budget);
@@ -172,18 +179,20 @@ function punten(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Punten {
     profiel.wonen === "kamer" ? clamp(1 - (r - 120) / 120) : clamp(1 - Math.max(0, r - profiel.maxReistijd) / 90);
   const totaal =
     Math.round(45 * affiniteit) +
-    (toelaatbaar && gekozen ? Math.round(8 + 7 * stijl) : 0) +
+    (toelaatbaar && gekozen ? Math.round((deficientie ? 3 : 8) + 7 * stijl) : 0) +
     Math.round(20 * clamp(1 - teDuur / 300)) +
     Math.round(20 * reisPunten);
   return {
     affiniteit,
     heeftInteresse,
     toelaatbaar,
+    toelating: t,
     gekozen,
     stijl,
     teDuur,
     reisPunten,
-    score: toelaatbaar ? totaal : Math.min(totaal, 40),
+    // Kun je er niet heen: maximaal 40. Mis je een vak: maximaal 70.
+    score: !toelaatbaar ? Math.min(totaal, 40) : deficientie ? Math.min(totaal, 70) : totaal,
   };
 }
 
@@ -206,13 +215,15 @@ function onderdelen(o: Opleiding, profiel: Profiel, r: number, p: Punten): Score
     {
       label: "Niveau",
       uitleg: !p.toelaatbaar
-        ? `Met ${VOOROPLEIDING_LABEL[profiel.vooropleiding!]} kun je niet direct naar het ${o.soort}`
-        : !p.gekozen
-          ? `Je zoekt nu niet naar ${o.soort}`
-          : p.stijl > 0.7
-            ? `${o.soort.toUpperCase()} past bij hoe jij graag leert`
-            : `${o.soort.toUpperCase()} is ${o.soort === "wo" ? "theoretischer" : "praktischer"} dan je voorkeur`,
-      punten: p.toelaatbaar && p.gekozen ? Math.round(8 + 7 * p.stijl) : 0,
+        ? p.toelating.reden
+        : p.toelating.status === "deficientie"
+          ? `Je mist ${p.toelating.mist.join(" en ")}`
+          : !p.gekozen
+            ? `Je zoekt nu niet naar ${o.soort}`
+            : p.stijl > 0.7
+              ? `${o.soort.toUpperCase()} past bij hoe jij graag leert`
+              : `${o.soort.toUpperCase()} is ${o.soort === "wo" ? "theoretischer" : "praktischer"} dan je voorkeur`,
+      punten: p.toelaatbaar && p.gekozen ? Math.round((p.toelating.status === "deficientie" ? 3 : 8) + 7 * p.stijl) : 0,
       max: 15,
     },
     {
@@ -240,14 +251,19 @@ function onderdelen(o: Opleiding, profiel: Profiel, r: number, p: Punten): Score
 /**
  * Match-score van 0 tot 100:
  *  - 45 punten: hoe goed de sector past bij je antwoorden in de studietest
- *  - 15 punten: soort onderwijs (mbo/hbo/wo) en of het past bij hoe je graag leert
+ *  - 15 punten: soort onderwijs (mbo/hbo/wo), je toelating (vakken) en of het past bij hoe je graag leert
  *  - 20 punten: maandlasten binnen je budget
  *  - 20 punten: reistijd
- * Opleidingen waar je met je diploma niet direct heen kunt, krijgen maximaal 40 punten.
+ * Opleidingen waar je met je diploma niet heen kunt: maximaal 40 punten. Mis je een vak: maximaal 70.
  */
 export function matchScore(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Match {
   const p = punten(o, profiel, r, k);
-  return { score: p.score, toelaatbaar: p.toelaatbaar, onderdelen: onderdelen(o, profiel, r, p) };
+  return {
+    score: p.score,
+    toelaatbaar: p.toelaatbaar,
+    toelating: p.toelating,
+    onderdelen: onderdelen(o, profiel, r, p),
+  };
 }
 
 // ------------------------------------------------------------ alles samen
@@ -286,6 +302,7 @@ export function bereken(o: Opleiding, profiel: Profiel): Resultaat {
     match: {
       score: p.score,
       toelaatbaar: p.toelaatbaar,
+      toelating: p.toelating,
       get onderdelen() {
         return (uitleg ??= onderdelen(o, profiel, minuten, p));
       },

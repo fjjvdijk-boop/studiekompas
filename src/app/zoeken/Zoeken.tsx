@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Layers, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
@@ -21,7 +22,8 @@ interface Filters {
   sectoren: SectorId[];
   plaats: string;
   maxReistijd: number;
-  toelaatbaar: boolean;
+  /** alle = alles tonen, mag = alleen waar je heen mag, zeker = ook zonder vak bij te spijkeren */
+  toelaatbaar: "alle" | "mag" | "zeker";
   groeperen: boolean;
   sort: Sortering;
 }
@@ -35,7 +37,7 @@ const LEEG: Filters = {
   sectoren: [],
   plaats: "",
   maxReistijd: GEEN_LIMIET,
-  toelaatbaar: true,
+  toelaatbaar: "mag",
   groeperen: true,
   sort: "match",
 };
@@ -101,7 +103,8 @@ export function Zoeken({ totaal }: { totaal: number }) {
       if (f.sectoren.length && !f.sectoren.includes(o.sector)) return false;
       if (f.plaats && o.plaats.naam !== f.plaats) return false;
       if (f.maxReistijd < GEEN_LIMIET && reistijd > f.maxReistijd) return false;
-      if (f.toelaatbaar && !match.toelaatbaar) return false;
+      if (f.toelaatbaar !== "alle" && !match.toelaatbaar) return false;
+      if (f.toelaatbaar === "zeker" && match.toelating.status === "deficientie") return false;
       if (woorden.length) {
         const tekst = normaal(
           `${o.naam} ${o.eigenNaam ?? ""} ${o.instelling.naam} ${plaatsNaam(o.plaats.naam)} ${o.plaats.naam} ${SECTOR[o.sector].naam}`,
@@ -260,19 +263,40 @@ export function Zoeken({ totaal }: { totaal: number }) {
       </div>
 
       {profiel.vooropleiding && (
-        <label className="flex cursor-pointer items-center justify-between gap-3">
-          <span className="text-sm">
-            <span className="block font-semibold">Alleen wat ik mag doen</span>
-            <span className="text-xs text-muted">Past bij je diploma</span>
-          </span>
-          <input
-            type="checkbox"
-            checked={f.toelaatbaar}
-            onChange={(e) => zet("toelaatbaar", e.target.checked)}
-            className="peer sr-only"
-          />
-          <span className="relative h-7 w-12 shrink-0 rounded-full bg-line transition-colors after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:shadow after:transition-transform peer-checked:bg-brand peer-checked:after:translate-x-5" />
-        </label>
+        <div>
+          <p className="mb-2.5 text-sm font-semibold">Toelating</p>
+          <div className="space-y-1.5">
+            {(
+              [
+                ["mag", "Waar ik heen mag", "Past bij je diploma; een ontbrekend vak mag"],
+                ["zeker", "Zonder bijspijkeren", "Je hebt alle vakken die nodig zijn"],
+                ["alle", "Alles tonen", "Ook waar je (nog) niet heen kunt"],
+              ] as const
+            ).map(([w, titel, tekst]) => (
+              <button
+                key={w}
+                type="button"
+                aria-pressed={f.toelaatbaar === w}
+                onClick={() => zet("toelaatbaar", w)}
+                className={`w-full rounded-xl border px-3 py-2 text-left transition-colors ${
+                  f.toelaatbaar === w ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-brand"
+                }`}
+              >
+                <span className="block text-sm font-semibold">{titel}</span>
+                <span className={`block text-xs ${f.toelaatbaar === w ? "opacity-80" : "text-muted"}`}>{tekst}</span>
+              </button>
+            ))}
+          </div>
+          {(profiel.vooropleiding === "havo" || profiel.vooropleiding === "vwo") && !profiel.vakken.length && (
+            <p className="mt-2 text-xs text-muted">
+              Tip: vul je vakken in op je{" "}
+              <Link href="/profiel" className="font-semibold text-brand">
+                profiel
+              </Link>{" "}
+              voor een precieze check.
+            </p>
+          )}
+        </div>
       )}
 
       {actieveFilters.length > 0 && (

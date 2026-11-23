@@ -52,6 +52,16 @@ export function OpleidingKaart({
           )}
         </p>
       </div>
+      {match.toelating.status === "deficientie" && (
+        <p className="-mt-1 rounded-xl bg-oranje-soft px-3 py-1.5 text-xs font-semibold text-oranje">
+          ⚠️ Je mist {match.toelating.mist.join(" en ")}
+        </p>
+      )}
+      {match.toelating.status === "nee" && (
+        <p className="-mt-1 rounded-xl bg-rood-soft px-3 py-1.5 text-xs font-semibold text-rood">
+          ⛔ Niet direct toelaatbaar met je diploma
+        </p>
+      )}
       <div className="mt-auto flex items-center gap-2 border-t border-line pt-3">
         <div className="min-w-0 flex-1">
           <div className="display text-lg font-bold tabular leading-none">

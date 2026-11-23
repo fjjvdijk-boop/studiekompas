@@ -16,13 +16,14 @@ import {
 } from "lucide-react";
 import { SECTOR } from "@/data/sectoren";
 import { ANTWOORDEN, STELLINGEN, VOLGORDE, interesseUitAntwoorden } from "@/data/vragenlijst";
-import { bereken, euro, reistijdTekst, TOELATING } from "@/lib/bereken";
+import { bereken, euro, reistijdTekst } from "@/lib/bereken";
 import { useData } from "@/lib/data-client";
 import { useStore } from "@/lib/store";
-import type { Profiel, SectorId, Soort, Vooropleiding, Wonen } from "@/lib/types";
+import type { Profiel, SectorId, Soort, Wonen } from "@/lib/types";
 import { Logo } from "@/components/Logo";
 import { OpleidingKaart, KaartSkelet } from "@/components/OpleidingKaart";
 import { Schuif } from "@/components/ui";
+import { DiplomaKiezer, diplomaCompleet } from "@/components/DiplomaKiezer";
 import { WoonplaatsKiezer } from "@/components/WoonplaatsKiezer";
 
 const KompasRadar = dynamic(() => import("@/components/KompasRadar"), {
@@ -94,7 +95,7 @@ export default function Vragenlijst() {
 
   const sector = stap.startsWith("s:") ? (stap.slice(2) as SectorId) : null;
   const vragen = sector ? (antwoorden[sector] ?? [null, null, null]) : [];
-  const magDoor = stap === "school" ? concept.vooropleiding !== null : sector ? vragen.every((v) => v !== null) : true;
+  const magDoor = stap === "school" ? diplomaCompleet(concept) : sector ? vragen.every((v) => v !== null) : true;
 
   const beantwoord = (i: number, w: number) => {
     if (!sector) return;
@@ -201,29 +202,9 @@ export default function Vragenlijst() {
           <Vraag
             label="Je diploma"
             titel="Welk diploma haal je (of heb je)?"
-            sub="Zo laten we alleen opleidingen zien waar je echt naartoe kunt."
+            sub="Zo laten we zien waar je echt naartoe kunt, en welke vakken je misschien nog mist."
           >
-            <div className="grid grid-cols-2 gap-3">
-              {(
-                [
-                  ["vmbo", "vmbo", "🎒", "Door naar het mbo"],
-                  ["havo", "havo", "📘", "Door naar mbo of hbo"],
-                  ["vwo", "vwo", "🎓", "Door naar mbo, hbo of universiteit"],
-                  ["mbo4", "mbo 4", "🛠️", "Door naar het hbo"],
-                ] as [Vooropleiding, string, string, string][]
-              ).map(([w, label, emoji, tekst]) => (
-                <Keuze
-                  key={w}
-                  gekozen={concept.vooropleiding === w}
-                  onClick={() => {
-                    setConcept((c) => ({ ...c, vooropleiding: w, soorten: TOELATING[w] }));
-                  }}
-                  emoji={emoji}
-                  titel={label}
-                  tekst={tekst}
-                />
-              ))}
-            </div>
+            <DiplomaKiezer groot waarde={concept} zet={(w) => setConcept((c) => ({ ...c, ...w }))} />
           </Vraag>
         )}
 
