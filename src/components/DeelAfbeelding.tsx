@@ -20,25 +20,13 @@ export function ogOpties() {
 
 function Kompas({ maat }: { maat: number }) {
   return (
-    <div
-      style={{
-        width: maat,
-        height: maat,
-        borderRadius: maat * 0.28,
-        background: "linear-gradient(135deg, #7c6cff, #4f39f6)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        boxShadow: "0 20px 60px rgba(0,0,0,.35)",
-      }}
-    >
-      <svg width={maat * 0.7} height={maat * 0.7} viewBox="0 0 64 64">
-        <circle cx="32" cy="32" r="20" fill="none" stroke="#fff" strokeOpacity=".3" strokeWidth="2.5" />
-        <path d="M32 12 L38.5 32 L32 52 L25.5 32 Z" fill="#fff" />
-        <path d="M32 12 L38.5 32 L25.5 32 Z" fill="#ff9f1c" />
-        <circle cx="32" cy="32" r="3.2" fill="#4f39f6" stroke="#fff" strokeWidth="1.5" />
-      </svg>
-    </div>
+    <svg width={maat} height={maat} viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="29" fill="none" stroke="#17160f" strokeWidth="2.5" />
+      <path d="M32 3v6M32 55v6M3 32h6M55 32h6" stroke="#17160f" strokeWidth="2" strokeLinecap="round" />
+      <path d="M32 12 L38 32 L32 52 L26 32 Z" fill="#17160f" />
+      <path d="M32 12 L38 32 L26 32 Z" fill="#b9472f" />
+      <circle cx="32" cy="32" r="2.6" fill="#f6f3ec" />
+    </svg>
   );
 }
 
@@ -62,10 +50,9 @@ export function DeelAfbeelding({
         flexDirection: "column",
         justifyContent: "space-between",
         padding: 72,
-        background: "#16123a",
-        backgroundImage:
-          "radial-gradient(circle at 85% 10%, rgba(124,108,255,.65), transparent 45%), radial-gradient(circle at 10% 110%, rgba(255,159,28,.35), transparent 45%)",
-        color: "white",
+        background: "#f6f3ec",
+        color: "#17160f",
+        borderBottom: "14px solid #1e4d3b",
         fontFamily: "Geist",
       }}
     >
@@ -74,7 +61,7 @@ export function DeelAfbeelding({
         <div style={{ fontSize: 36, fontWeight: 800, letterSpacing: -1 }}>StudieKompas</div>
       </div>
       <div style={{ display: "flex", flexDirection: "column" }}>
-        <div style={{ fontSize: 26, fontWeight: 700, letterSpacing: 4, textTransform: "uppercase", color: "#b3a9ff" }}>
+        <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: 4, textTransform: "uppercase", color: "#b3a9ff" }}>
           {label}
         </div>
         <div
@@ -89,7 +76,7 @@ export function DeelAfbeelding({
         >
           {titel}
         </div>
-        <div style={{ fontSize: 32, color: "rgba(255,255,255,.75)", marginTop: 18 }}>{sub}</div>
+        <div style={{ fontSize: 32, color: "#625e55", marginTop: 18 }}>{sub}</div>
       </div>
       <div style={{ display: "flex", gap: 14 }}>
         {chips.map((c) => (
@@ -99,7 +86,7 @@ export function DeelAfbeelding({
               display: "flex",
               padding: "10px 22px",
               borderRadius: 999,
-              background: "rgba(255,255,255,.12)",
+              border: "2px solid #17160f",
               fontSize: 26,
               fontWeight: 600,
             }}

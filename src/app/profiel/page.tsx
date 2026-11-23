@@ -2,11 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Check, Cloud, HardDrive, LogOut, Mail, Sparkles } from "lucide-react";
-import { SECTOREN } from "@/data/sectoren";
-import { euro, reistijdTekst, TOELATING } from "@/lib/bereken";
+import { Check, Cloud, HardDrive, LogOut, Mail } from "lucide-react";
+import { HOOFDRICHTINGEN, SECTOR } from "@/data/sectoren";
+import { euro, reistijdTekst } from "@/lib/bereken";
 import { useStore } from "@/lib/store";
-import type { Profiel, Soort, Wonen } from "@/lib/types";
+import type { Profiel, TaalVoorkeur, Wonen } from "@/lib/types";
 import { PaginaKop, Schuif, Segment } from "@/components/ui";
 import { DiplomaKiezer } from "@/components/DiplomaKiezer";
 import { WoonplaatsKiezer } from "@/components/WoonplaatsKiezer";
@@ -20,7 +20,7 @@ export default function ProfielPagina() {
     if (geladen) setP(profiel);
   }, [geladen, profiel]);
 
-  if (!geladen) return <div className="h-96 animate-pulse rounded-3xl bg-card-2" />;
+  if (!geladen) return <div className="h-96 animate-pulse rounded-2xl bg-card-2" />;
 
   const zet = <K extends keyof Profiel>(k: K, v: Profiel[K]) => {
     setP((oud) => ({ ...oud, [k]: v }));
@@ -31,169 +31,144 @@ export default function ProfielPagina() {
     setOpgeslagen(true);
   };
   const veranderd = JSON.stringify(p) !== JSON.stringify(profiel);
-  const toegestaan: Soort[] = p.vooropleiding ? TOELATING[p.vooropleiding] : ["mbo", "hbo", "wo"];
 
   return (
     <>
       <PaginaKop
         label="Profiel"
         titel={p.naam ? `Hoi ${p.naam}` : "Mijn profiel"}
-        sub="Hiermee berekent StudieKompas je match-score, je reistijd en je maandlasten."
+        sub="Hiermee berekenen we je match-score, je toelating, je reistijd en je geldplaatje."
       />
 
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
-        <div className="space-y-6">
-          <section className="kaart space-y-6 p-6 sm:p-7">
-            <h2 className="display text-xl font-bold">Over jou</h2>
+      <div className="grid gap-12 lg:grid-cols-[1.5fr_1fr]">
+        <div className="space-y-14">
+          <Blok titel="Over jou">
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold">Voornaam</span>
+                <span className="bovenschrift mb-2 block">Voornaam</span>
                 <input
                   value={p.naam}
                   onChange={(e) => zet("naam", e.target.value)}
                   autoComplete="given-name"
                   placeholder="Je voornaam"
-                  className="focus-ring w-full rounded-2xl border border-line bg-card px-4 py-3.5 text-[15px] font-medium"
+                  className="focus-ring w-full rounded-xl border border-line bg-card px-4 py-3.5 text-[15px]"
                 />
               </label>
               <div>
-                <span className="mb-2 block text-sm font-semibold">Woonplaats</span>
+                <span className="bovenschrift mb-2 block">Woonplaats</span>
                 <WoonplaatsKiezer waarde={p.woonplaats} kies={(w) => zet("woonplaats", w)} />
               </div>
             </div>
-            <div>
-              <span className="mb-1 block text-sm font-semibold">Diploma, profiel en vakken</span>
-              <p className="mb-3 text-sm text-muted">Hiermee checken we per opleiding of je toelaatbaar bent.</p>
-              <DiplomaKiezer
-                waarde={p}
-                zet={(w) => {
-                  setP((o) => ({ ...o, ...w }));
-                  setOpgeslagen(false);
-                }}
-              />
-            </div>
-            <div>
-              <span className="mb-2 block text-sm font-semibold">Ik zoek naar</span>
-              <div className="flex gap-2">
-                {(["mbo", "hbo", "wo"] as Soort[]).map((s) => {
-                  const aan = p.soorten.includes(s);
-                  const mag = toegestaan.includes(s);
-                  return (
-                    <button
-                      key={s}
-                      type="button"
-                      disabled={!mag}
-                      aria-pressed={aan}
-                      onClick={() => zet("soorten", aan ? p.soorten.filter((x) => x !== s) : [...p.soorten, s])}
-                      className={`inline-flex items-center gap-1.5 rounded-full border px-4 py-2 text-sm font-bold uppercase transition-colors disabled:opacity-30 ${
-                        aan && mag ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-brand"
-                      }`}
-                    >
-                      {aan && mag && <Check className="h-3.5 w-3.5" />} {s}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </section>
+          </Blok>
 
-          <section className="kaart space-y-7 p-6 sm:p-7">
-            <h2 className="display text-xl font-bold">Wonen en geld</h2>
-            <div>
-              <span className="mb-2 block text-sm font-semibold">Wonen</span>
-              <Segment
-                waarde={p.wonen}
-                kies={(w: Wonen) => zet("wonen", w)}
-                opties={[
-                  { waarde: "thuis", label: "🏠 Thuis" },
-                  { waarde: "allebei", label: "🤷 Weet nog niet" },
-                  { waarde: "kamer", label: "🔑 Op kamer" },
-                ]}
-              />
-            </div>
-            <div>
-              <div className="mb-3 flex items-baseline justify-between">
-                <span className="text-sm font-semibold">Max. reistijd (enkele reis)</span>
-                <span className="display text-2xl font-bold tabular">{reistijdTekst(p.maxReistijd)}</span>
-              </div>
-              <Schuif
-                label="Maximale reistijd"
-                waarde={p.maxReistijd}
-                min={15}
-                max={150}
-                stap={5}
-                zet={(n) => zet("maxReistijd", n)}
-              />
-            </div>
-            <div>
-              <div className="mb-3 flex items-baseline justify-between">
-                <span className="text-sm font-semibold">Budget per maand</span>
-                <span className="display text-2xl font-bold tabular">{euro(p.budget)}</span>
-              </div>
-              <Schuif label="Budget" waarde={p.budget} min={300} max={2000} stap={25} zet={(n) => zet("budget", n)} />
-            </div>
-            <div>
-              <div className="mb-3 flex justify-between text-sm font-semibold">
-                <span>🔧 Praktisch leren</span>
-                <span>🧠 Theoretisch leren</span>
-              </div>
-              <Schuif
-                label="Leerstijl"
-                waarde={p.leerstijl * 100}
-                min={0}
-                max={100}
-                stap={5}
-                zet={(n) => zet("leerstijl", n / 100)}
-              />
-            </div>
-          </section>
+          <Blok titel="Toelating">
+            <DiplomaKiezer
+              waarde={p}
+              zet={(w) => {
+                setP((o) => ({ ...o, ...w }));
+                setOpgeslagen(false);
+              }}
+            />
+          </Blok>
 
-          <section className="kaart p-6 sm:p-7">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+          <Blok titel="Voorkeuren">
+            <div className="space-y-7">
               <div>
-                <h2 className="display text-xl font-bold">Interesses</h2>
-                <p className="text-sm text-muted">
-                  {p.vragenlijstKlaar
-                    ? "Uit je studietest. Je kunt ze hier bijstellen."
-                    : "Doe de studietest, of stel ze zelf in."}
-                </p>
+                <span className="bovenschrift mb-2 block">Voertaal</span>
+                <Segment
+                  waarde={p.taal}
+                  kies={(t: TaalVoorkeur) => zet("taal", t)}
+                  opties={[
+                    { waarde: "beide", label: "Maakt niet uit" },
+                    { waarde: "nl", label: "Nederlands" },
+                    { waarde: "en", label: "Engels" },
+                  ]}
+                />
               </div>
-              <Link
-                href="/vragenlijst"
-                className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#7c6cff] to-[#4f39f6] px-4 py-2 text-sm font-semibold text-white"
-              >
-                <Sparkles className="h-4 w-4" /> {p.vragenlijstKlaar ? "Test opnieuw" : "Doe de test"}
-              </Link>
+              <div>
+                <span className="bovenschrift mb-2 block">Wonen</span>
+                <Segment
+                  waarde={p.wonen}
+                  kies={(w: Wonen) => zet("wonen", w)}
+                  opties={[
+                    { waarde: "thuis", label: "Thuis" },
+                    { waarde: "allebei", label: "Weet nog niet" },
+                    { waarde: "kamer", label: "Op kamer" },
+                  ]}
+                />
+              </div>
+              <div>
+                <div className="mb-3 flex items-baseline justify-between">
+                  <span className="bovenschrift">Max. reistijd (enkele reis)</span>
+                  <span className="display text-xl tabular">{reistijdTekst(p.maxReistijd)}</span>
+                </div>
+                <Schuif
+                  label="Maximale reistijd"
+                  waarde={p.maxReistijd}
+                  min={15}
+                  max={150}
+                  stap={5}
+                  zet={(n) => zet("maxReistijd", n)}
+                />
+              </div>
             </div>
-            <ul className="grid gap-x-8 gap-y-4 sm:grid-cols-2">
-              {SECTOREN.map((s) => {
-                const w = Math.round((p.interesse[s.id] ?? 0) * 100);
+          </Blok>
+
+          <Blok titel="Geld" actie={{ href: "/geld", label: "Uitgebreid rekenen" }}>
+            <dl className="grid grid-cols-2 border-y border-line sm:grid-cols-4">
+              {[
+                ["Inkomen ouders", p.ouderInkomen === null ? "onbekend" : euro(p.ouderInkomen)],
+                ["Bijdrage ouders", euro(p.ouderBijdrage)],
+                ["Bijbaan", euro(p.bijbaan)],
+                ["Max. lenen", euro(p.maxLenen)],
+              ].map(([l, w], i) => (
+                <div
+                  key={l}
+                  className={`py-4 ${i % 2 ? "pl-4" : "pr-4"} ${i > 0 ? "sm:border-l sm:border-line sm:pl-4" : ""} ${i > 1 ? "border-t border-line sm:border-t-0" : ""}`}
+                >
+                  <dt className="bovenschrift">{l}</dt>
+                  <dd className="display mt-1 text-xl tabular">{w}</dd>
+                </div>
+              ))}
+            </dl>
+          </Blok>
+
+          <Blok
+            titel="Interesses"
+            actie={{ href: "/vragenlijst", label: p.vragenlijstKlaar ? "Test opnieuw" : "Doe de test" }}
+          >
+            <p className="mb-5 text-sm text-muted">
+              {p.vragenlijstKlaar
+                ? "Uit je studietest. Je kunt ze hier bijstellen."
+                : "Doe de studietest, of stel ze zelf in."}
+            </p>
+            <ul className="grid gap-x-10 gap-y-5 sm:grid-cols-2">
+              {HOOFDRICHTINGEN.map((s) => {
+                const w = Math.round((p.interesse[s] ?? 0) * 100);
                 return (
-                  <li key={s.id}>
-                    <div className="mb-1.5 flex items-center justify-between text-sm">
-                      <span className="font-medium">
-                        {s.emoji} {s.naam}
-                      </span>
-                      <span className="text-muted tabular">{w}%</span>
+                  <li key={s}>
+                    <div className="mb-2 flex items-center justify-between text-sm">
+                      <span>{SECTOR[s].naam}</span>
+                      <span className="font-mono text-xs text-muted tabular">{w}</span>
                     </div>
                     <Schuif
-                      label={s.naam}
+                      label={SECTOR[s].naam}
                       waarde={w}
                       min={0}
                       max={100}
                       stap={5}
-                      zet={(n) => zet("interesse", { ...p.interesse, [s.id]: n / 100 })}
+                      zet={(n) => zet("interesse", { ...p.interesse, [s]: n / 100 })}
                     />
                   </li>
                 );
               })}
             </ul>
-          </section>
+          </Blok>
 
-          <div className="sticky bottom-24 z-20 flex items-center gap-4 rounded-full border border-line bg-card/95 p-2 pl-5 shadow-groot backdrop-blur lg:bottom-6">
+          <div className="sticky bottom-20 z-20 flex items-center gap-4 rounded-full border border-line bg-card p-2 pl-5 shadow-groot lg:bottom-6">
             <span className="flex-1 text-sm text-muted">
               {opgeslagen ? (
-                <span className="inline-flex items-center gap-1.5 font-semibold text-groen">
+                <span className="inline-flex items-center gap-1.5 text-groen">
                   <Check className="h-4 w-4" /> Opgeslagen
                 </span>
               ) : veranderd ? (
@@ -206,40 +181,61 @@ export default function ProfielPagina() {
               type="button"
               onClick={opslaan}
               disabled={!veranderd}
-              className="rounded-full bg-ink px-6 py-3 font-semibold text-bg disabled:opacity-40"
+              className="rounded-full bg-ink px-6 py-2.5 text-sm text-bg disabled:opacity-30"
             >
               Opslaan
             </button>
           </div>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="space-y-8">
           <Account cloud={cloud} email={gebruiker?.email ?? null} stuurInloglink={stuurInloglink} logUit={logUit} />
-          <div className="kaart p-6 text-sm text-muted">
-            <h2 className="display mb-3 text-lg font-bold text-ink">Hoe werkt de match-score?</h2>
+          <div className="border-t border-line pt-5 text-sm text-muted">
+            <h2 className="display mb-3 text-xl text-ink">Hoe werkt de match-score?</h2>
             <ul className="space-y-2">
               <li>
-                <strong className="text-ink">45</strong> punten: past de richting bij je interesses?
+                <span className="text-ink">50</span> punten: past de richting bij je studietest? Min 10 als de voertaal
+                niet past.
               </li>
               <li>
-                <strong className="text-ink">15</strong> punten: mbo, hbo of wo, heb je de juiste vakken, en past het
-                bij hoe je leert?
+                <span className="text-ink">10</span> punten: kun je erheen met je profiel en vakken?
               </li>
               <li>
-                <strong className="text-ink">20</strong> punten: blijf je binnen je budget?
+                <span className="text-ink">20</span> punten: hoeveel moet je lenen, tegenover wat je maximaal wilt?
               </li>
               <li>
-                <strong className="text-ink">20</strong> punten: is de reistijd te doen?
+                <span className="text-ink">20</span> punten: is de reistijd te doen?
               </li>
             </ul>
-            <p className="mt-3">
-              Kun je er met je diploma niet heen, dan krijgt een opleiding maximaal 40 punten. Mis je een vak, maximaal
-              70.
-            </p>
+            <p className="mt-3">Mis je een vak, dan krijgt een opleiding maximaal 70 punten.</p>
           </div>
         </aside>
       </div>
     </>
+  );
+}
+
+function Blok({
+  titel,
+  actie,
+  children,
+}: {
+  titel: string;
+  actie?: { href: string; label: string };
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <div className="mb-5 flex items-end justify-between border-b border-line pb-2">
+        <h2 className="display text-2xl">{titel}</h2>
+        {actie && (
+          <Link href={actie.href} className="text-sm streep">
+            {actie.label}
+          </Link>
+        )}
+      </div>
+      {children}
+    </section>
   );
 }
 
@@ -259,9 +255,9 @@ function Account({
 
   if (!cloud)
     return (
-      <div className="kaart p-6">
-        <h2 className="flex items-center gap-2 font-bold">
-          <HardDrive className="h-4 w-4 text-brand" /> Opgeslagen op dit apparaat
+      <div className="kaart p-5">
+        <h2 className="flex items-center gap-2 font-medium">
+          <HardDrive className="h-4 w-4 text-ink" /> Opgeslagen op dit apparaat
         </h2>
         <p className="mt-1 text-sm text-muted">
           Je profiel en favorieten staan alleen in deze browser. Je hebt geen account nodig.
@@ -271,9 +267,9 @@ function Account({
 
   if (email)
     return (
-      <div className="kaart p-6">
-        <h2 className="flex items-center gap-2 font-bold">
-          <Cloud className="h-4 w-4 text-brand" /> Ingelogd
+      <div className="kaart p-5">
+        <h2 className="flex items-center gap-2 font-medium">
+          <Cloud className="h-4 w-4 text-ink" /> Ingelogd
         </h2>
         <p className="mt-1 break-all text-sm text-muted">{email}</p>
         <p className="mt-2 text-sm text-muted">
@@ -291,7 +287,7 @@ function Account({
 
   return (
     <form
-      className="kaart p-6"
+      className="kaart p-5"
       onSubmit={async (e) => {
         e.preventDefault();
         setStatus("bezig");
@@ -299,8 +295,8 @@ function Account({
         setStatus(fout ?? "verstuurd");
       }}
     >
-      <h2 className="flex items-center gap-2 font-bold">
-        <Mail className="h-4 w-4 text-brand" /> Inloggen met je e-mail
+      <h2 className="flex items-center gap-2 font-medium">
+        <Mail className="h-4 w-4 text-ink" /> Inloggen met je e-mail
       </h2>
       <p className="mt-1 text-sm text-muted">
         Bewaar je lijst op al je apparaten en krijg een herinnering voor je open dagen. Wat je al hebt, neem je mee.

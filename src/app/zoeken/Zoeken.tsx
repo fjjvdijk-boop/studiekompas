@@ -3,28 +3,26 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Layers, RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
-import { NIVEAU_LABEL, SECTOR, SECTOREN } from "@/data/sectoren";
+import { RotateCcw, Search, SlidersHorizontal, X } from "lucide-react";
+import { HOOFDRICHTINGEN, SECTOR } from "@/data/sectoren";
 import { getal, plaatsNaam, reistijdTekst } from "@/lib/bereken";
 import { useData } from "@/lib/data-client";
 import { useResultaten, type Resultaat } from "@/lib/resultaten";
 import { useStore } from "@/lib/store";
-import type { Niveau, SectorId, Soort } from "@/lib/types";
+import type { SectorId } from "@/lib/types";
 import { KaartSkelet, OpleidingKaart } from "@/components/OpleidingKaart";
 import { PaginaKop, Schuif, Segment } from "@/components/ui";
 
-type Sortering = "match" | "kosten" | "reistijd" | "instroom" | "naam";
+type Sortering = "match" | "kosten" | "lenen" | "reistijd" | "instroom" | "naam";
 
 interface Filters {
   q: string;
-  soort: Soort | "alle";
-  niveaus: Niveau[];
   sectoren: SectorId[];
+  uni: string;
   plaats: string;
+  taal: "alle" | "nl" | "en";
   maxReistijd: number;
-  /** alle = alles tonen, mag = alleen waar je heen mag, zeker = ook zonder vak bij te spijkeren */
   toelaatbaar: "alle" | "mag" | "zeker";
-  groeperen: boolean;
   sort: Sortering;
 }
 
@@ -32,30 +30,27 @@ const GEEN_LIMIET = 180;
 const PER_PAGINA = 24;
 const LEEG: Filters = {
   q: "",
-  soort: "alle",
-  niveaus: [],
   sectoren: [],
+  uni: "",
   plaats: "",
+  taal: "alle",
   maxReistijd: GEEN_LIMIET,
   toelaatbaar: "mag",
-  groeperen: true,
   sort: "match",
 };
-const MBO_NIVEAUS: Niveau[] = ["mbo1", "mbo2", "mbo3", "mbo4"];
-const HBO_NIVEAUS: Niveau[] = ["ad", "hbo"];
 
 const normaal = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
 
 function uitUrl(p: URLSearchParams): Filters {
   const sectoren = (p.get("sector") ?? "").split(",").filter((s): s is SectorId => s in SECTOR);
-  const soort = p.get("soort");
+  const taal = p.get("taal");
   return {
     ...LEEG,
     q: p.get("q") ?? "",
-    soort: soort === "mbo" || soort === "hbo" || soort === "wo" ? soort : "alle",
     sectoren,
+    uni: p.get("uni") ?? "",
     plaats: p.get("plaats") ?? "",
-    groeperen: p.get("alle") !== "1",
+    taal: taal === "nl" || taal === "en" ? taal : "alle",
   };
 }
 
@@ -70,14 +65,13 @@ export function Zoeken({ totaal }: { totaal: number }) {
   const [paneel, setPaneel] = useState(false);
   const einde = useRef<HTMLDivElement>(null);
 
-  // Filters in de URL houden, zodat je een zoekopdracht kunt delen of terug kunt gaan
   useEffect(() => {
     const p = new URLSearchParams();
     if (f.q) p.set("q", f.q);
-    if (f.soort !== "alle") p.set("soort", f.soort);
     if (f.sectoren.length) p.set("sector", f.sectoren.join(","));
+    if (f.uni) p.set("uni", f.uni);
     if (f.plaats) p.set("plaats", f.plaats);
-    if (!f.groeperen) p.set("alle", "1");
+    if (f.taal !== "alle") p.set("taal", f.taal);
     const nieuw = p.toString();
     if (nieuw !== params.toString()) router.replace(nieuw ? `/zoeken?${nieuw}` : "/zoeken", { scroll: false });
     setAantal(PER_PAGINA);
@@ -85,31 +79,38 @@ export function Zoeken({ totaal }: { totaal: number }) {
   }, [f]);
 
   const zet = <K extends keyof Filters>(k: K, v: Filters[K]) => setF((oud) => ({ ...oud, [k]: v }));
-  const wissel = <T,>(lijst: T[], x: T) => (lijst.includes(x) ? lijst.filter((y) => y !== x) : [...lijst, x]);
 
-  const plaatsen = useMemo(() => {
-    if (!data) return [];
-    const tel = new Map<string, number>();
-    for (const o of data.opleidingen) tel.set(o.plaats.naam, (tel.get(o.plaats.naam) ?? 0) + 1);
-    return [...tel.entries()].sort((a, b) => plaatsNaam(a[0]).localeCompare(plaatsNaam(b[0]), "nl"));
-  }, [data]);
+  const unis = useMemo(
+    () =>
+      data ? [...new Set(data.opleidingen.map((o) => o.instelling.naam))].sort((a, b) => a.localeCompare(b, "nl")) : [],
+    [data],
+  );
+  const plaatsen = useMemo(
+    () =>
+      data
+        ? [...new Set(data.opleidingen.map((o) => o.plaats.naam))].sort((a, b) =>
+            plaatsNaam(a).localeCompare(plaatsNaam(b), "nl"),
+          )
+        : [],
+    [data],
+  );
 
   const gefilterd = useMemo(() => {
     if (!resultaten) return null;
     const woorden = normaal(f.q).split(/\s+/).filter(Boolean);
     const lijst = resultaten.filter(({ opleiding: o, reistijd, match }) => {
-      if (f.soort !== "alle" && o.soort !== f.soort) return false;
-      if (f.niveaus.length && !f.niveaus.includes(o.niveau)) return false;
       if (f.sectoren.length && !f.sectoren.includes(o.sector)) return false;
+      if (f.uni && o.instelling.naam !== f.uni) return false;
       if (f.plaats && o.plaats.naam !== f.plaats) return false;
+      if (f.taal === "nl" && o.taal === "EN") return false;
+      if (f.taal === "en" && (o.taal === "NL" || o.taal === null)) return false;
       if (f.maxReistijd < GEEN_LIMIET && reistijd > f.maxReistijd) return false;
       if (f.toelaatbaar !== "alle" && !match.toelaatbaar) return false;
       if (f.toelaatbaar === "zeker" && match.toelating.status === "deficientie") return false;
       if (woorden.length) {
         const tekst = normaal(
-          `${o.naam} ${o.eigenNaam ?? ""} ${o.instelling.naam} ${plaatsNaam(o.plaats.naam)} ${o.plaats.naam} ${SECTOR[o.sector].naam}`,
+          `${o.naam} ${o.instelling.naam} ${plaatsNaam(o.plaats.naam)} ${o.plaats.naam} ${SECTOR[o.sector].naam}`,
         );
-        // Soepel zoeken: "verpleegkunde" vindt ook "verpleegkundige"
         if (!woorden.every((w) => tekst.includes(w) || (w.length > 6 && tekst.includes(w.slice(0, -3))))) return false;
       }
       return true;
@@ -117,24 +118,14 @@ export function Zoeken({ totaal }: { totaal: number }) {
     const sorteer: Record<Sortering, (a: Resultaat, b: Resultaat) => number> = {
       match: (a, b) => b.match.score - a.match.score || a.reistijd - b.reistijd,
       kosten: (a, b) => a.kosten.advies - b.kosten.advies,
+      lenen: (a, b) => a.geld.teLenen - b.geld.teLenen,
       reistijd: (a, b) => a.reistijd - b.reistijd,
       instroom: (a, b) => (b.opleiding.instroom ?? -1) - (a.opleiding.instroom ?? -1),
       naam: (a, b) => a.opleiding.naam.localeCompare(b.opleiding.naam, "nl"),
     };
-    lijst.sort(sorteer[f.sort]);
-    if (!f.groeperen) return { items: lijst.map((r) => ({ r, extra: 0 })), plekken: lijst.length };
-    // Eén kaart per opleiding: de beste plek blijft staan, de rest telt mee als "ook op X andere plekken"
-    const groepen = new Map<string, { r: Resultaat; extra: number }>();
-    for (const r of lijst) {
-      const sleutel = `${r.opleiding.naam.toLowerCase()}|${r.opleiding.niveau}`;
-      const g = groepen.get(sleutel);
-      if (g) g.extra++;
-      else groepen.set(sleutel, { r, extra: 0 });
-    }
-    return { items: [...groepen.values()], plekken: lijst.length };
+    return lijst.sort(sorteer[f.sort]);
   }, [resultaten, f]);
 
-  // Meer laden als je onderaan bent
   useEffect(() => {
     const el = einde.current;
     if (!el) return;
@@ -145,110 +136,96 @@ export function Zoeken({ totaal }: { totaal: number }) {
     return () => io.disconnect();
   }, [gefilterd]);
 
-  const actieveFilters: { label: string; weg: () => void }[] = [
-    ...(f.soort !== "alle"
-      ? [{ label: f.soort.toUpperCase(), weg: () => setF((o) => ({ ...o, soort: "alle", niveaus: [] })) }]
-      : []),
-    ...f.niveaus.map((n) => ({
-      label: NIVEAU_LABEL[n],
-      weg: () =>
-        zet(
-          "niveaus",
-          f.niveaus.filter((x) => x !== n),
-        ),
-    })),
+  const actief: { label: string; weg: () => void }[] = [
     ...f.sectoren.map((s) => ({
-      label: `${SECTOR[s].emoji} ${SECTOR[s].kort}`,
+      label: SECTOR[s].kort,
       weg: () =>
         zet(
           "sectoren",
           f.sectoren.filter((x) => x !== s),
         ),
     })),
-    ...(f.plaats ? [{ label: `📍 ${plaatsNaam(f.plaats)}`, weg: () => zet("plaats", "") }] : []),
+    ...(f.uni ? [{ label: f.uni, weg: () => zet("uni", "") }] : []),
+    ...(f.plaats ? [{ label: plaatsNaam(f.plaats), weg: () => zet("plaats", "") }] : []),
+    ...(f.taal !== "alle"
+      ? [{ label: f.taal === "nl" ? "Nederlandstalig" : "Engelstalig", weg: () => zet("taal", "alle") }]
+      : []),
     ...(f.maxReistijd < GEEN_LIMIET
       ? [{ label: `≤ ${reistijdTekst(f.maxReistijd)}`, weg: () => zet("maxReistijd", GEEN_LIMIET) }]
       : []),
   ];
 
-  const niveauKeuzes = f.soort === "mbo" ? MBO_NIVEAUS : f.soort === "hbo" ? HBO_NIVEAUS : [];
-
   const filterPaneel = (
     <div className="space-y-7">
       <div>
-        <p className="mb-2.5 text-sm font-semibold">Soort onderwijs</p>
-        <Segment
-          waarde={f.soort}
-          kies={(s) => setF((o) => ({ ...o, soort: s, niveaus: [] }))}
-          opties={[
-            { waarde: "alle", label: "Alles" },
-            { waarde: "mbo", label: "mbo" },
-            { waarde: "hbo", label: "hbo" },
-            { waarde: "wo", label: "wo" },
-          ]}
-        />
-        {niveauKeuzes.length > 0 && (
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {niveauKeuzes.map((n) => (
-              <button
-                key={n}
-                type="button"
-                aria-pressed={f.niveaus.includes(n)}
-                onClick={() => zet("niveaus", wissel(f.niveaus, n))}
-                className={`rounded-full border px-3 py-1 text-sm font-medium ${f.niveaus.includes(n) ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-brand"}`}
-              >
-                {NIVEAU_LABEL[n]}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-
-      <div>
-        <p className="mb-2.5 text-sm font-semibold">Richting</p>
-        <div className="grid grid-cols-2 gap-1.5">
-          {SECTOREN.map((s) => {
-            const aan = f.sectoren.includes(s.id);
+        <p className="bovenschrift mb-3">Richting</p>
+        <ul className="space-y-1">
+          {HOOFDRICHTINGEN.map((s) => {
+            const aan = f.sectoren.includes(s);
             return (
-              <button
-                key={s.id}
-                type="button"
-                aria-pressed={aan}
-                onClick={() => zet("sectoren", wissel(f.sectoren, s.id))}
-                className={`flex items-center gap-2 rounded-xl border px-2.5 py-2 text-left text-[13px] font-medium transition-colors ${
-                  aan ? "border-transparent text-white" : "border-line bg-card hover:border-brand"
-                }`}
-                style={aan ? { background: s.kleur } : undefined}
-              >
-                <span className="text-base">{s.emoji}</span>
-                <span className="truncate">{s.kort}</span>
-              </button>
+              <li key={s}>
+                <button
+                  type="button"
+                  aria-pressed={aan}
+                  onClick={() => zet("sectoren", aan ? f.sectoren.filter((x) => x !== s) : [...f.sectoren, s])}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors ${aan ? "bg-ink text-bg" : "hover:bg-card-2"}`}
+                >
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: SECTOR[s].kleur }} />
+                  {SECTOR[s].naam}
+                </button>
+              </li>
             );
           })}
-        </div>
+        </ul>
       </div>
-
+      <div>
+        <p className="bovenschrift mb-2">Voertaal</p>
+        <Segment
+          waarde={f.taal}
+          kies={(t) => zet("taal", t)}
+          klein
+          opties={[
+            { waarde: "alle", label: "Alle" },
+            { waarde: "nl", label: "Nederlands" },
+            { waarde: "en", label: "Engels" },
+          ]}
+        />
+      </div>
       <label className="block">
-        <span className="mb-2.5 block text-sm font-semibold">Plaats</span>
+        <span className="bovenschrift mb-2 block">Universiteit</span>
         <select
-          value={f.plaats}
-          onChange={(e) => zet("plaats", e.target.value)}
-          className="focus-ring w-full rounded-xl border border-line bg-card px-3 py-2.5 text-sm"
+          value={f.uni}
+          onChange={(e) => zet("uni", e.target.value)}
+          className="focus-ring w-full rounded-lg border border-line bg-card px-3 py-2.5 text-sm"
         >
-          <option value="">Heel Nederland</option>
-          {plaatsen.map(([p, n]) => (
-            <option key={p} value={p}>
-              {plaatsNaam(p)} ({n})
+          <option value="">Alle universiteiten</option>
+          {unis.map((u) => (
+            <option key={u} value={u}>
+              {u}
             </option>
           ))}
         </select>
       </label>
-
+      <label className="block">
+        <span className="bovenschrift mb-2 block">Stad</span>
+        <select
+          value={f.plaats}
+          onChange={(e) => zet("plaats", e.target.value)}
+          className="focus-ring w-full rounded-lg border border-line bg-card px-3 py-2.5 text-sm"
+        >
+          <option value="">Alle steden</option>
+          {plaatsen.map((p) => (
+            <option key={p} value={p}>
+              {plaatsNaam(p)}
+            </option>
+          ))}
+        </select>
+      </label>
       <div>
-        <span className="mb-3 flex justify-between text-sm font-semibold">
-          Max. reistijd
-          <span className="font-normal text-muted tabular">
-            {f.maxReistijd >= GEEN_LIMIET ? "Geen limiet" : reistijdTekst(f.maxReistijd)}
+        <span className="mb-3 flex justify-between">
+          <span className="bovenschrift">Max. reistijd</span>
+          <span className="font-mono text-xs text-muted tabular">
+            {f.maxReistijd >= GEEN_LIMIET ? "geen limiet" : reistijdTekst(f.maxReistijd)}
           </span>
         </span>
         <Schuif
@@ -261,51 +238,45 @@ export function Zoeken({ totaal }: { totaal: number }) {
         />
         <p className="mt-2 text-xs text-muted">Vanaf {profiel.woonplaats.naam}, enkele reis met het OV</p>
       </div>
-
-      {profiel.vooropleiding && (
-        <div>
-          <p className="mb-2.5 text-sm font-semibold">Toelating</p>
-          <div className="space-y-1.5">
-            {(
-              [
-                ["mag", "Waar ik heen mag", "Past bij je diploma; een ontbrekend vak mag"],
-                ["zeker", "Zonder bijspijkeren", "Je hebt alle vakken die nodig zijn"],
-                ["alle", "Alles tonen", "Ook waar je (nog) niet heen kunt"],
-              ] as const
-            ).map(([w, titel, tekst]) => (
-              <button
-                key={w}
-                type="button"
-                aria-pressed={f.toelaatbaar === w}
-                onClick={() => zet("toelaatbaar", w)}
-                className={`w-full rounded-xl border px-3 py-2 text-left transition-colors ${
-                  f.toelaatbaar === w ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-brand"
-                }`}
-              >
-                <span className="block text-sm font-semibold">{titel}</span>
-                <span className={`block text-xs ${f.toelaatbaar === w ? "opacity-80" : "text-muted"}`}>{tekst}</span>
-              </button>
-            ))}
-          </div>
-          {(profiel.vooropleiding === "havo" || profiel.vooropleiding === "vwo") && !profiel.vakken.length && (
-            <p className="mt-2 text-xs text-muted">
-              Tip: vul je vakken in op je{" "}
-              <Link href="/profiel" className="font-semibold text-brand">
-                profiel
-              </Link>{" "}
-              voor een precieze check.
-            </p>
-          )}
+      <div>
+        <p className="bovenschrift mb-2">Toelating</p>
+        <div className="space-y-1">
+          {(
+            [
+              ["mag", "Waar ik heen mag", "Een ontbrekend vak mag"],
+              ["zeker", "Zonder bijspijkeren", "Je hebt alle vakken"],
+              ["alle", "Alles tonen", "Ook waar je niet heen kunt"],
+            ] as const
+          ).map(([w, titel, tekst]) => (
+            <button
+              key={w}
+              type="button"
+              aria-pressed={f.toelaatbaar === w}
+              onClick={() => zet("toelaatbaar", w)}
+              className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${f.toelaatbaar === w ? "bg-ink text-bg" : "hover:bg-card-2"}`}
+            >
+              <span className="block text-sm">{titel}</span>
+              <span className={`block text-xs ${f.toelaatbaar === w ? "opacity-70" : "text-muted"}`}>{tekst}</span>
+            </button>
+          ))}
         </div>
-      )}
-
-      {actieveFilters.length > 0 && (
+        {!profiel.vakken.length && (
+          <p className="mt-2 text-xs text-muted">
+            Vul je profiel en vakken in op je{" "}
+            <Link href="/profiel" className="streep text-ink">
+              profiel
+            </Link>{" "}
+            voor een precieze check.
+          </p>
+        )}
+      </div>
+      {actief.length > 0 && (
         <button
           type="button"
-          onClick={() => setF({ ...LEEG, q: f.q, sort: f.sort, groeperen: f.groeperen })}
-          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand"
+          onClick={() => setF({ ...LEEG, q: f.q, sort: f.sort })}
+          className="inline-flex items-center gap-1.5 text-sm"
         >
-          <RotateCcw className="h-3.5 w-3.5" /> Alle filters wissen
+          <RotateCcw className="h-3.5 w-3.5" /> <span className="streep">Filters wissen</span>
         </button>
       )}
     </div>
@@ -315,43 +286,42 @@ export function Zoeken({ totaal }: { totaal: number }) {
     <>
       <PaginaKop
         compact
-        label="Zoeken"
-        titel="Alle opleidingen"
-        sub={`${getal(totaal)} mbo-, hbo- en wo-opleidingen. Gesorteerd op hoe goed ze bij jou passen.`}
+        label="Opleidingen"
+        titel="Alle bachelors"
+        sub={`${getal(totaal)} universitaire bachelors, gesorteerd op hoe goed ze bij jou passen.`}
       />
 
-      <div className="sticky top-16 z-30 -mx-4 mb-5 bg-bg/85 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6">
+      <div className="sticky top-16 z-30 -mx-4 mb-6 border-b border-line bg-bg/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
         <div className="flex gap-2">
           <label className="relative flex-1">
-            <span className="sr-only">Zoek op opleiding, school of plaats</span>
-            <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted" />
+            <span className="sr-only">Zoek op opleiding, universiteit of stad</span>
+            <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
             <input
               type="search"
               value={f.q}
               onChange={(e) => zet("q", e.target.value)}
-              placeholder="Zoek op opleiding, school of plaats…"
-              className="focus-ring w-full rounded-full border border-line bg-card py-3.5 pl-12 pr-4 text-[15px] shadow-zacht placeholder:text-muted"
+              placeholder="Zoek op opleiding, universiteit of stad"
+              className="focus-ring w-full rounded-full border border-line bg-card py-3 pl-11 pr-4 text-[15px] placeholder:text-muted"
             />
           </label>
           <button
             type="button"
             onClick={() => setPaneel(true)}
             aria-label="Filters"
-            className="focus-ring relative inline-flex items-center gap-2 rounded-full border border-line bg-card px-4 font-semibold shadow-zacht lg:hidden"
+            className="focus-ring relative inline-flex items-center gap-2 rounded-full border border-line bg-card px-4 lg:hidden"
           >
             <SlidersHorizontal className="h-4 w-4" />
-            <span className="hidden sm:inline">Filters</span>
-            {actieveFilters.length > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1 text-[11px] font-bold text-brand-ink">
-                {actieveFilters.length}
+            {actief.length > 0 && (
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 font-mono text-[10px] text-bg">
+                {actief.length}
               </span>
             )}
           </button>
         </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[290px_1fr]">
-        <aside className="kaart sticky top-36 hidden h-fit max-h-[calc(100dvh-10rem)] overflow-y-auto p-5 lg:block">
+      <div className="grid gap-10 lg:grid-cols-[250px_1fr]">
+        <aside className="sticky top-36 hidden h-fit max-h-[calc(100dvh-10rem)] overflow-y-auto pr-2 lg:block">
           {filterPaneel}
         </aside>
 
@@ -359,50 +329,33 @@ export function Zoeken({ totaal }: { totaal: number }) {
           <h2 className="sr-only">Resultaten</h2>
           <div className="mb-4 flex items-center justify-between gap-3">
             <p className="whitespace-nowrap text-sm text-muted" aria-live="polite">
-              <span className="display text-lg font-bold text-ink tabular">
-                {gefilterd ? getal(gefilterd.items.length) : "…"}
-              </span>{" "}
-              opleidingen
-              {gefilterd && f.groeperen && gefilterd.plekken > gefilterd.items.length && (
-                <span className="hidden sm:inline"> op {getal(gefilterd.plekken)} plekken</span>
-              )}
+              <span className="display text-xl text-ink tabular">{gefilterd ? getal(gefilterd.length) : "…"}</span>{" "}
+              bachelors
             </p>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                aria-pressed={f.groeperen}
-                aria-label="Groepeer per opleiding"
-                onClick={() => zet("groeperen", !f.groeperen)}
-                title="Toon elke opleiding één keer, of elke plek apart"
-                className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${f.groeperen ? "border-ink bg-ink text-bg" : "border-line bg-card"}`}
+            <label className="flex items-center gap-2 text-sm">
+              <span className="sr-only sm:not-sr-only sm:text-muted">Sorteer op</span>
+              <select
+                value={f.sort}
+                onChange={(e) => zet("sort", e.target.value as Sortering)}
+                className="focus-ring rounded-full border border-line bg-card px-3 py-1.5"
               >
-                <Layers className="h-4 w-4" />
-                <span className="hidden sm:inline">{f.groeperen ? "Per opleiding" : "Alle plekken"}</span>
-              </button>
-              <label className="flex items-center gap-2 text-sm">
-                <span className="sr-only sm:not-sr-only sm:text-muted">Sorteer op</span>
-                <select
-                  value={f.sort}
-                  onChange={(e) => zet("sort", e.target.value as Sortering)}
-                  className="focus-ring rounded-full border border-line bg-card px-3 py-1.5 font-medium"
-                >
-                  <option value="match">Beste match</option>
-                  <option value="kosten">Laagste maandlasten</option>
-                  <option value="reistijd">Kortste reistijd</option>
-                  <option value="instroom">Meeste eerstejaars</option>
-                  <option value="naam">Naam (A–Z)</option>
-                </select>
-              </label>
-            </div>
+                <option value="match">Beste match</option>
+                <option value="lenen">Minst lenen</option>
+                <option value="kosten">Laagste kosten</option>
+                <option value="reistijd">Kortste reistijd</option>
+                <option value="instroom">Meeste eerstejaars</option>
+                <option value="naam">Naam (A–Z)</option>
+              </select>
+            </label>
           </div>
-          {actieveFilters.length > 0 && (
-            <div className="mb-4 flex flex-wrap gap-1.5">
-              {actieveFilters.map((a) => (
+          {actief.length > 0 && (
+            <div className="mb-5 flex flex-wrap gap-1.5">
+              {actief.map((a) => (
                 <button
                   key={a.label}
                   type="button"
                   onClick={a.weg}
-                  className="inline-flex items-center gap-1 rounded-full bg-ink px-3 py-1 text-sm font-medium text-bg"
+                  className="inline-flex items-center gap-1 rounded-full border border-ink px-3 py-1 text-sm"
                 >
                   {a.label} <X className="h-3.5 w-3.5" />
                 </button>
@@ -414,35 +367,23 @@ export function Zoeken({ totaal }: { totaal: number }) {
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               <KaartSkelet />
             </div>
-          ) : gefilterd.items.length ? (
+          ) : gefilterd.length ? (
             <>
               <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                {gefilterd.items.slice(0, aantal).map(({ r, extra }, i) => (
-                  <OpleidingKaart key={r.opleiding.id} r={r} index={i % PER_PAGINA} extra={extra} />
+                {gefilterd.slice(0, aantal).map((r, i) => (
+                  <OpleidingKaart key={r.opleiding.id} r={r} index={i % PER_PAGINA} />
                 ))}
               </div>
               <div ref={einde} className="h-10" />
-              {aantal < gefilterd.items.length && (
-                <div className="mt-2 text-center">
-                  <button
-                    type="button"
-                    onClick={() => setAantal((a) => a + PER_PAGINA)}
-                    className="rounded-full border border-line bg-card px-5 py-2.5 text-sm font-semibold hover:border-brand"
-                  >
-                    Toon meer ({getal(gefilterd.items.length - aantal)} over)
-                  </button>
-                </div>
-              )}
             </>
           ) : (
-            <div className="kaart px-6 py-16 text-center">
-              <p className="text-4xl">🧭</p>
-              <p className="display mt-3 text-2xl font-bold">Niets gevonden</p>
-              <p className="mt-1 text-muted">Probeer andere woorden, minder filters of een ruimere reistijd.</p>
+            <div className="border-y border-line py-16 text-center">
+              <p className="display text-3xl">Niets gevonden</p>
+              <p className="mt-2 text-muted">Probeer andere woorden, minder filters of een ruimere reistijd.</p>
               <button
                 type="button"
                 onClick={() => setF(LEEG)}
-                className="mt-5 rounded-full bg-ink px-5 py-2.5 text-sm font-semibold text-bg"
+                className="mt-6 rounded-full bg-ink px-5 py-2.5 text-sm text-bg"
               >
                 Alles tonen
               </button>
@@ -453,11 +394,10 @@ export function Zoeken({ totaal }: { totaal: number }) {
 
       {paneel && (
         <div className="fixed inset-0 z-[1100] lg:hidden" role="dialog" aria-modal="true" aria-label="Filters">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setPaneel(false)} />
-          <div className="binnenkomen absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-[2rem] bg-card p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
-            <div className="mx-auto mb-5 h-1.5 w-12 rounded-full bg-line" />
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setPaneel(false)} />
+          <div className="binnenkomen absolute inset-x-0 bottom-0 max-h-[88dvh] overflow-y-auto rounded-t-2xl bg-bg p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
             <div className="mb-6 flex items-center justify-between">
-              <h2 className="display text-2xl font-bold">Filters</h2>
+              <h2 className="display text-2xl">Filters</h2>
               <button
                 type="button"
                 onClick={() => setPaneel(false)}
@@ -471,9 +411,9 @@ export function Zoeken({ totaal }: { totaal: number }) {
             <button
               type="button"
               onClick={() => setPaneel(false)}
-              className="mt-7 w-full rounded-full bg-ink py-4 font-semibold text-bg"
+              className="mt-7 w-full rounded-full bg-ink py-3.5 text-bg"
             >
-              Toon {gefilterd ? getal(gefilterd.items.length) : ""} opleidingen
+              Toon {gefilterd ? getal(gefilterd.length) : ""} bachelors
             </button>
           </div>
         </div>

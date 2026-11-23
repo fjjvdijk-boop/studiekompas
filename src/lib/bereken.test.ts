@@ -2,7 +2,8 @@ import { readFileSync } from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { INSTELLINGEN, STANDAARD_PROFIEL, WIERDEN } from "@/data/instellingen";
-import { interesseUitAntwoorden } from "@/data/vragenlijst";
+import { berekenUitslag, LEGE_ANTWOORDEN } from "@/data/vragenlijst";
+import { aanvullendeBeurs, DUO, geldplaatje, grensGeenBeurs, maandTerug, studieschuld } from "./duo";
 import {
   afstandKm,
   bereken,
@@ -29,12 +30,12 @@ const amsterdam = plaats("Amsterdam");
 const profiel: Profiel = {
   ...STANDAARD_PROFIEL,
   interesse: { ict: 1, techniek: 0.75, zorg: 0 },
-  vooropleiding: "havo",
-  soorten: ["mbo", "hbo"],
-  leerstijl: 0.5,
+  vooropleiding: "vwo",
+  profielen: ["NT"],
+  vakken: ["wiskunde B", "natuurkunde", "scheikunde"],
   wonen: "allebei",
-  budget: 800,
   maxReistijd: 45,
+  maxLenen: 600,
   vragenlijstKlaar: true,
 };
 
@@ -42,9 +43,9 @@ const nep = (o: Partial<Opleiding>, p: Plaats): Opleiding => ({
   id: "x",
   naam: "Test",
   eigenNaam: null,
-  instelling: { naam: "School", soort: "hbo", url: null },
-  niveau: "hbo",
-  soort: "hbo",
+  instelling: { naam: "Universiteit", soort: "wo", url: null },
+  niveau: "wo",
+  soort: "wo",
   sector: "ict",
   plaats: p,
   instroom: null,
@@ -52,13 +53,18 @@ const nep = (o: Partial<Opleiding>, p: Plaats): Opleiding => ({
   leerwegen: null,
   url: null,
   code: "1",
+  taal: "NL",
+  studiekeuzecheck: false,
   ...o,
 });
 
 describe("data van DUO", () => {
-  it("bevat duizenden opleidingen van mbo, hbo en wo", () => {
-    expect(data.opleidingen.length).toBeGreaterThan(8000);
-    for (const soort of ["mbo", "hbo", "wo"]) expect(data.opleidingen.some((o) => o.soort === soort)).toBe(true);
+  it("bevat alleen universitaire bachelors", () => {
+    expect(data.opleidingen.length).toBeGreaterThan(400);
+    expect(data.opleidingen.every((o) => o.soort === "wo")).toBe(true);
+  });
+  it("kent de voertaal van bijna alle opleidingen", () => {
+    expect(data.opleidingen.filter((o) => o.taal).length / data.opleidingen.length).toBeGreaterThan(0.85);
   });
   it("heeft unieke id's en voor elke opleiding een plaats met coördinaten in Nederland", () => {
     expect(new Set(data.opleidingen.map((o) => o.id)).size).toBe(data.opleidingen.length);
@@ -69,10 +75,10 @@ describe("data van DUO", () => {
       expect(p.lng).toBeLessThan(7.3);
     }
   });
-  it("kent de Universiteit Twente en Saxion in Enschede", () => {
-    const hier = data.opleidingen.filter((o) => o.plaats.naam === "Enschede");
-    expect(hier.some((o) => o.instelling.naam === "Universiteit Twente")).toBe(true);
-    expect(hier.some((o) => o.instelling.naam.includes("Saxion"))).toBe(true);
+  it("kent de Universiteit Twente in Enschede", () => {
+    expect(
+      data.opleidingen.some((o) => o.plaats.naam === "Enschede" && o.instelling.naam === "Universiteit Twente"),
+    ).toBe(true);
   });
 });
 
@@ -96,42 +102,72 @@ describe("reistijd en stoplicht", () => {
 });
 
 describe("kosten", () => {
-  it("rekent collegegeld voor hbo en lesgeld voor mbo (BOL)", () => {
-    const hbo = kosten({ soort: "hbo", leerwegen: null }, amsterdam, 120, profiel);
-    expect(hbo.schoolgeld).toBeCloseTo(INSTELLINGEN.collegegeld / 12);
-    expect(hbo.thuisMogelijk).toBe(false);
-    expect(hbo.advies).toBe(hbo.uitwonend);
-    const mbo = kosten({ soort: "mbo", leerwegen: "BOL" }, enschede, 22, profiel);
-    expect(mbo.schoolgeld).toBeCloseTo(INSTELLINGEN.lesgeldMbo / 12);
-    expect(mbo.thuisMogelijk).toBe(true);
-    expect(mbo.advies).toBe(mbo.thuis);
+  it("rekent collegegeld en kamerhuur van Kamernet", () => {
+    const k = kosten({ soort: "wo", leerwegen: null }, amsterdam, 120, profiel);
+    expect(k.schoolgeld).toBeCloseTo(INSTELLINGEN.collegegeld / 12);
+    expect(k.huur).toBe(979);
+    expect(k.huurSchatting).toBe(false);
+    expect(k.thuisMogelijk).toBe(false);
+    expect(k.advies).toBe(k.uitwonend);
   });
-  it("rekent geen lesgeld bij BBL", () => {
-    expect(kosten({ soort: "mbo", leerwegen: "BBL" }, enschede, 22, profiel).schoolgeld).toBe(0);
+  it("adviseert thuis wonen als de reistijd binnen je maximum valt, of als je dat wilt", () => {
+    expect(kosten({ soort: "wo", leerwegen: null }, enschede, 22, profiel).thuisMogelijk).toBe(true);
+    expect(kosten({ soort: "wo", leerwegen: null }, amsterdam, 120, { ...profiel, wonen: "thuis" }).thuisMogelijk).toBe(
+      true,
+    );
   });
-  it("adviseert altijd thuis wonen als je dat wilt", () => {
-    expect(
-      kosten({ soort: "hbo", leerwegen: null }, amsterdam, 120, { ...profiel, wonen: "thuis" }).thuisMogelijk,
-    ).toBe(true);
+});
+
+describe("studiefinanciering (DUO)", () => {
+  it("geeft de maximale aanvullende beurs onder de inkomensgrens", () => {
+    expect(aanvullendeBeurs(30000)).toBeCloseTo(DUO.aanvullendeBeursMax);
+    expect(aanvullendeBeurs(null)).toBe(0);
+  });
+  it("trekt 13,6% van het inkomen boven de grens af, per jaar", () => {
+    const boven = 10000;
+    expect(aanvullendeBeurs(DUO.inkomensgrens + boven)).toBeCloseTo(DUO.aanvullendeBeursMax - (boven * 0.136) / 12);
+    expect(aanvullendeBeurs(grensGeenBeurs() + 1)).toBe(0);
+  });
+  it("telt broers en zussen mee", () => {
+    expect(aanvullendeBeurs(70000, 2)).toBeGreaterThan(aanvullendeBeurs(70000, 0));
+  });
+  it("maakt een kloppend geldplaatje", () => {
+    const g = geldplaatje(1500, {
+      uitwonend: true,
+      ouderInkomen: 30000,
+      andereKinderen: 0,
+      ouderBijdrage: 100,
+      bijbaan: 300,
+    });
+    expect(g.gift).toBeCloseTo(DUO.basisbeurs.uitwonend + DUO.aanvullendeBeursMax);
+    expect(g.teLenen).toBeCloseTo(1500 - g.gift - 400);
+    expect(g.past).toBe(true);
+  });
+  it("rekent schuld met rente en een maandbedrag in 35 jaar", () => {
+    const schuld = studieschuld(300, 4);
+    expect(schuld).toBeGreaterThan(300 * 48);
+    expect(schuld).toBeLessThan(300 * 48 * 1.06);
+    const m = maandTerug(schuld);
+    expect(m * 35 * 12).toBeGreaterThan(schuld);
+    expect(maandTerug(0)).toBe(0);
   });
 });
 
 describe("match-score", () => {
   it("geeft een hoge score als alles past", () => {
-    const m = bereken(nep({ sector: "ict" }, enschede), profiel).match;
-    expect(m.score).toBeGreaterThanOrEqual(90);
+    expect(bereken(nep({ sector: "ict" }, enschede), profiel).match.score).toBeGreaterThanOrEqual(90);
   });
   it("geeft weinig punten voor een richting die je niet leuk vindt", () => {
-    const m = bereken(nep({ sector: "zorg" }, enschede), profiel).match;
-    expect(m.onderdelen[0].punten).toBe(0);
+    expect(bereken(nep({ sector: "zorg" }, enschede), profiel).match.onderdelen[0].punten).toBe(0);
   });
-  it("laat wo niet toe met een havo-diploma", () => {
-    const m = bereken(nep({ soort: "wo", niveau: "wo" }, enschede), profiel).match;
-    expect(m.toelaatbaar).toBe(false);
-    expect(m.score).toBeLessThanOrEqual(40);
+  it("trekt punten af als de voertaal niet past", () => {
+    const p = { ...profiel, taal: "nl" as const };
+    expect(bereken(nep({ sector: "ict", taal: "EN" }, enschede), p).match.score).toBeLessThan(
+      bereken(nep({ sector: "ict" }, enschede), p).match.score,
+    );
   });
   it("blijft voor elke echte opleiding tussen 0 en 100", () => {
-    for (const o of data.opleidingen.slice(0, 2000)) {
+    for (const o of data.opleidingen) {
       const s = bereken(o, profiel).match.score;
       expect(s).toBeGreaterThanOrEqual(0);
       expect(s).toBeLessThanOrEqual(100);
@@ -139,12 +175,23 @@ describe("match-score", () => {
   });
 });
 
-describe("vragenlijst", () => {
-  it("zet antwoorden om naar interesse tussen 0 en 1", () => {
-    expect(interesseUitAntwoorden({ ict: [4, 4, 4], zorg: [0, 2, null], recht: [null, null, null] })).toEqual({
-      ict: 1,
-      zorg: 0.25,
+describe("studietest", () => {
+  it("zonder antwoorden is alles 0", () => {
+    expect(Object.values(berekenUitslag(LEGE_ANTWOORDEN).interesse).every((w) => w === 0)).toBe(true);
+  });
+  it("vertaalt een duidelijk bèta-profiel naar bèta bovenaan, met redenen", () => {
+    const u = berekenUitslag({
+      ...LEGE_ANTWOORDEN,
+      vakken: ["Wiskunde B", "Natuurkunde", "Scheikunde"],
+      keuzes: [0, 3, 3, 1, 3, 0, 3, 3],
+      toekomst: ["beta"],
+      stellingen: { beta: 4, techniek: 3, taal: 0 },
     });
+    const top = Object.entries(u.interesse).sort((a, b) => b[1] - a[1])[0][0];
+    expect(top).toBe("beta");
+    expect(u.interesse.beta).toBeGreaterThan(0.7);
+    expect(u.redenen.beta?.length).toBeGreaterThan(2);
+    for (const w of Object.values(u.interesse)) expect(w).toBeLessThanOrEqual(1);
   });
 });
 

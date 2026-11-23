@@ -53,6 +53,10 @@ export interface Opleiding {
   url: string | null;
   /** CREBO- (mbo) of CROHO-code (hbo/wo) */
   code: string;
+  /** Voertaal: Nederlands, Engels of allebei (volgens DUO) */
+  taal: "NL" | "EN" | "NL/EN" | null;
+  /** Is een studiekeuzecheck verplicht? */
+  studiekeuzecheck: boolean;
 }
 
 export interface Woonplaats {
@@ -88,26 +92,36 @@ export const VAKKEN = [
 export type Vak = (typeof VAKKEN)[number];
 export type Wonen = "thuis" | "kamer" | "allebei";
 
+export type TaalVoorkeur = "beide" | "nl" | "en";
+
 export interface Profiel {
-  versie: 2;
+  versie: 3;
   naam: string;
   woonplaats: Woonplaats;
-  /** Interesse per sector, 0 (niks) tot 1 (helemaal mijn ding). Komt uit de vragenlijst. */
+  /** Interesse per richting, 0 (niks) tot 1 (helemaal mijn ding). Komt uit de studietest. */
   interesse: Partial<Record<SectorId, number>>;
+  /** vwo = gewoon toelaatbaar; havo/mbo4 = via een hbo-propedeuse */
   vooropleiding: Vooropleiding | null;
-  /** Alleen bij vmbo */
+  /** Alleen bij vmbo (niet gebruikt voor de universiteit) */
   leerweg: Leerweg | null;
-  /** Alleen bij havo/vwo: je profiel(en), bijvoorbeeld NG en NT */
+  /** Je profiel(en) op het vwo, bijvoorbeeld NG en NT */
   profielen: ProfielNaam[];
-  /** Alleen bij havo/vwo: je examenvakken die ertoe doen voor toelating */
+  /** Je examenvakken die ertoe doen voor toelating */
   vakken: Vak[];
-  /** Welke soorten onderwijs je wilt zien */
-  soorten: Soort[];
-  /** 0 = liever doen (praktijk), 1 = liever theorie */
-  leerstijl: number;
+  /** Nederlands- of Engelstalig studeren */
+  taal: TaalVoorkeur;
   wonen: Wonen;
-  budget: number;
   maxReistijd: number;
+  /** Bruto inkomen van je ouders samen (2025), voor de aanvullende beurs. null = weet ik niet */
+  ouderInkomen: number | null;
+  /** Broers/zussen van 12–18 die nog naar school gaan (telt mee voor de aanvullende beurs) */
+  andereKinderen: number;
+  /** Wat je ouders per maand bijdragen */
+  ouderBijdrage: number;
+  /** Wat je per maand verdient met een bijbaan */
+  bijbaan: number;
+  /** Hoeveel je per maand maximaal wilt lenen bij DUO */
+  maxLenen: number;
   vragenlijstKlaar: boolean;
 }
 

@@ -1,100 +1,95 @@
 @import "tailwindcss";
 
+/* StudieKompas – redactioneel ontwerp: papier, inkt en één accentkleur */
 :root {
-  --bg: #f6f5fb;
-  --card: #ffffff;
-  --card-2: #f1f0f8;
-  --ink: #120f2e;
-  --muted: #5a5673;
-  --line: #e6e3f1;
-  --brand: #4f39f6;
-  --brand-2: #7c6cff;
-  --brand-soft: #ecebff;
-  --brand-ink: #ffffff;
-  --accent: #ff9f1c;
-  --accent-soft: #fff1dc;
-  --groen: #067a42;
-  --groen-soft: #dcf7e8;
-  --oranje: #b4470a;
-  --oranje-soft: #ffeedd;
-  --rood: #c01b30;
-  --rood-soft: #fde4e7;
-  --c-huur: #6d5dfc;
-  --c-leef: #18a6c9;
-  --c-college: #ff9f1c;
-  --c-boeken: #ec4899;
-  --mbo-bg: #fff1dc;
-  --mbo-ink: #9a4a05;
-  --hbo-bg: #e0f2fe;
-  --hbo-ink: #075985;
-  --schaduw: 0 1px 2px rgba(18, 15, 46, 0.04), 0 8px 24px -12px rgba(18, 15, 46, 0.12);
-  --schaduw-groot: 0 2px 4px rgba(18, 15, 46, 0.04), 0 24px 60px -24px rgba(79, 57, 246, 0.35);
+  --bg: #f6f3ec;
+  --card: #fffdf8;
+  --card-2: #efebe1;
+  --ink: #17160f;
+  --muted: #625e55;
+  --line: #ddd7c9;
+  --brand: #1e4d3b;
+  --brand-2: #2f6b53;
+  --brand-soft: #e2ebe3;
+  --brand-ink: #fffdf8;
+  --accent: #b9472f;
+  --accent-soft: #f5e1da;
+  --groen: #2b7048;
+  --groen-soft: #e1eee4;
+  --oranje: #9a5a0c;
+  --oranje-soft: #f6ead3;
+  --rood: #a8322e;
+  --rood-soft: #f6dfdc;
+  --c-huur: #1e4d3b;
+  --c-leef: #8a9a5b;
+  --c-college: #b9472f;
+  --c-boeken: #d0a03e;
+  --c-gift: #2b7048;
+  --c-lening: #b9472f;
+  --schaduw: 0 1px 0 rgba(23, 22, 15, 0.04);
+  --schaduw-groot: 0 18px 40px -24px rgba(23, 22, 15, 0.28);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0b0a1a;
-    --card: #14122b;
-    --card-2: #1c1a3a;
-    --ink: #ecebfa;
-    --muted: #a19dc0;
-    --line: #2a2750;
-    --brand: #8f80ff;
-    --brand-2: #b3a9ff;
-    --brand-soft: #241f55;
-    --brand-ink: #0b0a1a;
-    --accent: #ffb24d;
-    --accent-soft: #3a2a12;
-    --groen: #4ade80;
-    --groen-soft: #0f2d1d;
-    --oranje: #fb923c;
-    --oranje-soft: #34200f;
-    --rood: #fb7185;
-    --rood-soft: #3a1520;
-    --c-huur: #8f80ff;
-    --c-leef: #38bdf8;
-    --c-college: #ffb24d;
-    --c-boeken: #f472b6;
-    --mbo-bg: #3a2a12;
-    --mbo-ink: #ffb24d;
-    --hbo-bg: #0c2a3d;
-    --hbo-ink: #7dd3fc;
-    --schaduw: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-    --schaduw-groot: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 60px -24px rgba(143, 128, 255, 0.35);
+    --bg: #12110d;
+    --card: #1a1914;
+    --card-2: #23221b;
+    --ink: #eeeae0;
+    --muted: #a39e91;
+    --line: #34322a;
+    --brand: #8fc4a7;
+    --brand-2: #b0d8c1;
+    --brand-soft: #1f3128;
+    --brand-ink: #12110d;
+    --accent: #e3907a;
+    --accent-soft: #3a2119;
+    --groen: #8fc4a7;
+    --groen-soft: #1c2c22;
+    --oranje: #e2b062;
+    --oranje-soft: #33270f;
+    --rood: #e88c84;
+    --rood-soft: #3a1c1a;
+    --c-huur: #8fc4a7;
+    --c-leef: #b7c48a;
+    --c-college: #e3907a;
+    --c-boeken: #e3c06e;
+    --c-gift: #8fc4a7;
+    --c-lening: #e3907a;
+    --schaduw: 0 1px 0 rgba(0, 0, 0, 0.3);
+    --schaduw-groot: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0b0a1a;
-  --card: #14122b;
-  --card-2: #1c1a3a;
-  --ink: #ecebfa;
-  --muted: #a19dc0;
-  --line: #2a2750;
-  --brand: #8f80ff;
-  --brand-2: #b3a9ff;
-  --brand-soft: #241f55;
-  --brand-ink: #0b0a1a;
-  --accent: #ffb24d;
-  --accent-soft: #3a2a12;
-  --groen: #4ade80;
-  --groen-soft: #0f2d1d;
-  --oranje: #fb923c;
-  --oranje-soft: #34200f;
-  --rood: #fb7185;
-  --rood-soft: #3a1520;
-  --c-huur: #8f80ff;
-  --c-leef: #38bdf8;
-  --c-college: #ffb24d;
-  --c-boeken: #f472b6;
-  --mbo-bg: #3a2a12;
-  --mbo-ink: #ffb24d;
-  --hbo-bg: #0c2a3d;
-  --hbo-ink: #7dd3fc;
-  --schaduw: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -12px rgba(0, 0, 0, 0.6);
-  --schaduw-groot: 0 2px 4px rgba(0, 0, 0, 0.3), 0 24px 60px -24px rgba(143, 128, 255, 0.35);
+  --bg: #12110d;
+  --card: #1a1914;
+  --card-2: #23221b;
+  --ink: #eeeae0;
+  --muted: #a39e91;
+  --line: #34322a;
+  --brand: #8fc4a7;
+  --brand-2: #b0d8c1;
+  --brand-soft: #1f3128;
+  --brand-ink: #12110d;
+  --accent: #e3907a;
+  --accent-soft: #3a2119;
+  --groen: #8fc4a7;
+  --groen-soft: #1c2c22;
+  --oranje: #e2b062;
+  --oranje-soft: #33270f;
+  --rood: #e88c84;
+  --rood-soft: #3a1c1a;
+  --c-huur: #8fc4a7;
+  --c-leef: #b7c48a;
+  --c-college: #e3907a;
+  --c-boeken: #e3c06e;
+  --c-gift: #8fc4a7;
+  --c-lening: #e3907a;
+  --schaduw: 0 1px 0 rgba(0, 0, 0, 0.3);
+  --schaduw-groot: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
   color-scheme: dark;
 }
 
@@ -118,7 +113,8 @@
   --color-rood: var(--rood);
   --color-rood-soft: var(--rood-soft);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Bricolage Grotesque Variable", var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
   --shadow-zacht: var(--schaduw);
   --shadow-groot: var(--schaduw-groot);
 }
@@ -133,22 +129,20 @@ body {
   color: var(--ink);
 }
 
-/* Zachte kleurvlekken op de achtergrond */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(40rem 28rem at 8% -6%, color-mix(in oklab, var(--brand) 13%, transparent), transparent 70%),
-    radial-gradient(34rem 24rem at 100% 0%, color-mix(in oklab, var(--accent) 12%, transparent), transparent 70%);
-}
-
 .display {
   font-family: var(--font-display);
-  font-variation-settings: "wdth" 92;
-  letter-spacing: -0.025em;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+/* Klein bovenschrift in mono, zoals in een krant of tijdschrift */
+.bovenschrift {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
 }
 
 .tabular {
@@ -158,20 +152,12 @@ body::before {
 .kaart {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 1.5rem;
-  box-shadow: var(--schaduw);
+  border-radius: 1rem;
 }
 
 .focus-ring:focus-visible {
   outline: 2px solid var(--brand);
   outline-offset: 2px;
-}
-
-.gradient-tekst {
-  background: linear-gradient(100deg, var(--brand) 10%, #c04cfd 55%, var(--accent) 95%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
 }
 
 .scroll-x {
@@ -186,35 +172,45 @@ body::before {
   min-width: 0;
 }
 
+/* Onderstreping als in een tijdschrift */
+.streep {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+  text-decoration-color: var(--line);
+}
+.streep:hover {
+  text-decoration-color: var(--ink);
+}
+
 /* Schuifregelaar in de huisstijl */
 input[type="range"].schuif {
   appearance: none;
-  height: 8px;
+  height: 4px;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--brand) var(--p, 50%), var(--line) var(--p, 50%));
+  background: linear-gradient(to right, var(--ink) var(--p, 50%), var(--line) var(--p, 50%));
   cursor: pointer;
 }
 input[type="range"].schuif::-webkit-slider-thumb {
   appearance: none;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  background: var(--card);
-  border: 3px solid var(--brand);
-  box-shadow: 0 4px 12px -2px rgba(79, 57, 246, 0.45);
-}
-input[type="range"].schuif::-moz-range-thumb {
   width: 22px;
   height: 22px;
   border-radius: 999px;
   background: var(--card);
-  border: 3px solid var(--brand);
+  border: 2px solid var(--ink);
+}
+input[type="range"].schuif::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: var(--card);
+  border: 2px solid var(--ink);
 }
 
 @keyframes binnenkomen {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -222,42 +218,59 @@ input[type="range"].schuif::-moz-range-thumb {
   }
 }
 .binnenkomen {
-  animation: binnenkomen 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation: binnenkomen 0.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
-@keyframes zweven {
-  0%,
-  100% {
-    transform: translateY(0) rotate(var(--r, 0deg));
+@keyframes inschuiven {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--richting, 1) * 28px));
   }
-  50% {
-    transform: translateY(-8px) rotate(var(--r, 0deg));
-  }
-}
-.zweven {
-  animation: zweven 6s ease-in-out infinite;
-}
-@keyframes draai {
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: none;
   }
+}
+.inschuiven {
+  animation: inschuiven 0.42s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes teken {
+  from {
+    stroke-dashoffset: var(--lengte, 400);
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.teken path,
+.teken circle,
+.teken rect,
+.teken line,
+.teken polyline {
+  stroke-dasharray: var(--lengte, 400);
+  animation: teken 1.1s ease-out both;
 }
 @keyframes wiebel {
   0%,
   100% {
-    transform: rotate(-14deg);
+    transform: rotate(-10deg);
   }
   50% {
-    transform: rotate(18deg);
+    transform: rotate(14deg);
   }
 }
 .kompasnaald {
   transform-origin: 50% 50%;
-  animation: wiebel 5s ease-in-out infinite;
+  animation: wiebel 6s ease-in-out infinite;
 }
 @media (prefers-reduced-motion: reduce) {
   .binnenkomen,
-  .zweven,
-  .kompasnaald {
+  .inschuiven,
+  .kompasnaald,
+  .teken path,
+  .teken circle,
+  .teken rect,
+  .teken line,
+  .teken polyline {
     animation: none;
   }
 }
@@ -266,7 +279,8 @@ input[type="range"].schuif::-moz-range-thumb {
 .maplibregl-popup-content {
   background: var(--card) !important;
   color: var(--ink);
-  border-radius: 14px !important;
+  border-radius: 10px !important;
+  border: 1px solid var(--line);
   box-shadow: var(--schaduw-groot) !important;
   padding: 10px 14px !important;
   font-family: var(--font-sans);
@@ -276,6 +290,6 @@ input[type="range"].schuif::-moz-range-thumb {
   border-bottom-color: var(--card) !important;
 }
 .maplibregl-ctrl-group {
-  border-radius: 12px !important;
+  border-radius: 10px !important;
   overflow: hidden;
 }

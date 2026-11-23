@@ -1,49 +1,17 @@
+import { KAMER_PER_PLAATS } from "./kamers";
+
 /**
- * Gemiddelde kamerhuur per maand (€), INDICATIEF.
- * Gebaseerd op de orde van grootte uit de Kamernet Huurmonitor. Vervang door de nieuwste cijfers.
- * Voor plaatsen die hier niet staan gebruikt de app een schatting per provincie.
+ * Gemiddelde kamerhuur per maand (€).
+ * Waar bekend: Kamernet Huurmonitor Q1 2025. Anders een schatting.
  */
-export const KAMERHUUR: Record<string, number> = {
-  Amsterdam: 1000,
-  Amstelveen: 900,
-  Diemen: 900,
-  Haarlem: 750,
-  Utrecht: 720,
-  "'s-Gravenhage": 700,
-  Leiden: 690,
-  Delft: 680,
-  Eindhoven: 660,
+const SCHATTING: Record<string, number> = {
   Rotterdam: 650,
-  Amersfoort: 650,
-  Almere: 650,
-  Alkmaar: 650,
-  Zoetermeer: 650,
-  Rijswijk: 650,
-  "'s-Hertogenbosch": 620,
-  Breda: 600,
-  Maastricht: 600,
-  Tilburg: 560,
-  Nijmegen: 560,
-  Ede: 550,
-  Dordrecht: 550,
-  Helmond: 550,
-  Arnhem: 540,
-  Zwolle: 540,
-  Groningen: 520,
-  Deventer: 520,
-  Apeldoorn: 520,
-  Wageningen: 500,
+  "'s-Gravenhage": 700,
+  Breda: 569,
   Leeuwarden: 480,
-  Venlo: 480,
-  Enschede: 470,
-  Hengelo: 470,
-  Almelo: 450,
-  Heerlen: 450,
-  Sittard: 450,
-  Vlissingen: 450,
   Middelburg: 450,
-  Assen: 450,
-  Emmen: 420,
+  Venlo: 480,
+  Apeldoorn: 520,
 };
 
 export const KAMERHUUR_PROVINCIE: Record<string, number> = {
@@ -63,6 +31,7 @@ export const KAMERHUUR_PROVINCIE: Record<string, number> = {
 };
 
 export function kamerhuurVan(plaats: { naam: string; provincie: string }): { bedrag: number; schatting: boolean } {
-  if (plaats.naam in KAMERHUUR) return { bedrag: KAMERHUUR[plaats.naam], schatting: false };
-  return { bedrag: KAMERHUUR_PROVINCIE[plaats.provincie] ?? 500, schatting: true };
+  const k = KAMER_PER_PLAATS.get(plaats.naam)?.kamernet;
+  if (k) return { bedrag: k, schatting: false };
+  return { bedrag: SCHATTING[plaats.naam] ?? KAMERHUUR_PROVINCIE[plaats.provincie] ?? 550, schatting: true };
 }

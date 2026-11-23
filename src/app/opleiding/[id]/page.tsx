@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { NIVEAU_LABEL } from "@/data/sectoren";
 import { plaatsNaam } from "@/lib/bereken";
 import { dataOpServer } from "@/lib/data-server";
 import { OpleidingDetail } from "./OpleidingDetail";
@@ -15,8 +14,8 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   const o = dataOpServer().perId.get(id);
   if (!o) return {};
   return {
-    title: `${o.naam} (${NIVEAU_LABEL[o.niveau]}) – ${o.instelling.naam}`,
-    description: `${o.naam} bij ${o.instelling.naam} in ${plaatsNaam(o.plaats.naam)}: maandlasten, reistijd, match-score en studentenleven.`,
+    title: `${o.naam} – ${o.instelling.naam}`,
+    description: `Bachelor ${o.naam} aan de ${o.instelling.naam} in ${plaatsNaam(o.plaats.naam)}: kosten, studiefinanciering, toelating, kamers en studentenleven.`,
   };
 }
 

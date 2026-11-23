@@ -25,9 +25,9 @@ export function ThemaKnop() {
       }}
       aria-label={`${LABEL[thema]} (klik om te wisselen)`}
       title={LABEL[thema]}
-      className="focus-ring flex h-10 w-10 items-center justify-center rounded-full border border-line bg-card text-ink transition-colors hover:border-brand"
+      className="focus-ring hidden h-10 w-10 items-center justify-center rounded-full border border-line text-ink transition-colors hover:border-ink sm:flex"
     >
-      <Icoon className="h-[18px] w-[18px]" />
+      <Icoon className="h-[17px] w-[17px]" strokeWidth={1.75} />
     </button>
   );
 }

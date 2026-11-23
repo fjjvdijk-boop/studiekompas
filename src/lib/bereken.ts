@@ -1,8 +1,9 @@
 import { INSTELLINGEN } from "@/data/instellingen";
 import { kamerhuurVan } from "@/data/kamerhuur";
 import { SECTOR } from "@/data/sectoren";
+import { geldplaatje, type Plaatje } from "./duo";
 import { toelating, type Toelating } from "./toelating";
-import type { Opleiding, Plaats, Profiel, Soort, Vooropleiding } from "./types";
+import type { Opleiding, Plaats, Profiel } from "./types";
 
 export type Stoplicht = "groen" | "oranje" | "rood";
 
@@ -67,7 +68,7 @@ export interface Kosten {
   huurSchatting: boolean;
   leefUit: number;
   leefThuis: number;
-  /** Collegegeld of lesgeld per maand */
+  /** Collegegeld per maand */
   schoolgeld: number;
   schoolgeldLabel: string;
   boeken: number;
@@ -86,10 +87,8 @@ export function kosten(
   inst = INSTELLINGEN,
 ): Kosten {
   const { bedrag: huur, schatting: huurSchatting } = kamerhuurVan(plaats);
-  const bbl = o.soort === "mbo" && o.leerwegen === "BBL";
-  const schoolgeldJaar = o.soort === "mbo" ? (bbl ? 0 : inst.lesgeldMbo) : inst.collegegeld;
-  const schoolgeld = schoolgeldJaar / 12;
-  const boeken = (o.soort === "mbo" ? inst.boekenMbo : inst.boekenHo) / 12;
+  const schoolgeld = inst.collegegeld / 12;
+  const boeken = inst.boekenHo / 12;
   const uitwonend = huur + inst.leefUitwonend + schoolgeld + boeken;
   const thuis = inst.leefThuis + schoolgeld + boeken;
   const thuisMogelijk = profiel.wonen === "thuis" || (profiel.wonen !== "kamer" && reistijdMin <= profiel.maxReistijd);
@@ -99,7 +98,7 @@ export function kosten(
     leefUit: inst.leefUitwonend,
     leefThuis: inst.leefThuis,
     schoolgeld,
-    schoolgeldLabel: o.soort === "mbo" ? (bbl ? "Lesgeld (geen bij BBL)" : "Lesgeld (vanaf 18 jaar)") : "Collegegeld",
+    schoolgeldLabel: `Collegegeld (${inst.studiejaar})`,
     boeken,
     uitwonend,
     thuis,
@@ -108,22 +107,16 @@ export function kosten(
   };
 }
 
-// ------------------------------------------------------------ toelating
-
-/** Met welke vooropleiding kun je (zonder extra eisen) naar welk soort onderwijs? */
-export const TOELATING: Record<Vooropleiding, Soort[]> = {
-  vmbo: ["mbo"],
-  havo: ["mbo", "hbo"],
-  vwo: ["mbo", "hbo", "wo"],
-  mbo4: ["mbo", "hbo"],
-};
-
-export const VOOROPLEIDING_LABEL: Record<Vooropleiding, string> = {
-  vmbo: "vmbo",
-  havo: "havo",
-  vwo: "vwo",
-  mbo4: "mbo 4",
-};
+/** Het geldplaatje met studiefinanciering van DUO, ouders en bijbaan */
+export function geldVoor(k: Kosten, profiel: Profiel, thuis = k.thuisMogelijk): Plaatje {
+  return geldplaatje(thuis ? k.thuis : k.uitwonend, {
+    uitwonend: !thuis,
+    ouderInkomen: profiel.ouderInkomen,
+    andereKinderen: profiel.andereKinderen,
+    ouderBijdrage: profiel.ouderBijdrage,
+    bijbaan: profiel.bijbaan,
+  });
+}
 
 // ------------------------------------------------------------ match-score
 
@@ -143,93 +136,74 @@ export interface Match {
   toelating: Toelating;
 }
 
-const LEERSTIJL_DOEL: Record<Soort, number> = { mbo: 0.15, hbo: 0.5, wo: 0.85 };
 const clamp = (x: number) => Math.max(0, Math.min(1, x));
+const TOELATING_PUNTEN: Record<Toelating["status"], number> = { ja: 10, onbekend: 7, deficientie: 3, nee: 0 };
 
-/**
- * Match-score van 0 tot 100:
- *  - 45 punten: hoe goed de sector past bij je antwoorden in de vragenlijst
- *  - 15 punten: soort onderwijs (mbo/hbo/wo), je toelating (vakken) en of het past bij hoe je graag leert
- *  - 20 punten: maandlasten binnen je budget
- *  - 20 punten: reistijd
- */
 interface Punten {
   affiniteit: number;
   heeftInteresse: boolean;
-  toelaatbaar: boolean;
+  taalMis: boolean;
   toelating: Toelating;
-  gekozen: boolean;
-  stijl: number;
-  teDuur: number;
+  teLenen: number;
   reisPunten: number;
   score: number;
 }
 
-/** Alleen de getallen: snel genoeg om voor alle 10.000+ opleidingen tegelijk uit te rekenen */
-function punten(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Punten {
+/** Alleen de getallen: snel genoeg om voor alle opleidingen tegelijk uit te rekenen */
+function punten(o: Opleiding, profiel: Profiel, r: number, geld: Plaatje): Punten {
   const heeftInteresse = Object.keys(profiel.interesse).length > 0;
   const affiniteit = heeftInteresse ? (profiel.interesse[o.sector] ?? 0) : 0.5;
+  const taalMis = (profiel.taal === "nl" && o.taal === "EN") || (profiel.taal === "en" && o.taal === "NL");
   const t = toelating(o, profiel);
-  const toelaatbaar = t.status !== "nee";
-  const deficientie = t.status === "deficientie";
-  const gekozen = profiel.soorten.includes(o.soort);
-  const stijl = 1 - Math.abs(profiel.leerstijl - LEERSTIJL_DOEL[o.soort]);
-  const teDuur = Math.max(0, k.advies - profiel.budget);
   const reisPunten =
     profiel.wonen === "kamer" ? clamp(1 - (r - 120) / 120) : clamp(1 - Math.max(0, r - profiel.maxReistijd) / 90);
+  const teVeel = Math.max(0, geld.teLenen - profiel.maxLenen);
   const totaal =
-    Math.round(45 * affiniteit) +
-    (toelaatbaar && gekozen ? Math.round((deficientie ? 3 : 8) + 7 * stijl) : 0) +
-    Math.round(20 * clamp(1 - teDuur / 300)) +
+    Math.round(50 * affiniteit) -
+    (taalMis ? 10 : 0) +
+    TOELATING_PUNTEN[t.status] +
+    Math.round(20 * clamp(1 - teVeel / 300)) +
     Math.round(20 * reisPunten);
-  return {
-    affiniteit,
-    heeftInteresse,
-    toelaatbaar,
-    toelating: t,
-    gekozen,
-    stijl,
-    teDuur,
-    reisPunten,
-    // Kun je er niet heen: maximaal 40. Mis je een vak: maximaal 70.
-    score: !toelaatbaar ? Math.min(totaal, 40) : deficientie ? Math.min(totaal, 70) : totaal,
-  };
+  const score = Math.max(
+    0,
+    t.status === "nee" ? Math.min(totaal, 40) : t.status === "deficientie" ? Math.min(totaal, 70) : totaal,
+  );
+  return { affiniteit, heeftInteresse, taalMis, toelating: t, teLenen: geld.teLenen, reisPunten, score };
 }
 
 /** De uitleg per onderdeel (alleen nodig op de detailpagina) */
 function onderdelen(o: Opleiding, profiel: Profiel, r: number, p: Punten): ScoreOnderdeel[] {
   const sector = SECTOR[o.sector];
+  const teVeel = Math.max(0, p.teLenen - profiel.maxLenen);
   return [
     {
       label: "Interesse",
       uitleg: !p.heeftInteresse
         ? "Doe de studietest voor een persoonlijke score"
-        : p.affiniteit >= 0.75
-          ? `${sector.naam} past heel goed bij jou`
-          : p.affiniteit >= 0.5
-            ? `${sector.naam} vind je best interessant`
-            : `${sector.naam} is niet echt jouw ding`,
-      punten: Math.round(45 * p.affiniteit),
-      max: 45,
+        : (p.affiniteit >= 0.7
+            ? `${sector.naam} past heel goed bij jou`
+            : p.affiniteit >= 0.45
+              ? `${sector.naam} vind je best interessant`
+              : `${sector.naam} is niet echt jouw richting`) +
+          (p.taalMis ? `, maar de opleiding is ${o.taal === "EN" ? "Engelstalig" : "Nederlandstalig"}` : ""),
+      punten: Math.max(0, Math.round(50 * p.affiniteit) - (p.taalMis ? 10 : 0)),
+      max: 50,
     },
     {
-      label: "Niveau",
-      uitleg: !p.toelaatbaar
-        ? p.toelating.reden
-        : p.toelating.status === "deficientie"
-          ? `Je mist ${p.toelating.mist.join(" en ")}`
-          : !p.gekozen
-            ? `Je zoekt nu niet naar ${o.soort}`
-            : p.stijl > 0.7
-              ? `${o.soort.toUpperCase()} past bij hoe jij graag leert`
-              : `${o.soort.toUpperCase()} is ${o.soort === "wo" ? "theoretischer" : "praktischer"} dan je voorkeur`,
-      punten: p.toelaatbaar && p.gekozen ? Math.round((p.toelating.status === "deficientie" ? 3 : 8) + 7 * p.stijl) : 0,
-      max: 15,
+      label: "Toelating",
+      uitleg: p.toelating.status === "deficientie" ? `Je mist ${p.toelating.mist.join(" en ")}` : p.toelating.reden,
+      punten: TOELATING_PUNTEN[p.toelating.status],
+      max: 10,
     },
     {
-      label: "Budget",
-      uitleg: p.teDuur === 0 ? "Binnen je budget" : `${euro(p.teDuur)} per maand boven je budget`,
-      punten: Math.round(20 * clamp(1 - p.teDuur / 300)),
+      label: "Geld",
+      uitleg:
+        p.teLenen <= 0
+          ? "Je redt het zonder te lenen"
+          : teVeel === 0
+            ? `Je leent ${euro(p.teLenen)} per maand, binnen wat je wilt`
+            : `Je moet ${euro(teVeel)} per maand meer lenen dan je wilt`,
+      punten: Math.round(20 * clamp(1 - teVeel / 300)),
       max: 20,
     },
     {
@@ -250,17 +224,17 @@ function onderdelen(o: Opleiding, profiel: Profiel, r: number, p: Punten): Score
 
 /**
  * Match-score van 0 tot 100:
- *  - 45 punten: hoe goed de sector past bij je antwoorden in de studietest
- *  - 15 punten: soort onderwijs (mbo/hbo/wo), je toelating (vakken) en of het past bij hoe je graag leert
- *  - 20 punten: maandlasten binnen je budget
+ *  - 50 punten: hoe goed de richting past bij je studietest (−10 als de taal niet past)
+ *  - 10 punten: toelating met jouw profiel en vakken
+ *  - 20 punten: geld: hoeveel je moet lenen tegenover wat je maximaal wilt lenen
  *  - 20 punten: reistijd
- * Opleidingen waar je met je diploma niet heen kunt: maximaal 40 punten. Mis je een vak: maximaal 70.
+ * Kun je er niet heen: maximaal 40 punten. Mis je een vak: maximaal 70.
  */
 export function matchScore(o: Opleiding, profiel: Profiel, r: number, k: Kosten): Match {
-  const p = punten(o, profiel, r, k);
+  const p = punten(o, profiel, r, geldVoor(k, profiel));
   return {
     score: p.score,
-    toelaatbaar: p.toelaatbaar,
+    toelaatbaar: p.toelating.status !== "nee",
     toelating: p.toelating,
     onderdelen: onderdelen(o, profiel, r, p),
   };
@@ -274,23 +248,27 @@ export interface Resultaat {
   reistijdSchatting: boolean;
   licht: Stoplicht;
   kosten: Kosten;
+  geld: Plaatje;
   match: Match;
 }
 
-/** Reistijd en kosten hangen alleen af van plaats en soort: die rekenen we per profiel één keer uit. */
-const tussen = new WeakMap<Profiel, Map<string, { r: { minuten: number; schatting: boolean }; k: Kosten }>>();
+/** Reistijd, kosten en geld hangen alleen af van de plaats: die rekenen we per profiel één keer uit. */
+const tussen = new WeakMap<
+  Profiel,
+  Map<string, { r: { minuten: number; schatting: boolean }; k: Kosten; g: Plaatje }>
+>();
 
 export function bereken(o: Opleiding, profiel: Profiel): Resultaat {
   let cache = tussen.get(profiel);
   if (!cache) tussen.set(profiel, (cache = new Map()));
-  const sleutel = `${o.plaats.naam}|${o.soort}|${o.leerwegen === "BBL" ? "BBL" : ""}`;
-  let rk = cache.get(sleutel);
+  let rk = cache.get(o.plaats.naam);
   if (!rk) {
     const r = reistijd(profiel.woonplaats, o.plaats);
-    rk = { r, k: kosten(o, o.plaats, r.minuten, profiel) };
-    cache.set(sleutel, rk);
+    const k = kosten(o, o.plaats, r.minuten, profiel);
+    rk = { r, k, g: geldVoor(k, profiel) };
+    cache.set(o.plaats.naam, rk);
   }
-  const p = punten(o, profiel, rk.r.minuten, rk.k);
+  const p = punten(o, profiel, rk.r.minuten, rk.g);
   let uitleg: ScoreOnderdeel[] | null = null;
   const minuten = rk.r.minuten;
   return {
@@ -299,9 +277,10 @@ export function bereken(o: Opleiding, profiel: Profiel): Resultaat {
     reistijdSchatting: rk.r.schatting,
     licht: stoplicht(minuten),
     kosten: rk.k,
+    geld: rk.g,
     match: {
       score: p.score,
-      toelaatbaar: p.toelaatbaar,
+      toelaatbaar: p.toelating.status !== "nee",
       toelating: p.toelating,
       get onderdelen() {
         return (uitleg ??= onderdelen(o, profiel, minuten, p));

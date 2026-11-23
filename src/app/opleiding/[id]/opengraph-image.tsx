@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 import { DeelAfbeelding, OG_MAAT, ogOpties } from "@/components/DeelAfbeelding";
-import { NIVEAU_LABEL, SECTOR } from "@/data/sectoren";
+import { SECTOR } from "@/data/sectoren";
 import { plaatsNaam } from "@/lib/bereken";
 import { dataOpServer } from "@/lib/data-server";
 
@@ -13,10 +13,10 @@ export default async function Afbeelding({ params }: { params: Promise<{ id: str
   return new ImageResponse(
     o ? (
       <DeelAfbeelding
-        label={`${NIVEAU_LABEL[o.niveau]} · ${SECTOR[o.sector].naam}`}
+        label={`Bachelor · ${SECTOR[o.sector].naam}`}
         titel={o.naam}
         sub={`${o.instelling.naam} · ${plaatsNaam(o.plaats.naam)}`}
-        chips={["Kosten per maand", "Reistijd", "Match-score"]}
+        chips={["Kosten & DUO", "Toelating", "Kamers"]}
       />
     ) : (
       <DeelAfbeelding label="Opleiding" titel="StudieKompas" sub="Alle opleidingen van Nederland" />

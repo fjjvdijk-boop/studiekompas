@@ -1,18 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { Heart } from "lucide-react";
-import { SECTOR, NIVEAU_LABEL } from "@/data/sectoren";
+import { ArrowRight, Heart } from "lucide-react";
+import { SECTOR } from "@/data/sectoren";
 import type { Kosten, Stoplicht } from "@/lib/bereken";
 import { euro, reistijdTekst } from "@/lib/bereken";
 import { useStore } from "@/lib/store";
-import type { Niveau, SectorId } from "@/lib/types";
+import type { Opleiding, SectorId } from "@/lib/types";
 
-const LICHT_STIJL: Record<Stoplicht, string> = {
-  groen: "bg-groen-soft text-groen",
-  oranje: "bg-oranje-soft text-oranje",
-  rood: "bg-rood-soft text-rood",
-};
+const LICHT_KLEUR: Record<Stoplicht, string> = { groen: "text-groen", oranje: "text-oranje", rood: "text-rood" };
 export const LICHT_LABEL: Record<Stoplicht, string> = {
   groen: "Goed te reizen",
   oranje: "Pittige reis",
@@ -30,20 +26,21 @@ export function StoplichtBadge({
 }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-semibold tabular ${LICHT_STIJL[licht]}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 font-mono text-xs tabular ${LICHT_KLEUR[licht]}`}
       title={`${LICHT_LABEL[licht]}: ${schatting ? "± " : ""}${minuten} min enkele reis`}
     >
-      <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {schatting ? "± " : ""}
+      <span className="h-2 w-2 rounded-full bg-current" />
+      {schatting ? "±" : ""}
       {reistijdTekst(minuten)}
     </span>
   );
 }
 
-export function ScoreRing({ score, maat = 52, dik = 5 }: { score: number; maat?: number; dik?: number }) {
+/** Rustige scoremeter: getal in schreefletter met een dunne ring */
+export function ScoreRing({ score, maat = 52, dik = 3 }: { score: number; maat?: number; dik?: number }) {
   const r = maat / 2 - dik;
   const omtrek = 2 * Math.PI * r;
-  const kleur = score >= 75 ? "var(--groen)" : score >= 50 ? "var(--brand)" : "var(--muted)";
+  const kleur = score >= 75 ? "var(--brand)" : score >= 50 ? "var(--ink)" : "var(--muted)";
   return (
     <div
       className="relative shrink-0"
@@ -67,8 +64,8 @@ export function ScoreRing({ score, maat = 52, dik = 5 }: { score: number; maat?:
         />
       </svg>
       <span
-        className="display absolute inset-0 flex items-center justify-center font-bold tabular"
-        style={{ fontSize: maat * 0.3 }}
+        className="display absolute inset-0 flex items-center justify-center tabular"
+        style={{ fontSize: maat * 0.34 }}
       >
         {score}
       </span>
@@ -76,39 +73,12 @@ export function ScoreRing({ score, maat = 52, dik = 5 }: { score: number; maat?:
   );
 }
 
-const NIVEAU_STIJL: Record<string, string> = {
-  mbo: "bg-[var(--mbo-bg)] text-[var(--mbo-ink)]",
-  hbo: "bg-[var(--hbo-bg)] text-[var(--hbo-ink)]",
-  ad: "bg-[var(--hbo-bg)] text-[var(--hbo-ink)]",
-  wo: "bg-brand-soft text-brand",
-};
-
-export function NiveauChip({ niveau }: { niveau: Niveau }) {
-  const soort = niveau.startsWith("mbo") ? "mbo" : niveau;
+export function TaalChip({ taal }: { taal: Opleiding["taal"] }) {
+  if (!taal) return null;
+  const label = taal === "EN" ? "Engels" : taal === "NL" ? "Nederlands" : "NL + EN";
   return (
-    <span
-      className={`inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${NIVEAU_STIJL[soort]}`}
-    >
-      {NIVEAU_LABEL[niveau]}
-    </span>
-  );
-}
-
-export function SectorIcoon({ sector, maat = 44 }: { sector: SectorId; maat?: number }) {
-  const s = SECTOR[sector];
-  return (
-    <span
-      className="flex shrink-0 items-center justify-center rounded-2xl"
-      style={{
-        width: maat,
-        height: maat,
-        fontSize: maat * 0.5,
-        background: `color-mix(in oklab, ${s.kleur} 16%, transparent)`,
-        boxShadow: `inset 0 0 0 1px color-mix(in oklab, ${s.kleur} 22%, transparent)`,
-      }}
-      aria-hidden
-    >
-      {s.emoji}
+    <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-muted">
+      {label}
     </span>
   );
 }
@@ -116,10 +86,7 @@ export function SectorIcoon({ sector, maat = 44 }: { sector: SectorId; maat?: nu
 export function SectorLabel({ sector }: { sector: SectorId }) {
   const s = SECTOR[sector];
   return (
-    <span
-      className="inline-flex items-center gap-1 text-xs font-medium"
-      style={{ color: `color-mix(in oklab, ${s.kleur} 55%, var(--ink))` }}
-    >
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium" style={{ color: s.kleur }}>
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: s.kleur }} />
       {s.kort}
     </span>
@@ -139,14 +106,11 @@ export function FavorietKnop({ opleidingId, groot = false }: { opleidingId: stri
       }}
       aria-pressed={is}
       aria-label={is ? "Verwijder uit favorieten" : "Bewaar als favoriet"}
-      className={`focus-ring group/hart inline-flex shrink-0 items-center justify-center gap-2 rounded-full border font-semibold transition-all active:scale-90 ${
-        groot ? "h-12 px-5 text-sm" : "h-9 w-9"
-      } ${is ? "border-transparent bg-rood text-white shadow-[0_6px_16px_-6px_var(--rood)]" : "border-line bg-card text-muted hover:border-rood hover:text-rood"}`}
+      className={`focus-ring inline-flex shrink-0 items-center justify-center gap-2 rounded-full border font-medium transition-colors active:scale-95 ${
+        groot ? "h-11 px-5 text-sm" : "h-9 w-9"
+      } ${is ? "border-accent bg-accent text-brand-ink" : "border-line bg-card text-muted hover:border-ink hover:text-ink"}`}
     >
-      <Heart
-        className={`${groot ? "h-[18px] w-[18px]" : "h-4 w-4"} transition-transform group-active/hart:scale-125`}
-        fill={is ? "currentColor" : "none"}
-      />
+      <Heart className={groot ? "h-4 w-4" : "h-4 w-4"} fill={is ? "currentColor" : "none"} strokeWidth={1.75} />
       {groot && (is ? "Bewaard" : "Bewaar")}
     </button>
   );
@@ -156,23 +120,27 @@ export function Kop({
   titel,
   sub,
   actie,
+  label,
 }: {
   titel: React.ReactNode;
   sub?: string;
   actie?: { href: string; label: string };
+  label?: string;
 }) {
   return (
-    <div className="mb-4 flex items-end justify-between gap-4">
+    <div className="mb-5 flex items-end justify-between gap-4 border-b border-line pb-3">
       <div>
-        <h2 className="display text-2xl font-bold sm:text-[28px]">{titel}</h2>
-        {sub && <p className="mt-0.5 text-sm text-muted">{sub}</p>}
+        {label && <p className="bovenschrift mb-1">{label}</p>}
+        <h2 className="display text-2xl sm:text-[30px]">{titel}</h2>
+        {sub && <p className="mt-1 text-sm text-muted">{sub}</p>}
       </div>
       {actie && (
         <Link
           href={actie.href}
-          className="focus-ring shrink-0 rounded-full border border-line bg-card px-3.5 py-1.5 text-sm font-medium hover:border-brand"
+          className="focus-ring group inline-flex shrink-0 items-center gap-1 text-sm font-medium"
         >
-          {actie.label} →
+          <span className="streep">{actie.label}</span>{" "}
+          <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
       )}
     </div>
@@ -194,20 +162,12 @@ export function PaginaKop({
   compact?: boolean;
 }) {
   return (
-    <div className={`flex flex-wrap items-end justify-between gap-4 ${compact ? "mb-3 sm:mb-7" : "mb-7"}`}>
-      <div className="binnenkomen">
-        {label && (
-          <p
-            className={`mb-2 text-xs font-bold uppercase tracking-[0.14em] text-brand ${compact ? "hidden sm:block" : ""}`}
-          >
-            {label}
-          </p>
-        )}
-        <h1 className={`display font-bold leading-[1.05] sm:text-5xl ${compact ? "text-[28px]" : "text-[34px]"}`}>
-          {titel}
-        </h1>
+    <div className={`flex flex-wrap items-end justify-between gap-4 ${compact ? "mb-4 sm:mb-8" : "mb-8"}`}>
+      <div className="binnenkomen max-w-3xl">
+        {label && <p className={`bovenschrift mb-3 ${compact ? "hidden sm:block" : ""}`}>{label}</p>}
+        <h1 className={`display leading-[1.02] sm:text-6xl ${compact ? "text-[32px]" : "text-[40px]"}`}>{titel}</h1>
         {sub && (
-          <p className={`mt-2 max-w-2xl text-[15px] text-muted sm:text-base ${compact ? "hidden sm:block" : ""}`}>
+          <p className={`mt-3 max-w-2xl text-[15px] text-muted sm:text-[17px] ${compact ? "hidden sm:block" : ""}`}>
             {sub}
           </p>
         )}
@@ -230,15 +190,15 @@ export function LeegScherm({
 }) {
   return (
     <div className="kaart flex flex-col items-center px-6 py-16 text-center">
-      <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-3xl bg-brand-soft text-3xl text-brand">
+      <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-full border border-line text-muted">
         {icoon}
       </div>
-      <h2 className="display text-2xl font-bold">{titel}</h2>
+      <h2 className="display text-2xl">{titel}</h2>
       <p className="mt-2 max-w-sm text-muted">{tekst}</p>
       {actie && (
         <Link
           href={actie.href}
-          className="focus-ring mt-6 rounded-full bg-ink px-6 py-3 text-sm font-semibold text-bg hover:opacity-90"
+          className="focus-ring mt-6 rounded-full bg-ink px-6 py-3 text-sm font-medium text-bg hover:opacity-90"
         >
           {actie.label}
         </Link>
@@ -259,15 +219,15 @@ export function Segment<T extends string>({
   klein?: boolean;
 }) {
   return (
-    <div className="inline-flex rounded-full bg-card-2 p-1" role="group">
+    <div className="inline-flex rounded-full border border-line bg-card p-0.5" role="group">
       {opties.map((o) => (
         <button
           key={o.waarde}
           type="button"
           aria-pressed={waarde === o.waarde}
           onClick={() => kies(o.waarde)}
-          className={`focus-ring rounded-full font-semibold transition-all ${klein ? "px-3 py-1 text-xs" : "px-4 py-1.5 text-sm"} ${
-            waarde === o.waarde ? "bg-card text-ink shadow-zacht" : "text-muted hover:text-ink"
+          className={`focus-ring rounded-full font-medium transition-colors ${klein ? "px-3 py-1 text-xs" : "px-4 py-1.5 text-sm"} ${
+            waarde === o.waarde ? "bg-ink text-bg" : "text-muted hover:text-ink"
           }`}
         >
           {o.label}
@@ -289,7 +249,11 @@ export function kostenDelen(k: Kosten, thuis: boolean) {
     ...(thuis
       ? []
       : [
-          { naam: k.huurSchatting ? "Kamerhuur (schatting)" : "Kamerhuur", bedrag: k.huur, kleur: KOSTEN_KLEUREN.huur },
+          {
+            naam: k.huurSchatting ? "Kamerhuur (schatting)" : "Kamerhuur (Kamernet)",
+            bedrag: k.huur,
+            kleur: KOSTEN_KLEUREN.huur,
+          },
         ]),
     {
       naam: thuis ? "Leefkosten thuis" : "Leefkosten",
@@ -301,19 +265,26 @@ export function kostenDelen(k: Kosten, thuis: boolean) {
   ].filter((d) => d.bedrag > 0);
 }
 
-export function KostenBalk({ kosten: k, thuis }: { kosten: Kosten; thuis: boolean }) {
-  const delen = kostenDelen(k, thuis);
-  const totaal = delen.reduce((s, d) => s + d.bedrag, 0);
+/** Dunne gestapelde balk */
+export function Balk({
+  delen,
+  hoogte = 10,
+}: {
+  delen: { naam: string; bedrag: number; kleur: string }[];
+  hoogte?: number;
+}) {
+  const totaal = delen.reduce((s, d) => s + d.bedrag, 0) || 1;
   return (
     <div
-      className="flex h-4 w-full gap-1 overflow-hidden rounded-full"
+      className="flex w-full gap-[2px] overflow-hidden rounded-sm"
+      style={{ height: hoogte }}
       role="img"
-      aria-label={`Totaal ${euro(totaal)} per maand`}
+      aria-label={`Totaal ${euro(totaal)}`}
     >
       {delen.map((d) => (
         <div
           key={d.naam}
-          className="h-full rounded-full transition-[width] duration-700"
+          className="h-full transition-[width] duration-700"
           style={{ width: `${(d.bedrag / totaal) * 100}%`, background: d.kleur }}
           title={`${d.naam}: ${euro(d.bedrag)}`}
         />
@@ -350,5 +321,35 @@ export function Schuif({
       className="schuif w-full"
       style={{ "--p": `${((waarde - min) / (max - min)) * 100}%` } as React.CSSProperties}
     />
+  );
+}
+
+/** Knop in de huisstijl */
+export function Knop({
+  href,
+  children,
+  soort = "vol",
+  onClick,
+}: {
+  href?: string;
+  children: React.ReactNode;
+  soort?: "vol" | "rand" | "tekst";
+  onClick?: () => void;
+}) {
+  const stijl =
+    soort === "vol"
+      ? "bg-ink text-bg hover:opacity-90"
+      : soort === "rand"
+        ? "border border-ink text-ink hover:bg-ink hover:text-bg"
+        : "text-ink underline underline-offset-4 decoration-line hover:decoration-ink";
+  const klasse = `focus-ring inline-flex items-center gap-2 rounded-full ${soort === "tekst" ? "" : "px-5 py-3"} text-sm font-medium transition-colors ${stijl}`;
+  return href ? (
+    <Link href={href} className={klasse}>
+      {children}
+    </Link>
+  ) : (
+    <button type="button" onClick={onClick} className={klasse}>
+      {children}
+    </button>
   );
 }

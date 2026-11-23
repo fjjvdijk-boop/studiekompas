@@ -2,13 +2,14 @@ import type { Profiel } from "@/lib/types";
 
 /**
  * Rekenparameters. Pas deze aan als de bedragen veranderen.
- * Bronnen: duo.nl en rijksoverheid.nl (collegegeld en lesgeld 2026/2027), Nibud (leefkosten, schatting).
+ * Collegegeld 2027/2028: afgeleid uit het collegegeldkrediet van DUO (€ 230,92 per maand × 12).
+ * Leefkosten: schatting op basis van het Nibud Studentenonderzoek.
  */
 export const INSTELLINGEN = {
-  studiejaar: "2026/2027",
-  /** Wettelijk collegegeld hbo/wo per jaar */
-  collegegeld: 2694,
-  /** Lesgeld mbo per jaar (alleen BOL en alleen als je 18 of ouder bent) */
+  studiejaar: "2027/2028",
+  /** Wettelijk collegegeld per jaar */
+  collegegeld: 2771,
+  /** Niet meer gebruikt voor de universiteit, maar nodig voor oude code */
   lesgeldMbo: 1511,
   boekenHo: 600,
   boekenMbo: 400,
@@ -24,18 +25,21 @@ export const INSTELLINGEN = {
 export const WIERDEN = { naam: "Wierden", gemeente: "Wierden", lat: 52.3592, lng: 6.5928 };
 
 export const STANDAARD_PROFIEL: Profiel = {
-  versie: 2,
+  versie: 3,
   naam: "",
   woonplaats: WIERDEN,
   interesse: {},
-  vooropleiding: null,
+  vooropleiding: "vwo",
   leerweg: null,
   profielen: [],
   vakken: [],
-  soorten: ["mbo", "hbo", "wo"],
-  leerstijl: 0.5,
+  taal: "beide",
   wonen: "allebei",
-  budget: 800,
   maxReistijd: 45,
+  ouderInkomen: null,
+  andereKinderen: 0,
+  ouderBijdrage: 0,
+  bijbaan: 250,
+  maxLenen: 200,
   vragenlijstKlaar: false,
 };

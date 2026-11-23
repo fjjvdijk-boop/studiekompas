@@ -10,10 +10,10 @@ export default function Afbeelding() {
   const s = statistiek();
   return new ImageResponse(
     <DeelAfbeelding
-      label="Studiekeuze"
-      titel="Vind de studie die echt bij je past."
-      sub="Doe de studietest en zie wat studeren je per maand kost."
-      chips={[`${s.mbo.toLocaleString("nl-NL")} mbo`, `${s.hbo.toLocaleString("nl-NL")} hbo`, `${s.wo} wo`]}
+      label="Studiekeuze voor de universiteit"
+      titel="Welke studie past bij jou?"
+      sub={`Alle ${s.totaal} universitaire bachelors, met DUO en kamers.`}
+      chips={["Studietest", "Geld & DUO", "Kamer vinden"]}
     />,
     ogOpties(),
   );

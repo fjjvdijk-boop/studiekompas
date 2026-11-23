@@ -12,13 +12,13 @@ export default async function Afbeelding({ params }: { params: Promise<{ slug: s
   const data = dataOpServer();
   const plaats = data.plaatsen.find((p) => plaatsSlug(p.naam) === slug);
   const hier = plaats ? data.opleidingen.filter((o) => o.plaats.naam === plaats.naam) : [];
-  const tel = (s: string) => hier.filter((o) => o.soort === s).length;
+  const unis = new Set(hier.map((o) => o.instelling.naam)).size;
   return new ImageResponse(
     <DeelAfbeelding
       label={plaats?.provincie ?? "Studieplaats"}
       titel={`Studeren in ${plaats ? plaatsNaam(plaats.naam) : "Nederland"}`}
-      sub={`${hier.length} opleidingen · kosten, scholen en studentenleven`}
-      chips={[`${tel("mbo")} mbo`, `${tel("hbo")} hbo`, `${tel("wo")} wo`]}
+      sub={`${hier.length} bachelors · kosten, kamers en studentenleven`}
+      chips={[`${unis} ${unis === 1 ? "universiteit" : "universiteiten"}`, "Kamer vinden", "Geld & DUO"]}
     />,
     ogOpties(),
   );

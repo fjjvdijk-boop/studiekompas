@@ -1,8 +1,8 @@
-# 🧭 StudieKompas
+# StudieKompas
 
-**Alle mbo-, hbo- en wo-opleidingen van Nederland, een studiekeuzetest, en meteen zien wat studeren je per maand kost.**
+**Alle 433 universitaire bachelors van Nederland, een studietest, en meteen zien wat DUO betaalt en hoe je aan een kamer komt.**
 
-StudieKompas is een web-app voor eindexamenleerlingen. De app koppelt open data over opleidingen (DUO), kamerhuur (Kamernet) en reistijd (NS) en maakt daar nieuwe informatie van: *wat kost studeren daar per maand, en kan ik thuis blijven wonen?*
+StudieKompas is een web-app voor vwo-leerlingen die naar de universiteit willen. De app koppelt open data over opleidingen (DUO), studiefinanciering (duo.nl), kamerhuur (Kamernet) en reistijd en maakt daar nieuwe informatie van: *wat kost studeren daar per maand, hoeveel moet ik lenen, en hoe kom ik aan een kamer?*
 
 Gemaakt voor de app-opdracht Informatica 6V.
 
@@ -12,28 +12,23 @@ Gemaakt voor de app-opdracht Informatica 6V.
 
 | Scherm | Wat je kunt doen |
 |---|---|
-| **Home** | Je beste matches, alle 14 richtingen, de voordeligste studentensteden en je volgende open dag |
-| **Studietest** | 42 stellingen over 14 interessegebieden, plus je diploma, hoe je leert, wonen en budget. Resultaat: je persoonlijke "kompas" (radargrafiek), niveau-advies en je beste matches |
-| **Zoeken** | Alle 10.538 opleidingen filteren op mbo/hbo/wo (en mbo-niveau 1–4 of Ad), richting, plaats en reistijd, en alleen tonen wat je met je diploma mag |
-| **Opleiding** | Maandlasten (op kamer of thuis), reistijd-stoplicht, uitleg van je match-score, studentenleven en studieverenigingen, links, open dag plannen, cijfer en notitie |
-| **Kaart** | Vectorkaart van Nederland met alle 154 studieplaatsen: grootte = aantal opleidingen, kleur = reistijd vanaf je woonplaats |
-| **Plaats** | Per stad: kosten, scholen, richtingen, je beste matches en studentenverenigingen met links |
-| **Mijn lijst** | Favorieten vergelijken (tabel en grafiek) en open dagen plannen in een kalender (ook als .ics in je agenda) |
-| **Profiel** | Woonplaats (alle 2.503 woonplaatsen), diploma, wonen, budget, reistijd en je interesses bijstellen |
+| **Home** | Je beste matches, de tien richtingen, een rekenvoorbeeld voor een kamer in Utrecht en alle universiteiten |
+| **Studietest** | Favoriete vakken kiezen, acht keer "dit of dat" met illustraties, kiezen waar je jezelf ziet werken en tien stellingen. Je kompas groeit live mee. Resultaat: radargrafiek, je top 3 mét uitleg waarom, en je beste bachelors |
+| **Opleidingen** | Filteren op richting, voertaal (NL/EN), universiteit, stad, reistijd en toelating; sorteren op match, kosten of "minst lenen" |
+| **Opleiding** | Toelating met jouw profiel en vakken, geldplaatje (thuis of op kamer) met DUO, schuld en terugbetalen, kamermarkt in die stad, verenigingen, open dag plannen |
+| **Geld & DUO** | Rekenhulp met basisbeurs, aanvullende beurs (op basis van inkomen ouders en broers/zussen), lening, collegegeldkrediet, schuld en maandbedrag terugbetalen; plus het stappenplan om het aan te vragen |
+| **Kamer vinden** | Stappenplan voor september (ROOM.nl vanaf 16 jaar, lokale huisvesters, Studielink-deadlines, oplichting herkennen), en per universiteitsstad de gemiddelde huur, wachttijd en huisvesters met links |
+| **Steden** | Kaart van alle universiteitssteden, kleur = reistijd vanaf je woonplaats |
+| **Mijn lijst** | Favorieten vergelijken (toelating, voertaal, kosten, zelf lenen, schuld) en open dagen plannen |
+| **Profiel** | Woonplaats, diploma (vwo-profiel en vakken of hbo-propedeuse), voertaal, wonen, geld en interesses |
 
 **Op de achtergrond:**
-- **Echte data:** alle opleidingen komen uit DUO Open Onderwijsdata (zie `scripts/bouw-data.py`)
-- **Maandlasten:** kamerhuur + leefkosten + collegegeld of lesgeld (2026/2027) + boeken ÷ 12
-- **Reistijd:** vanaf je eigen woonplaats; vanaf Wierden gecontroleerde treintijden, anders een schatting op basis van afstand
-- **Match-score (0–100):** interesse 45, niveau en leerstijl 15, budget 20, reistijd 20 punten (zie `src/lib/bereken.ts`)
-- **Toelatingseisen:** je geeft je diploma op, en bij vmbo je leerweg, bij havo/vwo je profiel en vakken. Per opleiding checkt de app de landelijke profielvereisten (bijvoorbeeld wiskunde B + natuurkunde voor techniek aan de universiteit, biologie voor hbo-zorg met een EM/CM-profiel). Je ziet "✅ toelaatbaar", "⚠️ je mist natuurkunde" (een deficiëntie die je vaak kunt wegwerken) of "⛔ niet direct". Ook toelatingsexamens (kunst), sporttests (ALO), toetsen voor de pabo en numerus fixus worden genoemd. Zie `src/lib/toelating.ts`. Dit is een vereenvoudiging: scholen kunnen afwijken.
-- **Alleen eigen favorieten:** row level security in de database (`supabase/schema.sql`)
-- **E-mailherinnering:** 3 dagen voor een open dag die je hebt gepland
-- Werkt op je telefoon, ook als app op je beginscherm (met eigen icoon)
-- Thema-knop: licht, donker of zoals je apparaat
-- Zoeken groepeert dezelfde opleiding op meerdere plekken ("+ 33 plekken") en vindt ook verwante woorden
-- Studietest: tussenstand blijft bewaard, toetsen 1–5 om snel te antwoorden, en je kunt je kompas delen
-- Mooie preview-afbeelding als je een link deelt (WhatsApp, Instagram …), sitemap voor zoekmachines
+- **Echte data:** alle wo-bachelors uit DUO Open Onderwijsdata, inclusief voertaal (zie `scripts/bouw-data.py`)
+- **DUO-bedragen** (september–december 2027, gecontroleerd op duo.nl) in `src/lib/duo.ts`. De aanvullende beurs is een vereenvoudiging van de DUO-regel (13,6% van het inkomen boven de grens, rekening met andere kinderen). Collegegeld 2027/2028 (€ 2.771) is afgeleid van het collegegeldkrediet.
+- **Match-score (0–100):** interesse 50, toelating 10, geld (hoeveel je moet lenen t.o.v. wat je wilt) 20, reistijd 20 (zie `src/lib/bereken.ts`)
+- **Toelatingseisen:** per bachelor de landelijke profielvereisten; je ziet "toelaatbaar", "je mist natuurkunde" (deficiëntie) of "niet direct". Zie `src/lib/toelating.ts`. Dit is een vereenvoudiging: universiteiten kunnen afwijken.
+- **Vormgeving:** rustige "papier en inkt"-stijl met Fraunces en Geist, eigen lijntekeningen per richting (geen emoji's of stockfoto's), licht en donker thema
+- Alleen eigen favorieten (row level security, `supabase/schema.sql`), e-mailherinnering 3 dagen voor een open dag, installeerbaar op je telefoon, deelbare uitslag met preview-afbeelding
 
 ---
 
@@ -42,7 +37,7 @@ Gemaakt voor de app-opdracht Informatica 6V.
 | Onderdeel | Gekozen |
 |---|---|
 | Framework | Next.js 15 + React + TypeScript |
-| Opmaak | Tailwind CSS 4, lettertypes Bricolage Grotesque en Geist |
+| Opmaak | Tailwind CSS 4, lettertypes Fraunces en Geist |
 | Kaart | MapLibre GL met vectorkaarten van OpenFreeMap (gratis, geen sleutel) |
 | Grafieken | Recharts |
 | Data | Python-script dat DUO-bestanden omzet naar `public/data/*.json` |
@@ -124,12 +119,13 @@ Hiermee staan je favorieten op al je apparaten, ziet iedereen alleen zijn eigen 
 
 | Wat | Bron | Status |
 |---|---|---|
-| Opleidingen mbo | DUO: `mbo_opleidingsaanbod` | Echt (alle kwalificaties met BOL/BBL per school en plaats) |
-| Opleidingen hbo/wo | DUO: eerstejaars per opleiding en gemeente | Echt (opleidingen met eerstejaars in de laatste 2 jaar) |
+| Opleidingen wo | DUO: eerstejaars per opleiding en gemeente | Echt (bachelors met eerstejaars in de laatste 2 jaar) |
+| Voertaal | DUO: hoger-onderwijsaanbod | Echt |
+| Studiefinanciering | duo.nl | Bedragen september–december 2027 |
 | Websites | DUO | Waar DUO ze heeft; anders de site van de school |
 | Coördinaten | PDOK Locatieserver | Echt |
-| Collegegeld / lesgeld | duo.nl, rijksoverheid.nl | 2026/2027: € 2.694 / € 1.511 |
-| Kamerhuur | Kamernet Huurmonitor (orde van grootte) | **Indicatief**, per provincie geschat voor kleinere plaatsen |
+| Collegegeld | duo.nl (collegegeldkrediet) | 2027/2028: € 2.771 |
+| Kamerhuur en huisvesting | Kamernet Huurmonitor, sites van ROOM.nl, DUWO, SSH&, Roomspot, Idealis | **Indicatief**; wachttijden zijn een orde van grootte |
 | Reistijd | NS (vanaf Wierden), anders afstand | **Indicatief** |
 | Verenigingen | Officiële sites van universiteiten en hogescholen | Alleen gecontroleerde namen, met links naar de officiële overzichten |
 

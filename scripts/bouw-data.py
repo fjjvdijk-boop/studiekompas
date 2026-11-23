@@ -15,6 +15,9 @@ import csv, hashlib, json, os, re, sys, urllib.request
 from collections import Counter, defaultdict
 from datetime import date
 
+# StudieKompas richt zich op de universiteit: alleen wo-bachelors in de app
+ALLEEN_WO = True
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CACHE = os.path.join(ROOT, ".cache")
 UIT = os.path.join(ROOT, "public", "data")
@@ -74,7 +77,7 @@ TREFWOORDEN = [
     ("welzijn", r"psycholog|sociaal|social|sociolog|pedagog|maatschappelijk|welzijn|begeleider|jeugd|culturele antropologie|antropolog|human resource|toegepaste psychologie|cultureel maatschappelijk"),
     ("creatief", r"design|ontwerp|\bkunst\b|kunsten|beeldende|kunst en|\bart\b|muziek|music|dans|theater|film|fotograf|animat|illustrat|mode|fashion|grafisch|vormgev|architect|interieur|media|audiovisu|podium|regie|acteur|artiest|creative"),
     ("horeca", r"horeca|hotel|kok\b|koken|bakker|banket|toeris|touris|leisure|recreat|reis|gastvrij|hospitality|evenement|event|kapper|haar|schoonheid|beauty|nagel|uiterlijke|facilitair|zelfstandig werkend kok|gastheer|barista|food"),
-    ("natuur", r"biolog|dier|animal|milieu|voeding|agr|landbouw|tuin|bos|groen|natuur|plant|veehouderij|bodem|water|ecolog|paard|hovenier|bloem|levensmiddel|food technology|life science|earth|aarde|geograf|planolog|duurzaam"),
+    ("natuur", r"biolog|dier|animal|milieu|voeding|agr|landbouw|tuin|bos|groen|natuur(?!kunde|wetenschap|- en sterren)|plant|veehouderij|bodem|water|ecolog|paard|hovenier|bloem|levensmiddel|food technology|life science|earth|aarde|geograf|planolog|duurzaam"),
     ("beta", r"wiskunde|mathemat|natuurkunde|physics|scheikunde|chemie|chemistry|chemisch|laboratorium|labor|analist|astronom|nanobiolog|moleculair|science"),
     ("economie", r"econom|bedrijfskunde|business|finance|financ|accountancy|accountant|marketing|commerc|bank|verkoop|sales|retail|ondernem|manag|administrat|secretar|office|kantoor|handel|winkel|makelaar|vastgoed|international business"),
     ("taal", r"taal|talen|letterkunde|literatuur|engels|duits|frans|spaans|nederlands|geschiedenis|history|filosofie|philosophy|religie|theolog|communicatie|journalist|tolk|vertal|cultuur|cultural|kunstgeschiedenis|archeolog|liberal arts|studies|humanities"),
@@ -192,6 +195,24 @@ def domein(w):
     return re.sub(r"^(https?://)?(www\.)?", "", w).split("/")[0].lower() if w else None
 
 
+# Korte sleutel om universiteitsnamen uit verschillende DUO-bestanden aan elkaar te koppelen
+UNI_SLEUTELS = [
+    ("vrije", "vu"), ("universiteit van amsterdam", "uva"), ("twente", "ut"), ("utrecht", "uu"), ("groningen", "rug"),
+    ("leiden", "leiden"), ("delft", "tud"), ("eindhoven", "tue"), ("tilburg", "tiu"), ("maastricht", "um"),
+    ("wageningen", "wur"), ("radboud", "ru"), ("nijmegen", "ru"), ("erasmus", "eur"), ("humanistiek", "uvh"),
+    ("apeldoorn", "tua"), ("protestantse", "pthu"), ("theologische universiteit utrecht", "tuu"), ("open universiteit", "ou"),
+    ("breda", "buas"),
+]
+
+
+def uni_sleutel(naam):
+    n = naam.lower()
+    for woord, sleutel in UNI_SLEUTELS:
+        if woord in n:
+            return sleutel
+    return n
+
+
 # Merknaam voor mbo-scholen waarvan de DUO-naam alleen een afdeling noemt
 MBO_MERK = {
     "100B581": "Noorderpoort",
@@ -299,18 +320,26 @@ def main():
             "m" + kort_id(aanbieder, crebo, plaatsen[p]["naam"]),
             naam, extra, i, niveau, SECTOREN.index(sector), p, None,
             round(duur * 2) / 2 if duur else None,
-            "/".join(sorted(g["leerwegen"])), url, crebo,
+            "/".join(sorted(g["leerwegen"])), url, crebo, None, False,
         ])
 
     # ---------- hbo en wo
     inst_ho = {r["INSTELLINGSCODE"]: maak_url(r["INTERNETADRES"].lower()) for r in lees("instellingen_ho.csv")}
     ho_site = {}
     ho_duur = {}
+    ho_taal = defaultdict(set)
+    ho_check = {}
     for r in lees("ho_aanbod.csv"):
+        croho = r["ERKENDEOPLEIDINGSCODE"] or r["VARIANT_VAN"]
+        sleutel = (uni_sleutel(r["ONDERWIJSBESTUUR_NAAM"]), croho)
         if r["ERKENDEOPLEIDINGSCODE"] and r["STUDIELAST"]:
             ho_duur.setdefault(r["ERKENDEOPLEIDINGSCODE"], int(r["STUDIELAST"]))
-        if r["WEBSITE"] and r["ERKENDEOPLEIDINGSCODE"]:
-            ho_site.setdefault((normaal(r["ONDERWIJSBESTUUR_NAAM"])[:12], r["ERKENDEOPLEIDINGSCODE"]), maak_url(r["WEBSITE"]))
+        if r["WEBSITE"] and croho:
+            ho_site.setdefault(sleutel, maak_url(r["WEBSITE"]))
+        if r["VOERTAAL"] and r["VORM"] != "DEELTIJD":
+            ho_taal[sleutel].update(r["VOERTAAL"].split(","))
+        if r["STUDIEKEUZECHECK"]:
+            ho_check[sleutel] = r["STUDIEKEUZECHECK"] == "STUDIEKEUZE_CHECK_VERPLICHT" or ho_check.get(sleutel, False)
 
     for bestand, soort in (("hbo_eerstejaars.csv", "hbo"), ("wo_eerstejaars.csv", "wo")):
         rijen = lees(bestand)
@@ -343,12 +372,29 @@ def main():
             niveau = "ad" if ad else soort
             ec = ho_duur.get(croho)
             duur = (ec / 60) if ec else (2 if ad else 4 if soort == "hbo" else 3)
-            url = ho_site.get((normaal(r["INSTELLINGSNAAM_ACTUEEL"])[:12], croho))
+            sl = (uni_sleutel(r["INSTELLINGSNAAM_ACTUEEL"]), croho)
+            url = ho_site.get(sl)
+            talen = ho_taal.get(sl, set())
+            taal = "NL/EN" if {"NLD", "ENG"} <= talen else "EN" if "ENG" in talen else "NL" if "NLD" in talen else None
+            extra = {"taal": taal, "check": ho_check.get(sl, False)}
             opleidingen.append([
                 "h" + kort_id(code, croho, gemeente),
                 naam, None, i, niveau, SECTOREN.index(sector), p, aantal,
-                round(duur * 2) / 2, None, url, croho,
+                round(duur * 2) / 2, None, url, croho, extra["taal"], extra["check"],
             ])
+
+    # ---------- alleen universiteit (StudieKompas richt zich op wo-bachelors)
+    if ALLEEN_WO:
+        opleidingen = [o for o in opleidingen if o[4] == "wo"]
+        oude_plaatsen, oude_inst = plaatsen, instellingen
+        gebruikt_p = sorted({o[6] for o in opleidingen})
+        gebruikt_i = sorted({o[3] for o in opleidingen})
+        pmap = {old: new for new, old in enumerate(gebruikt_p)}
+        imap = {old: new for new, old in enumerate(gebruikt_i)}
+        plaatsen = [oude_plaatsen[i] for i in gebruikt_p]
+        instellingen = [oude_inst[i] for i in gebruikt_i]
+        for o in opleidingen:
+            o[3], o[6] = imap[o[3]], pmap[o[6]]
 
     # ---------- opschonen en wegschrijven
     ids = Counter(o[0] for o in opleidingen)
@@ -361,7 +407,7 @@ def main():
         "versie": 2,
         "gegenereerd": date.today().isoformat(),
         "bron": "DUO Open Onderwijsdata (CC0); coördinaten: PDOK",
-        "kolommen": ["id", "naam", "eigenNaam", "instelling", "niveau", "sector", "plaats", "instroom", "duur", "leerwegen", "url", "code"],
+        "kolommen": ["id", "naam", "eigenNaam", "instelling", "niveau", "sector", "plaats", "instroom", "duur", "leerwegen", "url", "code", "taal", "studiekeuzecheck"],
         "sectoren": SECTOREN,
         "plaatsen": plaatsen,
         "instellingen": instellingen,

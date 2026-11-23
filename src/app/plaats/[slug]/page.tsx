@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (!r) return {};
   return {
     title: `Studeren in ${plaatsNaam(r.plaats.naam)}`,
-    description: `${r.opleidingen.length} opleidingen in ${plaatsNaam(r.plaats.naam)}: kosten, reistijd, scholen en studentenverenigingen.`,
+    description: `${r.opleidingen.length} universitaire bachelors in ${plaatsNaam(r.plaats.naam)}: kosten, kamers, universiteiten en studentenleven.`,
   };
 }
 

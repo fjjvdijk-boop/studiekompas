@@ -90,7 +90,7 @@ export default function NederlandKaart({
           "circle-color": ["get", "kleur"],
           "circle-opacity": 0.18,
           "circle-blur": 0.6,
-          "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "aantal"]], 1, 10, 30, 46],
+          "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "aantal"]], 1, 9, 10, 30],
         },
       });
       map.addLayer({
@@ -99,7 +99,7 @@ export default function NederlandKaart({
         source: "plaatsen",
         paint: {
           "circle-color": ["get", "kleur"],
-          "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "aantal"]], 1, 4, 30, 22],
+          "circle-radius": ["interpolate", ["linear"], ["sqrt", ["get", "aantal"]], 1, 5, 10, 16],
           "circle-stroke-color": "#ffffff",
           "circle-stroke-width": ["case", ["boolean", ["feature-state", "gekozen"], false], 4, 2],
           "circle-opacity": 0.92,
@@ -111,7 +111,7 @@ export default function NederlandKaart({
         source: "plaatsen",
         minzoom: 0,
         layout: {
-          "text-field": ["concat", ["get", "label"], "\n", ["get", "prijs"]],
+          "text-field": ["get", "label"],
           "text-font": ["Noto Sans Bold"],
           "text-size": ["interpolate", ["linear"], ["zoom"], 6, 10, 10, 13],
           "text-offset": [0, 1.4],
@@ -135,9 +135,7 @@ export default function NederlandKaart({
         const p = f.properties as { label: string; aantal: number; prijs: string };
         popup
           .setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number])
-          .setHTML(
-            `<strong>${p.label}</strong><br><span style="opacity:.7">${p.aantal} opleidingen · ${p.prijs}/mnd</span>`,
-          )
+          .setHTML(`<strong>${p.label}</strong><br><span style="opacity:.7">${p.aantal} bachelors</span>`)
           .addTo(map);
       });
       map.on("mouseleave", "plaatsen", () => {
@@ -174,7 +172,7 @@ export default function NederlandKaart({
     if (!klaar || !kaart.current) return;
     thuisMarker.current?.remove();
     const el = document.createElement("div");
-    el.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:999px;background:#120f2e;color:#fff;font:600 12px var(--font-sans);box-shadow:0 8px 20px -6px rgba(0,0,0,.5);border:2px solid #fff"><span style="font-size:15px">🏠</span>${thuis.naam}</div>`;
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:999px;background:#17160f;color:#fffdf8;font:500 12px var(--font-sans);box-shadow:0 8px 20px -6px rgba(0,0,0,.5);border:2px solid #fff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>${thuis.naam}</div>`;
     thuisMarker.current = new maplibregl.Marker({ element: el, anchor: "bottom" })
       .setLngLat([thuis.lng, thuis.lat])
       .addTo(kaart.current);

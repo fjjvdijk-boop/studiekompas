@@ -24,17 +24,28 @@ const OUDE_SECTOREN: Record<string, SectorId> = {
 export function migreerProfiel(p: unknown): Profiel | null {
   if (!p || typeof p !== "object") return null;
   const o = p as Record<string, unknown>;
-  if (o.versie === 2) return { ...STANDAARD_PROFIEL, ...(o as Partial<Profiel>) } as Profiel;
+  if (o.versie === 2 || o.versie === 3) {
+    // Oude velden (budget, leerstijl, soorten) vallen weg; nieuwe krijgen een standaardwaarde
+    const { budget: _b, leerstijl: _l, soorten: _s, ...rest } = o as Record<string, unknown>;
+    void _b;
+    void _l;
+    void _s;
+    return {
+      ...STANDAARD_PROFIEL,
+      ...(rest as Partial<Profiel>),
+      versie: 3,
+      vooropleiding: (rest.vooropleiding as Profiel["vooropleiding"]) ?? "vwo",
+    };
+  }
   const interesse: Partial<Record<SectorId, number>> = {};
   if (Array.isArray(o.interesses))
     for (const s of o.interesses) if (OUDE_SECTOREN[s]) interesse[OUDE_SECTOREN[s]] = 0.85;
   const niveau = o.niveau as string | undefined;
+  void niveau;
   return {
     ...STANDAARD_PROFIEL,
     naam: typeof o.naam === "string" ? o.naam : "",
     interesse,
-    soorten: niveau === "hbo" ? ["hbo"] : niveau === "wo" ? ["wo"] : ["mbo", "hbo", "wo"],
-    budget: typeof o.budget === "number" ? o.budget : STANDAARD_PROFIEL.budget,
     maxReistijd: typeof o.maxReistijd === "number" ? o.maxReistijd : STANDAARD_PROFIEL.maxReistijd,
   };
 }

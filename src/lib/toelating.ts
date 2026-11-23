@@ -177,11 +177,14 @@ export function toelating(
   if (!v) return { status: "onbekend", mist: [], reden: "Vul je diploma in om je toelating te checken", eisen };
 
   // Soort onderwijs
+  if (o.soort === "wo" && v === "vmbo")
+    return { status: "nee", mist: [], reden: "Met vmbo kun je niet direct naar de universiteit.", eisen };
   if (o.soort === "wo" && v !== "vwo")
     return {
-      status: "nee",
+      status: "onbekend",
       mist: [],
-      reden: `Met ${v === "mbo4" ? "mbo 4" : v} kun je niet direct naar de universiteit. Wel via een hbo-propedeuse${v === "havo" ? " of het vwo" : ""}.`,
+      reden:
+        "Met een hbo-propedeuse kun je naar de universiteit. Soms moet je dan nog een vak bijspijkeren: check de eisen bij de opleiding.",
       eisen,
     };
   if (o.soort === "hbo" && v === "vmbo")

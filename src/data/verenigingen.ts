@@ -23,12 +23,12 @@ export interface StadVerenigingen {
 }
 
 export const SOORT_LABEL: Record<VerenigingSoort, { label: string; emoji: string }> = {
-  gezelligheid: { label: "Gezelligheid", emoji: "🍻" },
-  christelijk: { label: "Christelijk", emoji: "✝️" },
-  internationaal: { label: "Internationaal", emoji: "🌍" },
-  sport: { label: "Sport", emoji: "🚣" },
-  cultuur: { label: "Cultuur", emoji: "🎻" },
-  lhbti: { label: "LHBTI+", emoji: "🏳️‍🌈" },
+  gezelligheid: { label: "Gezelligheid", emoji: "" },
+  christelijk: { label: "Christelijk", emoji: "" },
+  internationaal: { label: "Internationaal", emoji: "" },
+  sport: { label: "Sport", emoji: "" },
+  cultuur: { label: "Cultuur", emoji: "" },
+  lhbti: { label: "LHBTI+", emoji: "" },
 };
 
 export const STUDENTENVERENIGINGEN: StadVerenigingen[] = [

@@ -21,6 +21,8 @@ export interface RuweData {
     string | null,
     string | null,
     string,
+    ("NL" | "EN" | "NL/EN" | null)?,
+    boolean?,
   ][];
 }
 
@@ -36,7 +38,22 @@ export const soortVan = (n: Niveau): Soort => (n.startsWith("mbo") ? "mbo" : n =
 
 export function decodeer(ruw: RuweData): Data {
   const opleidingen = ruw.opleidingen.map(
-    ([id, naam, eigenNaam, inst, niveau, sector, plaats, instroom, duur, leerwegen, url, code]): Opleiding => ({
+    ([
+      id,
+      naam,
+      eigenNaam,
+      inst,
+      niveau,
+      sector,
+      plaats,
+      instroom,
+      duur,
+      leerwegen,
+      url,
+      code,
+      taal,
+      check,
+    ]): Opleiding => ({
       id,
       naam,
       eigenNaam,
@@ -50,6 +67,8 @@ export function decodeer(ruw: RuweData): Data {
       leerwegen,
       url,
       code,
+      taal: taal ?? null,
+      studiekeuzecheck: check ?? false,
     }),
   );
   return {

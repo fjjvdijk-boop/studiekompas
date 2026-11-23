@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
-import "@fontsource-variable/bricolage-grotesque/standard.css";
+import { GeistMono } from "geist/font/mono";
+import "@fontsource-variable/fraunces/opsz.css";
+import "@fontsource-variable/fraunces/opsz-italic.css";
 import "./globals.css";
 import { StoreProvider } from "@/lib/store";
 import { Navigatie } from "@/components/Navigatie";
@@ -12,17 +14,17 @@ import { SITE_URL } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   openGraph: { type: "website", locale: "nl_NL", siteName: "StudieKompas" },
-  title: { default: "StudieKompas – vind de opleiding die bij je past", template: "%s · StudieKompas" },
+  title: { default: "StudieKompas – kies je universitaire studie", template: "%s · StudieKompas" },
   description:
-    "Alle mbo-, hbo- en wo-opleidingen van Nederland. Doe de studiekeuzetest, zie wat studeren per maand kost en of je thuis kunt blijven wonen.",
+    "Alle universitaire bachelors van Nederland. Doe de studiekeuzetest, reken je studiefinanciering uit en vind een kamer.",
   applicationName: "StudieKompas",
   appleWebApp: { capable: true, title: "StudieKompas", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f6f5fb" },
-    { media: "(prefers-color-scheme: dark)", color: "#0b0a1a" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#12110d" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -31,7 +33,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="nl" className={GeistSans.variable} suppressHydrationWarning>
+    <html lang="nl" className={`${GeistSans.variable} ${GeistMono.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEMA_SCRIPT }} />
       </head>

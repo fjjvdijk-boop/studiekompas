@@ -3,14 +3,14 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
-import { SECTOREN } from "@/data/sectoren";
+import { HOOFDRICHTINGEN, SECTOREN } from "@/data/sectoren";
 import { euro, getal, plaatsNaam } from "@/lib/bereken";
 import { useData } from "@/lib/data-client";
 import { plaatsOverzicht } from "@/lib/plaatsen";
 import { useStore } from "@/lib/store";
-import type { SectorId, Soort } from "@/lib/types";
+import type { SectorId } from "@/lib/types";
 import { PlaatsPaneel } from "@/components/PlaatsPaneel";
-import { PaginaKop, Segment, StoplichtBadge } from "@/components/ui";
+import { PaginaKop, StoplichtBadge } from "@/components/ui";
 
 const NederlandKaart = dynamic(() => import("@/components/NederlandKaart"), {
   ssr: false,
@@ -20,7 +20,6 @@ const NederlandKaart = dynamic(() => import("@/components/NederlandKaart"), {
 export default function KaartPagina() {
   const data = useData();
   const { profiel } = useStore();
-  const [soort, setSoort] = useState<Soort | "alle">("alle");
   const [sector, setSector] = useState<SectorId | null>(null);
   const [gekozen, setGekozen] = useState<string | null>(null);
   const paneel = useRef<HTMLElement>(null);
@@ -31,16 +30,8 @@ export default function KaartPagina() {
   }, [gekozen]);
 
   const plaatsen = useMemo(
-    () =>
-      data
-        ? plaatsOverzicht(
-            data,
-            profiel,
-            (o) => (soort === "alle" || o.soort === soort) && (!sector || o.sector === sector),
-            soort === "mbo" ? "mbo" : "hbo",
-          )
-        : [],
-    [data, profiel, soort, sector],
+    () => (data ? plaatsOverzicht(data, profiel, (o) => !sector || o.sector === sector, "wo") : []),
+    [data, profiel, sector],
   );
   const punten = useMemo(
     () =>
@@ -73,36 +64,25 @@ export default function KaartPagina() {
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <Segment
-          waarde={soort}
-          kies={setSoort}
-          opties={[
-            { waarde: "alle", label: "Alles" },
-            { waarde: "mbo", label: "mbo" },
-            { waarde: "hbo", label: "hbo" },
-            { waarde: "wo", label: "wo" },
-          ]}
-        />
         <div className="scroll-x -mx-4 flex flex-1 gap-1.5 overflow-x-auto px-4 sm:mx-0 sm:px-0">
           <button
             type="button"
             onClick={() => setSector(null)}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium ${!sector ? "border-ink bg-ink text-bg" : "border-line bg-card"}`}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-sm ${!sector ? "border-ink bg-ink text-bg" : "border-line bg-card"}`}
           >
             Alle richtingen
           </button>
-          {SECTOREN.map((s) => (
+          {SECTOREN.filter((s) => HOOFDRICHTINGEN.includes(s.id)).map((s) => (
             <button
               key={s.id}
               type="button"
               onClick={() => setSector(sector === s.id ? null : s.id)}
               aria-pressed={sector === s.id}
-              className={`shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-                sector === s.id ? "border-transparent text-white" : "border-line bg-card hover:border-brand"
+              className={`shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                sector === s.id ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink"
               }`}
-              style={sector === s.id ? { background: s.kleur } : undefined}
             >
-              {s.emoji} {s.kort}
+              {s.kort}
             </button>
           ))}
         </div>
@@ -129,8 +109,8 @@ export default function KaartPagina() {
             <PlaatsPaneel info={info} sluit={() => setGekozen(null)} />
           ) : (
             <div>
-              <h2 className="display text-2xl font-bold">Grootste studieplaatsen</h2>
-              <p className="mb-4 text-sm text-muted">Tik op een plaats voor alle details.</p>
+              <h2 className="display text-3xl">Universiteitssteden</h2>
+              <p className="mb-4 text-sm text-muted">Tik op een stad voor alle details.</p>
               {!data ? (
                 <div className="space-y-2">
                   {Array.from({ length: 8 }, (_, i) => (
@@ -139,7 +119,7 @@ export default function KaartPagina() {
                 </div>
               ) : (
                 <ul className="space-y-1.5">
-                  {plaatsen.slice(0, 14).map((p, i) => (
+                  {plaatsen.map((p, i) => (
                     <li key={p.plaats.naam}>
                       <button
                         type="button"
@@ -151,7 +131,7 @@ export default function KaartPagina() {
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-semibold">{plaatsNaam(p.plaats.naam)}</span>
                           <span className="text-xs text-muted tabular">
-                            {getal(p.aantal)} opleidingen · {euro(p.kosten.advies)}/mnd
+                            {getal(p.aantal)} bachelors · kamer {euro(p.kosten.huur)}
                           </span>
                         </span>
                         <StoplichtBadge licht={p.licht} minuten={p.reistijd} schatting={p.reistijdSchatting} />

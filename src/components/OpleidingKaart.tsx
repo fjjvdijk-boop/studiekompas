@@ -1,10 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Home as HomeIcon, MapPin, Building2 } from "lucide-react";
 import { euro, plaatsNaam } from "@/lib/bereken";
 import type { Resultaat } from "@/lib/resultaten";
-import { FavorietKnop, NiveauChip, ScoreRing, SectorIcoon, SectorLabel, StoplichtBadge } from "./ui";
+import { FavorietKnop, ScoreRing, SectorLabel, StoplichtBadge, TaalChip } from "./ui";
 
 export function OpleidingKaart({
   r,
@@ -15,71 +14,51 @@ export function OpleidingKaart({
   r: Resultaat;
   toonScore?: boolean;
   index?: number;
-  /** Aantal andere plekken waar je deze opleiding ook kunt doen */
+  /** Aantal andere universiteiten met dezelfde opleiding */
   extra?: number;
 }) {
-  const { opleiding: o, kosten: k, match, licht, reistijd, reistijdSchatting } = r;
+  const { opleiding: o, kosten: k, geld, match, licht, reistijd, reistijdSchatting } = r;
   return (
     <Link
       href={`/opleiding/${o.id}`}
-      className="kaart focus-ring group binnenkomen relative flex flex-col gap-4 overflow-hidden p-4 transition-all duration-300 hover:-translate-y-1 hover:shadow-groot sm:p-5"
-      style={{ animationDelay: `${Math.min(index, 12) * 30}ms` }}
+      className="kaart focus-ring group binnenkomen flex flex-col gap-4 p-5 transition-colors hover:border-ink/40"
+      style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
     >
       <div className="flex items-start gap-3">
-        <SectorIcoon sector={o.sector} />
         <div className="min-w-0 flex-1">
-          <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <NiveauChip niveau={o.niveau} />
+          <div className="mb-2 flex flex-wrap items-center gap-2">
             <SectorLabel sector={o.sector} />
+            <TaalChip taal={o.taal} />
           </div>
-          <h3 className="display text-[17px] font-bold leading-tight group-hover:text-brand">{o.naam}</h3>
+          <h3 className="display text-[21px] leading-[1.15] group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
+            {o.naam}
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            {o.instelling.naam} · {plaatsNaam(o.plaats.naam)}
+            {extra > 0 && <span> · ook bij {extra} andere</span>}
+          </p>
         </div>
-        {toonScore && <ScoreRing score={match.score} maat={46} dik={4} />}
-      </div>
-      <div className="space-y-1 text-sm text-muted">
-        <p className="flex items-start gap-1.5">
-          <Building2 className="mt-[3px] h-3.5 w-3.5 shrink-0" />
-          <span className="line-clamp-1">{o.instelling.naam}</span>
-        </p>
-        <p className="flex items-center gap-1.5">
-          <MapPin className="h-3.5 w-3.5 shrink-0" />
-          {plaatsNaam(o.plaats.naam)}
-          {o.leerwegen && <span className="text-xs opacity-75">· {o.leerwegen}</span>}
-          {extra > 0 && (
-            <span className="ml-auto shrink-0 rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-semibold text-brand">
-              + {extra} {extra === 1 ? "plek" : "plekken"}
-            </span>
-          )}
-        </p>
+        {toonScore && <ScoreRing score={match.score} maat={44} />}
       </div>
       {match.toelating.status === "deficientie" && (
-        <p className="-mt-1 rounded-xl bg-oranje-soft px-3 py-1.5 text-xs font-semibold text-oranje">
-          ⚠️ Je mist {match.toelating.mist.join(" en ")}
-        </p>
+        <p className="text-xs text-oranje">Je mist {match.toelating.mist.join(" en ")}</p>
       )}
-      {match.toelating.status === "nee" && (
-        <p className="-mt-1 rounded-xl bg-rood-soft px-3 py-1.5 text-xs font-semibold text-rood">
-          ⛔ Niet direct toelaatbaar met je diploma
-        </p>
-      )}
-      <div className="mt-auto flex items-center gap-2 border-t border-line pt-3">
-        <div className="min-w-0 flex-1">
-          <div className="display text-lg font-bold tabular leading-none">
-            {euro(k.advies)}
-            <span className="font-sans text-xs font-normal text-muted"> /mnd</span>
-          </div>
-          <div className="mt-1 flex items-center gap-1 text-[11px] text-muted">
-            {k.thuisMogelijk ? (
-              <>
-                <HomeIcon className="h-3 w-3" /> thuis wonen
-              </>
-            ) : (
-              "op kamer"
-            )}
-          </div>
+      {match.toelating.status === "nee" && <p className="text-xs text-rood">Niet direct toelaatbaar met je diploma</p>}
+      <div className="mt-auto grid grid-cols-[1fr_1fr_auto] items-end gap-3 border-t border-line pt-3">
+        <div>
+          <p className="bovenschrift">{k.thuisMogelijk ? "Thuis wonend" : "Op kamer"}</p>
+          <p className="display text-lg tabular">{euro(k.advies)}</p>
         </div>
-        <StoplichtBadge licht={licht} minuten={reistijd} schatting={reistijdSchatting} />
-        <FavorietKnop opleidingId={o.id} />
+        <div>
+          <p className="bovenschrift">Zelf lenen</p>
+          <p className={`display text-lg tabular ${geld.teLenen > 0 ? "" : "text-groen"}`}>
+            {geld.teLenen > 0 ? euro(geld.teLenen) : "€ 0"}
+          </p>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <StoplichtBadge licht={licht} minuten={reistijd} schatting={reistijdSchatting} />
+          <FavorietKnop opleidingId={o.id} />
+        </div>
       </div>
     </Link>
   );
@@ -89,7 +68,7 @@ export function KaartSkelet({ aantal = 6 }: { aantal?: number }) {
   return (
     <>
       {Array.from({ length: aantal }, (_, i) => (
-        <div key={i} className="h-[214px] animate-pulse rounded-3xl bg-card-2" />
+        <div key={i} className="h-[200px] animate-pulse rounded-2xl bg-card-2" />
       ))}
     </>
   );

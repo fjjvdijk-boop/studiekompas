@@ -9,7 +9,8 @@ import { downloadIcs, maakIcs } from "@/lib/ics";
 import { useStore } from "@/lib/store";
 import type { Favoriet, Opleiding } from "@/lib/types";
 import { MijnLijstTabs } from "@/components/MijnLijstTabs";
-import { LeegScherm, NiveauChip, PaginaKop, SectorIcoon } from "@/components/ui";
+import { LeegScherm, PaginaKop, SectorLabel } from "@/components/ui";
+import { SectorIcoon } from "@/components/SectorIcoon";
 import { SECTOR } from "@/data/sectoren";
 
 const WEEKDAGEN = ["ma", "di", "wo", "do", "vr", "za", "zo"];
@@ -88,7 +89,7 @@ export default function OpenDagenPagina() {
       <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
         <section className="kaart h-fit p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="display text-2xl font-bold capitalize">{maandNaam}</h2>
+            <h2 className="display text-2xl font-medium capitalize">{maandNaam}</h2>
             <div className="flex gap-1">
               <button
                 type="button"
@@ -108,7 +109,7 @@ export default function OpenDagenPagina() {
               </button>
             </div>
           </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold uppercase text-muted">
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-medium uppercase text-muted">
             {WEEKDAGEN.map((w) => (
               <div key={w} className="py-1">
                 {w}
@@ -124,7 +125,7 @@ export default function OpenDagenPagina() {
                 <div
                   key={i}
                   className={`relative flex aspect-square flex-col items-center rounded-2xl p-1 pt-1.5 text-sm tabular ${
-                    op.length ? "bg-ink font-bold text-bg" : datum < nu ? "text-muted/40" : ""
+                    op.length ? "bg-ink font-medium text-bg" : datum < nu ? "text-muted/40" : ""
                   } ${datum === nu && !op.length ? "ring-2 ring-brand" : ""}`}
                   title={op.map((x) => x.o.naam).join(", ")}
                 >
@@ -132,9 +133,11 @@ export default function OpenDagenPagina() {
                   {op.length > 0 && (
                     <span className="mb-1 mt-auto flex gap-0.5">
                       {op.slice(0, 3).map((x) => (
-                        <span key={x.o.id} className="text-[10px] leading-none">
-                          {SECTOR[x.o.sector].emoji}
-                        </span>
+                        <span
+                          key={x.o.id}
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{ background: SECTOR[x.o.sector].kleur }}
+                        />
                       ))}
                     </span>
                   )}
@@ -161,27 +164,27 @@ export default function OpenDagenPagina() {
         <section className="space-y-6">
           {gepland.length > 0 && (
             <div>
-              <h2 className="display mb-3 text-xl font-bold">Gepland</h2>
+              <h2 className="display mb-3 text-xl font-medium">Gepland</h2>
               <ul className="space-y-2.5">
                 {gepland.map(({ f, o }) => {
                   const n = dagenTot(f.openDag!);
                   return (
                     <li key={o.id} className="kaart flex items-center gap-4 p-4">
-                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-2xl bg-ink text-bg">
+                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-ink text-bg">
                         <span className="text-[10px] font-semibold uppercase">
                           {datumTekst(f.openDag!, { month: "short" }).replace(".", "")}
                         </span>
-                        <span className="display text-xl font-bold leading-none tabular">
+                        <span className="display text-xl font-medium leading-none tabular">
                           {datumTekst(f.openDag!, { day: "numeric" })}
                         </span>
                       </div>
                       <Link href={`/opleiding/${o.id}`} className="min-w-0 flex-1">
-                        <p className="display truncate font-bold hover:text-brand">{o.naam}</p>
+                        <p className="display truncate font-medium hover:text-brand">{o.naam}</p>
                         <p className="truncate text-sm text-muted">
                           {o.instelling.naam}, {plaatsNaam(o.plaats.naam)}
                         </p>
                       </Link>
-                      <span className={`shrink-0 text-xs font-bold ${n <= 7 ? "text-oranje" : "text-muted"}`}>
+                      <span className={`shrink-0 text-xs font-medium ${n <= 7 ? "text-oranje" : "text-muted"}`}>
                         {n === 0 ? "vandaag" : n === 1 ? "morgen" : `over ${n} d`}
                       </span>
                     </li>
@@ -193,7 +196,7 @@ export default function OpenDagenPagina() {
 
           {ongepland.length > 0 && (
             <div>
-              <h2 className="display mb-1 text-xl font-bold">Nog plannen</h2>
+              <h2 className="display mb-1 text-xl font-medium">Nog plannen</h2>
               <p className="mb-3 text-sm text-muted">Zoek de datum op de site van de school en vul hem in.</p>
               <ul className="space-y-2.5">
                 {ongepland.map(({ f, o }) => (
@@ -201,8 +204,8 @@ export default function OpenDagenPagina() {
                     <SectorIcoon sector={o.sector} maat={40} />
                     <Link href={`/opleiding/${o.id}`} className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <NiveauChip niveau={o.niveau} />
-                        <p className="display truncate font-bold hover:text-brand">{o.naam}</p>
+                        <SectorLabel sector={o.sector} />
+                        <p className="display truncate font-medium hover:text-brand">{o.naam}</p>
                       </div>
                       <p className="truncate text-sm text-muted">
                         {o.instelling.naam}, {plaatsNaam(o.plaats.naam)}
