@@ -122,10 +122,11 @@ export default function GeldPagina() {
   return (
     <>
       <PaginaKop
+        foto="studeren"
         label="Geld & DUO"
         titel={
           <>
-            Wat kost studeren, en wat <em className="italic">betaalt DUO</em>?
+            Wat kost studeren, en wat <em>betaalt DUO</em>?
           </>
         }
         sub="Stel je situatie in. We rekenen met de officiële bedragen van DUO voor september 2027 en bewaren je keuzes in je profiel."

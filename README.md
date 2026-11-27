@@ -13,7 +13,7 @@ Gemaakt voor de app-opdracht Informatica 6V.
 | Scherm | Wat je kunt doen |
 |---|---|
 | **Home** | Je beste matches, de tien richtingen, een rekenvoorbeeld voor een kamer in Utrecht en alle universiteiten |
-| **Studietest** | Favoriete vakken kiezen, acht keer "dit of dat" met illustraties, kiezen waar je jezelf ziet werken en tien stellingen. Je kompas groeit live mee. Resultaat: radargrafiek, je top 3 mét uitleg waarom, en je beste bachelors |
+| **Studietest** | Een story-quiz met foto's: eerst een grote richting, dan zes vragen met vier antwoorden, daarna kort je diploma, wonen, taal en geld. Uitslag: je richting op een grote foto, je top 3 met redenen, je kompas en je beste bachelors |
 | **Opleidingen** | Filteren op richting, voertaal (NL/EN), universiteit, stad, reistijd en toelating; sorteren op match, kosten of "minst lenen" |
 | **Opleiding** | Toelating met jouw profiel en vakken, geldplaatje (thuis of op kamer) met DUO, schuld en terugbetalen, kamermarkt in die stad, verenigingen, open dag plannen |
 | **Geld & DUO** | Rekenhulp met basisbeurs, aanvullende beurs (op basis van inkomen ouders en broers/zussen), lening, collegegeldkrediet, schuld en maandbedrag terugbetalen; plus het stappenplan om het aan te vragen |
@@ -27,7 +27,8 @@ Gemaakt voor de app-opdracht Informatica 6V.
 - **DUO-bedragen** (september–december 2027, gecontroleerd op duo.nl) in `src/lib/duo.ts`. De aanvullende beurs is een vereenvoudiging van de DUO-regel (13,6% van het inkomen boven de grens, rekening met andere kinderen). Collegegeld 2027/2028 (€ 2.771) is afgeleid van het collegegeldkrediet.
 - **Match-score (0–100):** interesse 50, toelating 10, geld (hoeveel je moet lenen t.o.v. wat je wilt) 20, reistijd 20 (zie `src/lib/bereken.ts`)
 - **Toelatingseisen:** per bachelor de landelijke profielvereisten; je ziet "toelaatbaar", "je mist natuurkunde" (deficiëntie) of "niet direct". Zie `src/lib/toelating.ts`. Dit is een vereenvoudiging: universiteiten kunnen afwijken.
-- **Vormgeving:** rustige "papier en inkt"-stijl met Fraunces en Geist, eigen lijntekeningen per richting (geen emoji's of stockfoto's), licht en donker thema
+- **Vormgeving:** wit, één felblauwe merkkleur en echte foto's van Nederlandse universiteiten en studentensteden (Wikimedia Commons, vrije licenties; maker en licentie staan bij elke foto, zie `scripts/fotos.md`). Licht en donker thema
+- **Studietest als story:** schermvullende foto per vraag, voortgang in segmenten, antwoorden A–D met één tik. Eerst kies je een grote richting, daarna krijg je zes vragen die daarbij passen (of een gemengde route als je twijfelt). Zie `src/data/vragenlijst.ts`
 - Alleen eigen favorieten (row level security, `supabase/schema.sql`), e-mailherinnering 3 dagen voor een open dag, installeerbaar op je telefoon, deelbare uitslag met preview-afbeelding
 
 ---
@@ -37,7 +38,7 @@ Gemaakt voor de app-opdracht Informatica 6V.
 | Onderdeel | Gekozen |
 |---|---|
 | Framework | Next.js 15 + React + TypeScript |
-| Opmaak | Tailwind CSS 4, lettertypes Fraunces en Geist |
+| Opmaak | Tailwind CSS 4, lettertype Geist |
 | Kaart | MapLibre GL met vectorkaarten van OpenFreeMap (gratis, geen sleutel) |
 | Grafieken | Recharts |
 | Data | Python-script dat DUO-bestanden omzet naar `public/data/*.json` |

@@ -78,14 +78,14 @@ function mail(naam: string, datum: string, items: Opleiding[], basis: string) {
         <div style="font-size:12px;color:#5b6478;text-transform:uppercase;letter-spacing:.04em">Open dag · ${o.niveau.toUpperCase()}</div>
         <div style="font-size:17px;font-weight:600;margin:4px 0">${ontsnap(o.naam)}</div>
         <div style="color:#5b6478">${ontsnap(o.instelling.naam)}, ${ontsnap(plaatsNaam(o.plaats.naam))}</div>
-        <a href="${basis}/opleiding/${o.id}" style="display:inline-block;margin-top:12px;color:#1e4d3b;font-weight:600">Bekijk in StudieKompas →</a>
+        <a href="${basis}/opleiding/${o.id}" style="display:inline-block;margin-top:12px;color:#2541ff;font-weight:600">Bekijk in StudieKompas →</a>
       </td></tr><tr><td style="height:10px"></td></tr>`,
     )
     .join("");
   return `<!doctype html><html><body style="margin:0;background:#f5f6fa;font-family:system-ui,-apple-system,sans-serif;color:#0e1630">
   <table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center" style="padding:32px 16px">
   <table width="100%" style="max-width:520px;background:#fff;border-radius:20px;padding:28px" cellpadding="0" cellspacing="0">
-    <tr><td style="font-size:20px;font-weight:600;color:#17160f;padding-bottom:16px;font-family:Georgia,serif">StudieKompas</td></tr>
+    <tr><td style="font-size:20px;font-weight:600;color:#0b0d12;padding-bottom:16px;letter-spacing:-0.02em">StudieKompas</td></tr>
     <tr><td style="font-size:16px;padding-bottom:16px">Hoi${naam ? " " + ontsnap(naam) : ""}! Op <strong>${datumTekst(datum)}</strong> ga je naar een open dag.</td></tr>
     ${blokken}
     <tr><td style="font-size:14px;color:#5b6478;padding-top:8px">Na afloop kun je in de app een cijfer en notitie geven. Veel plezier!</td></tr>

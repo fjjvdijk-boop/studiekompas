@@ -58,7 +58,7 @@ export function PlaatsPaneel({ info, sluit }: { info: PlaatsInfo; sluit?: () => 
           {info.instellingen.map(({ instelling, aantal }) => (
             <li key={instelling.naam} className="flex justify-between gap-3">
               <span>{instelling.naam}</span>
-              <span className="font-mono text-xs text-muted tabular">{aantal}</span>
+              <span className="text-xs text-muted tabular">{aantal}</span>
             </li>
           ))}
         </ul>
@@ -94,7 +94,7 @@ export function PlaatsPaneel({ info, sluit }: { info: PlaatsInfo; sluit?: () => 
 
       <Link
         href={`/plaats/${info.slug}`}
-        className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink px-5 py-3 text-sm text-bg hover:opacity-90"
+        className="focus-ring inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand px-5 py-3 text-sm text-white hover:opacity-90"
       >
         Alles over studeren in {plaatsNaam(info.plaats.naam)} <ArrowRight className="h-4 w-4" />
       </Link>

@@ -21,11 +21,11 @@ export function ogOpties() {
 function Kompas({ maat }: { maat: number }) {
   return (
     <svg width={maat} height={maat} viewBox="0 0 64 64">
-      <circle cx="32" cy="32" r="29" fill="none" stroke="#17160f" strokeWidth="2.5" />
-      <path d="M32 3v6M32 55v6M3 32h6M55 32h6" stroke="#17160f" strokeWidth="2" strokeLinecap="round" />
-      <path d="M32 12 L38 32 L32 52 L26 32 Z" fill="#17160f" />
-      <path d="M32 12 L38 32 L26 32 Z" fill="#b9472f" />
-      <circle cx="32" cy="32" r="2.6" fill="#f6f3ec" />
+      <circle cx="32" cy="32" r="29" fill="none" stroke="#0b0d12" strokeWidth="2.5" />
+      <path d="M32 3v6M32 55v6M3 32h6M55 32h6" stroke="#0b0d12" strokeWidth="2" strokeLinecap="round" />
+      <path d="M32 12 L38 32 L32 52 L26 32 Z" fill="#0b0d12" />
+      <path d="M32 12 L38 32 L26 32 Z" fill="#ff4d2e" />
+      <circle cx="32" cy="32" r="2.6" fill="#ffffff" />
     </svg>
   );
 }
@@ -50,9 +50,9 @@ export function DeelAfbeelding({
         flexDirection: "column",
         justifyContent: "space-between",
         padding: 72,
-        background: "#f6f3ec",
-        color: "#17160f",
-        borderBottom: "14px solid #1e4d3b",
+        background: "#ffffff",
+        color: "#0b0d12",
+        borderBottom: "14px solid #2541ff",
         fontFamily: "Geist",
       }}
     >
@@ -86,7 +86,7 @@ export function DeelAfbeelding({
               display: "flex",
               padding: "10px 22px",
               borderRadius: 999,
-              border: "2px solid #17160f",
+              border: "2px solid #0b0d12",
               fontSize: 26,
               fontWeight: 600,
             }}

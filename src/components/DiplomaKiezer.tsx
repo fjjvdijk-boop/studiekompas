@@ -39,7 +39,7 @@ export function DiplomaKiezer({ waarde, zet }: { waarde: Diploma; zet: (w: Parti
               }`}
             >
               <span
-                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${gekozen ? "border-ink bg-ink text-bg" : "border-line"}`}
+                className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${gekozen ? "border-ink bg-brand text-white" : "border-line"}`}
               >
                 {gekozen && <Check className="h-3 w-3" strokeWidth={3} />}
               </span>
@@ -66,7 +66,7 @@ export function DiplomaKiezer({ waarde, zet }: { waarde: Diploma; zet: (w: Parti
                     aria-pressed={aan}
                     onClick={() => wisselProfiel(pr)}
                     className={`focus-ring flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
-                      aan ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink/40"
+                      aan ? "border-ink bg-brand text-white" : "border-line bg-card hover:border-ink/40"
                     }`}
                   >
                     <span className="display text-xl">{pr}</span>
@@ -91,7 +91,7 @@ export function DiplomaKiezer({ waarde, zet }: { waarde: Diploma; zet: (w: Parti
                     aria-pressed={aan}
                     onClick={() => wisselVak(vak)}
                     className={`focus-ring inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                      aan ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink/40"
+                      aan ? "border-ink bg-brand text-white" : "border-line bg-card hover:border-ink/40"
                     }`}
                   >
                     {aan && <Check className="h-3.5 w-3.5" />}

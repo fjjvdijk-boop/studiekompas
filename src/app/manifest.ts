@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Kies je universitaire studie: test, DUO en kamer vinden.",
     start_url: "/",
     display: "standalone",
-    background_color: "#f6f3ec",
-    theme_color: "#1e4d3b",
+    background_color: "#ffffff",
+    theme_color: "#2541ff",
     lang: "nl",
     icons: [{ src: "/icon.svg", sizes: "any", type: "image/svg+xml", purpose: "any" }],
   };

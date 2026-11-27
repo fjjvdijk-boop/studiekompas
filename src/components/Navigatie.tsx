@@ -52,7 +52,7 @@ export function Navigatie() {
                 aria-current={actief(pad, href) ? "page" : undefined}
                 className={`focus-ring relative py-5 text-sm transition-colors ${
                   actief(pad, href)
-                    ? "text-ink after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-ink"
+                    ? "text-ink after:absolute after:inset-x-0 after:bottom-0 after:h-[2px] after:bg-brand"
                     : "text-muted hover:text-ink"
                 }`}
               >
@@ -73,7 +73,7 @@ export function Navigatie() {
             >
               <Heart className="h-[17px] w-[17px]" strokeWidth={1.75} />
               {aantal > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 font-mono text-[10px] text-brand-ink">
+                <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[10px] text-brand-ink">
                   {aantal}
                 </span>
               )}
@@ -85,7 +85,7 @@ export function Navigatie() {
                 pad === "/profiel" ? "border-ink" : "border-line hover:border-ink"
               }`}
             >
-              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-ink text-sm font-medium text-bg">
+              <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white">
                 {geladen && heeftProfiel && initiaal ? initiaal : <UserRound className="h-4 w-4" />}
               </span>
               <span className="hidden text-sm sm:inline">{geladen && profiel.naam ? profiel.naam : "Profiel"}</span>
@@ -108,7 +108,7 @@ export function Navigatie() {
                   aria-current={is ? "page" : undefined}
                   className={`relative flex flex-col items-center gap-1 pb-2 pt-2.5 text-[11px] ${is ? "text-ink" : "text-muted"}`}
                 >
-                  {is && <span className="absolute inset-x-6 top-0 h-[2px] bg-ink" />}
+                  {is && <span className="absolute inset-x-6 top-0 h-[2px] bg-brand" />}
                   <Icoon className="h-5 w-5" strokeWidth={is ? 2 : 1.6} />
                   {label}
                 </Link>

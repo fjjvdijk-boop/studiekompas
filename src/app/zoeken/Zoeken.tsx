@@ -168,7 +168,7 @@ export function Zoeken({ totaal }: { totaal: number }) {
                   type="button"
                   aria-pressed={aan}
                   onClick={() => zet("sectoren", aan ? f.sectoren.filter((x) => x !== s) : [...f.sectoren, s])}
-                  className={`flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors ${aan ? "bg-ink text-bg" : "hover:bg-card-2"}`}
+                  className={`flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left text-sm transition-colors ${aan ? "bg-brand text-white" : "hover:bg-card-2"}`}
                 >
                   <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: SECTOR[s].kleur }} />
                   {SECTOR[s].naam}
@@ -224,7 +224,7 @@ export function Zoeken({ totaal }: { totaal: number }) {
       <div>
         <span className="mb-3 flex justify-between">
           <span className="bovenschrift">Max. reistijd</span>
-          <span className="font-mono text-xs text-muted tabular">
+          <span className="text-xs text-muted tabular">
             {f.maxReistijd >= GEEN_LIMIET ? "geen limiet" : reistijdTekst(f.maxReistijd)}
           </span>
         </span>
@@ -253,7 +253,7 @@ export function Zoeken({ totaal }: { totaal: number }) {
               type="button"
               aria-pressed={f.toelaatbaar === w}
               onClick={() => zet("toelaatbaar", w)}
-              className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${f.toelaatbaar === w ? "bg-ink text-bg" : "hover:bg-card-2"}`}
+              className={`w-full rounded-lg px-3 py-2 text-left transition-colors ${f.toelaatbaar === w ? "bg-brand text-white" : "hover:bg-card-2"}`}
             >
               <span className="block text-sm">{titel}</span>
               <span className={`block text-xs ${f.toelaatbaar === w ? "opacity-70" : "text-muted"}`}>{tekst}</span>
@@ -312,7 +312,7 @@ export function Zoeken({ totaal }: { totaal: number }) {
           >
             <SlidersHorizontal className="h-4 w-4" />
             {actief.length > 0 && (
-              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 font-mono text-[10px] text-bg">
+              <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-md bg-brand px-1 text-[10px] text-white">
                 {actief.length}
               </span>
             )}
@@ -383,7 +383,7 @@ export function Zoeken({ totaal }: { totaal: number }) {
               <button
                 type="button"
                 onClick={() => setF(LEEG)}
-                className="mt-6 rounded-full bg-ink px-5 py-2.5 text-sm text-bg"
+                className="mt-6 rounded-md bg-brand px-5 py-2.5 text-sm text-white"
               >
                 Alles tonen
               </button>
@@ -411,7 +411,7 @@ export function Zoeken({ totaal }: { totaal: number }) {
             <button
               type="button"
               onClick={() => setPaneel(false)}
-              className="mt-7 w-full rounded-full bg-ink py-3.5 text-bg"
+              className="mt-7 w-full rounded-md bg-brand py-3.5 text-white"
             >
               Toon {gefilterd ? getal(gefilterd.length) : ""} bachelors
             </button>

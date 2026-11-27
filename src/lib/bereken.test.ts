@@ -2,7 +2,7 @@ import { readFileSync } from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
 import { INSTELLINGEN, STANDAARD_PROFIEL, WIERDEN } from "@/data/instellingen";
-import { berekenUitslag, LEGE_ANTWOORDEN } from "@/data/vragenlijst";
+import { berekenUitslag, DOMEINEN, LEGE_ANTWOORDEN, VRAGEN } from "@/data/vragenlijst";
 import { aanvullendeBeurs, DUO, geldplaatje, grensGeenBeurs, maandTerug, studieschuld } from "./duo";
 import {
   afstandKm,
@@ -179,19 +179,45 @@ describe("studietest", () => {
   it("zonder antwoorden is alles 0", () => {
     expect(Object.values(berekenUitslag(LEGE_ANTWOORDEN).interesse).every((w) => w === 0)).toBe(true);
   });
-  it("vertaalt een duidelijk bèta-profiel naar bèta bovenaan, met redenen", () => {
-    const u = berekenUitslag({
-      ...LEGE_ANTWOORDEN,
-      vakken: ["Wiskunde B", "Natuurkunde", "Scheikunde"],
-      keuzes: [0, 3, 3, 1, 3, 0, 3, 3],
-      toekomst: ["beta"],
-      stellingen: { beta: 4, techniek: 3, taal: 0 },
-    });
+  it("elke route heeft zes vragen met vier antwoorden", () => {
+    for (const d of DOMEINEN) {
+      expect(VRAGEN[d.id]).toHaveLength(6);
+      for (const v of VRAGEN[d.id]) expect(v.antwoorden).toHaveLength(4);
+    }
+  });
+  it("vertaalt steeds 'ziekenhuis' kiezen naar Geneeskunde bovenaan, met redenen", () => {
+    const vragen = VRAGEN.beta;
+    const keuzes = vragen.map((v) => v.antwoorden.findIndex((x) => (x.punten.zorg ?? 0) >= 1));
+    const u = berekenUitslag({ domein: "beta", keuzes: keuzes.map((k) => (k < 0 ? null : k)) });
     const top = Object.entries(u.interesse).sort((a, b) => b[1] - a[1])[0][0];
-    expect(top).toBe("beta");
-    expect(u.interesse.beta).toBeGreaterThan(0.7);
-    expect(u.redenen.beta?.length).toBeGreaterThan(2);
+    expect(top).toBe("zorg");
+    expect(u.interesse.zorg).toBeGreaterThan(0.9);
+    expect(u.redenen.zorg?.length).toBeGreaterThan(2);
     for (const w of Object.values(u.interesse)) expect(w).toBeLessThanOrEqual(1);
+  });
+  it("kan bij twijfel elke richting bovenaan zetten", () => {
+    for (const s of [
+      "beta",
+      "ict",
+      "zorg",
+      "natuur",
+      "economie",
+      "recht",
+      "taal",
+      "creatief",
+      "welzijn",
+      "techniek",
+    ] as const) {
+      const keuzes = VRAGEN.twijfel.map((v) => {
+        const i = v.antwoorden.findIndex((x) => (x.punten[s] ?? 0) >= 0.5);
+        return i < 0 ? null : i;
+      });
+      const u = berekenUitslag({ domein: "twijfel", keuzes });
+      const top = Object.entries(u.interesse)
+        .filter(([k]) => k.length > 0)
+        .sort((a, b) => b[1] - a[1])[0][0];
+      expect(top, s).toBe(s);
+    }
   });
 });
 

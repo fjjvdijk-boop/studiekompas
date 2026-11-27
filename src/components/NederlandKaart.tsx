@@ -172,7 +172,7 @@ export default function NederlandKaart({
     if (!klaar || !kaart.current) return;
     thuisMarker.current?.remove();
     const el = document.createElement("div");
-    el.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:999px;background:#17160f;color:#fffdf8;font:500 12px var(--font-sans);box-shadow:0 8px 20px -6px rgba(0,0,0,.5);border:2px solid #fff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>${thuis.naam}</div>`;
+    el.innerHTML = `<div style="display:flex;align-items:center;gap:6px;padding:5px 10px 5px 6px;border-radius:999px;background:#0b0d12;color:#ffffff;font:500 12px var(--font-sans);box-shadow:0 8px 20px -6px rgba(0,0,0,.5);border:2px solid #fff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>${thuis.naam}</div>`;
     thuisMarker.current = new maplibregl.Marker({ element: el, anchor: "bottom" })
       .setLngLat([thuis.lng, thuis.lat])
       .addTo(kaart.current);

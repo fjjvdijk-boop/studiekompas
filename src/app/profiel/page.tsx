@@ -149,7 +149,7 @@ export default function ProfielPagina() {
                   <li key={s}>
                     <div className="mb-2 flex items-center justify-between text-sm">
                       <span>{SECTOR[s].naam}</span>
-                      <span className="font-mono text-xs text-muted tabular">{w}</span>
+                      <span className="text-xs text-muted tabular">{w}</span>
                     </div>
                     <Schuif
                       label={SECTOR[s].naam}
@@ -181,7 +181,7 @@ export default function ProfielPagina() {
               type="button"
               onClick={opslaan}
               disabled={!veranderd}
-              className="rounded-full bg-ink px-6 py-2.5 text-sm text-bg disabled:opacity-30"
+              className="rounded-md bg-brand px-6 py-2.5 text-sm text-white disabled:opacity-30"
             >
               Opslaan
             </button>
@@ -319,7 +319,7 @@ function Account({
           <button
             type="submit"
             disabled={status === "bezig"}
-            className="mt-2 w-full rounded-full bg-ink py-3 text-sm font-semibold text-bg disabled:opacity-60"
+            className="mt-2 w-full rounded-md bg-brand py-3 text-sm font-semibold text-white disabled:opacity-60"
           >
             {status === "bezig" ? "Versturen…" : "Stuur inloglink"}
           </button>

@@ -68,7 +68,7 @@ export default function KaartPagina() {
           <button
             type="button"
             onClick={() => setSector(null)}
-            className={`shrink-0 rounded-full border px-3 py-1.5 text-sm ${!sector ? "border-ink bg-ink text-bg" : "border-line bg-card"}`}
+            className={`shrink-0 rounded-full border px-3 py-1.5 text-sm ${!sector ? "border-ink bg-brand text-white" : "border-line bg-card"}`}
           >
             Alle richtingen
           </button>
@@ -79,7 +79,7 @@ export default function KaartPagina() {
               onClick={() => setSector(sector === s.id ? null : s.id)}
               aria-pressed={sector === s.id}
               className={`shrink-0 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                sector === s.id ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink"
+                sector === s.id ? "border-ink bg-brand text-white" : "border-line bg-card hover:border-ink"
               }`}
             >
               {s.kort}

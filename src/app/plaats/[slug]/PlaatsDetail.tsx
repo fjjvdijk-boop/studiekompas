@@ -9,6 +9,8 @@ import { PER_STAD, SOORT_LABEL } from "@/data/verenigingen";
 import { bereken, euro, geldVoor, kosten, plaatsNaam, reistijd, reistijdTekst, stoplicht } from "@/lib/bereken";
 import { useStore } from "@/lib/store";
 import type { Opleiding, Plaats, SectorId } from "@/lib/types";
+import { Foto, FotoBron } from "@/components/Foto";
+import { STAD_FOTO } from "@/data/fotos";
 import { KamerStadKaart } from "@/components/KamerStadKaart";
 import { OpleidingKaart } from "@/components/OpleidingKaart";
 import { LICHT_LABEL } from "@/components/ui";
@@ -47,21 +49,36 @@ export function PlaatsDetail({ plaats, opleidingen }: { plaats: Plaats; opleidin
   return (
     <div className="space-y-16">
       <div>
-        <Link
-          href="/kaart"
-          className="focus-ring mb-8 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink"
-        >
-          <ArrowLeft className="h-4 w-4" /> Alle studiesteden
-        </Link>
-        <p className="bovenschrift mb-3">{plaats.provincie}</p>
-        <h1 className="display text-[48px] leading-[1] sm:text-8xl">
-          Studeren in <em className="italic">{naam}</em>
-        </h1>
-        <p className="mt-5 max-w-xl text-lg text-muted">
-          {opleidingen.length} universitaire bachelors bij {unis.size} {unis.size === 1 ? "instelling" : "instellingen"}
-          .
-        </p>
-        <dl className="mt-10 grid grid-cols-2 border-y border-line sm:grid-cols-4">
+        <section className="volle-breedte relative -mt-5 overflow-hidden bg-black text-white sm:-mt-8">
+          <Foto
+            sleutel={STAD_FOTO[plaats.naam] ?? "campus"}
+            className="kenburns absolute inset-0 h-full w-full object-cover"
+            sizes="100vw"
+            prioriteit
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-black/20" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/15 to-transparent" aria-hidden />
+          <div className="relative mx-auto flex min-h-[420px] max-w-6xl flex-col px-4 pb-10 pt-6 sm:min-h-[500px] sm:px-6">
+            <Link
+              href="/kaart"
+              className="inline-flex w-fit items-center gap-1.5 rounded-md bg-white/15 px-3 py-1.5 text-sm backdrop-blur hover:bg-white/25"
+            >
+              <ArrowLeft className="h-4 w-4" /> Alle studiesteden
+            </Link>
+            <div className="mt-auto">
+              <p className="text-sm font-semibold text-white/80">{plaats.provincie}</p>
+              <h1 className="mt-1 text-[48px] font-bold leading-[1] tracking-tight sm:text-[88px]">
+                Studeren in {naam}
+              </h1>
+              <p className="mt-3 max-w-xl text-lg text-white/85">
+                {opleidingen.length} universitaire bachelors bij {unis.size}{" "}
+                {unis.size === 1 ? "instelling" : "instellingen"}.
+              </p>
+              <FotoBron sleutel={STAD_FOTO[plaats.naam] ?? "campus"} className="mt-5 block text-[11px] text-white/60" />
+            </div>
+          </div>
+        </section>
+        <dl className="relative z-10 -mt-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-4">
           {[
             [
               `Reizen vanaf ${profiel.woonplaats.naam}`,
@@ -75,11 +92,8 @@ export function PlaatsDetail({ plaats, opleidingen }: { plaats: Plaats; opleidin
             ],
             ["Op kamer per maand", euro(k.uitwonend), "huur, leven, collegegeld, boeken"],
             ["Zelf lenen", euro(g.teLenen), "na DUO, ouders en bijbaan"],
-          ].map(([l, w, s], i) => (
-            <div
-              key={l}
-              className={`py-5 ${i % 2 ? "pl-5" : "pr-5"} ${i > 0 ? "sm:border-l sm:border-line sm:pl-5" : ""} ${i > 1 ? "border-t border-line sm:border-t-0" : ""}`}
-            >
+          ].map(([l, w, s]) => (
+            <div key={l} className="bg-card px-5 py-5">
               <dt className="bovenschrift">{l}</dt>
               <dd className="display mt-1 text-2xl tabular">{w}</dd>
               <dd className="text-xs text-muted">{s}</dd>
@@ -130,7 +144,7 @@ export function PlaatsDetail({ plaats, opleidingen }: { plaats: Plaats; opleidin
                       style={{ width: `${(n / max) * 100}%`, background: SECTOR[s].kleur }}
                     />
                   </span>
-                  <span className="text-right font-mono text-xs text-muted tabular">{n}</span>
+                  <span className="text-right text-xs text-muted tabular">{n}</span>
                 </Link>
               </li>
             ))}
@@ -148,7 +162,7 @@ export function PlaatsDetail({ plaats, opleidingen }: { plaats: Plaats; opleidin
                 <li key={n} className="flex items-baseline justify-between gap-3 py-3">
                   <span>{n}</span>
                   <span className="flex items-center gap-3">
-                    <span className="font-mono text-xs text-muted tabular">{u.n}</span>
+                    <span className="text-xs text-muted tabular">{u.n}</span>
                     {u.url && (
                       <a
                         href={u.url}

@@ -1,0 +1,178 @@
+[
+ {
+  "sleutel": "campus",
+  "bestand": "Academiegebouw_Groningen.json",
+  "nr": 2,
+  "alt": "Het Academiegebouw van de Rijksuniversiteit Groningen, met fietsen ervoor",
+  "positie": "50% 60%"
+ },
+ {
+  "sleutel": "stad-groningen",
+  "bestand": "Academiegebouw_Groningen.json",
+  "nr": 0,
+  "alt": "Het Academiegebouw in Groningen"
+ },
+ {
+  "sleutel": "stad-amsterdam",
+  "bestand": "Roeterseiland_Amsterdam.json",
+  "nr": 7,
+  "alt": "Studenten op de campus Roeterseiland in Amsterdam"
+ },
+ {
+  "sleutel": "stad-utrecht",
+  "bestand": "Universiteit_Utrecht_Uithof.json",
+  "nr": 4,
+  "alt": "Universiteitsgebouwen op de Uithof in Utrecht"
+ },
+ {
+  "sleutel": "stad-leiden",
+  "bestand": "Leiden_university_Academiegebouw.json",
+  "nr": 1,
+  "alt": "Het Academiegebouw aan het Rapenburg in Leiden",
+  "positie": "50% 40%"
+ },
+ {
+  "sleutel": "stad-tilburg",
+  "bestand": "Tilburg_University_campus.json",
+  "nr": 1,
+  "alt": "Studenten op het gras op de campus van Tilburg University"
+ },
+ {
+  "sleutel": "stad-rotterdam",
+  "bestand": "Erasmus_Universiteit_Woudestein.json",
+  "nr": 3,
+  "alt": "Tegelwerk van Karel Appel op campus Woudestein in Rotterdam"
+ },
+ {
+  "sleutel": "stad-delft",
+  "bestand": "TU_Delft_Aula.json",
+  "nr": 3,
+  "alt": "De Aula van de TU Delft"
+ },
+ {
+  "sleutel": "stad-enschede",
+  "bestand": "Universiteit_Twente_campus.json",
+  "nr": 8,
+  "alt": "Het carillon op de campus van de Universiteit Twente"
+ },
+ {
+  "sleutel": "stad-maastricht",
+  "bestand": "Maastricht_University.json",
+  "nr": 6,
+  "alt": "Hoogleraren in toga lopen door Maastricht bij de Diesviering"
+ },
+ {
+  "sleutel": "stad-wageningen",
+  "bestand": "Wageningen_University_campus.json",
+  "nr": 8,
+  "alt": "De campus van Wageningen University van bovenaf"
+ },
+ {
+  "sleutel": "lab",
+  "bestand": "chemistry_laboratory_student.json",
+  "nr": 11,
+  "alt": "Glaswerk in een scheikundelab"
+ },
+ {
+  "sleutel": "techniek",
+  "bestand": "engineering_students_workshop.json",
+  "nr": 0,
+  "alt": "Studenten aan het lassen in een werkplaats"
+ },
+ {
+  "sleutel": "code",
+  "bestand": "programming_laptop_code.json",
+  "nr": 2,
+  "alt": "Code op het scherm van een laptop"
+ },
+ {
+  "sleutel": "natuur",
+  "bestand": "biologist_fieldwork.json",
+  "nr": 7,
+  "alt": "Een bioloog doet veldwerk in een kwelder"
+ },
+ {
+  "sleutel": "economie",
+  "bestand": "stock_exchange_trading_floor.json",
+  "nr": 8,
+  "alt": "De handelsvloer van de beurs in Frankfurt"
+ },
+ {
+  "sleutel": "recht",
+  "bestand": "Vredespaleis.json",
+  "nr": 9,
+  "alt": "Het Vredespaleis in Den Haag met tulpen ervoor"
+ },
+ {
+  "sleutel": "bibliotheek",
+  "bestand": "university_library_reading_room.json",
+  "nr": 1,
+  "alt": "Een leeszaal van een universiteitsbibliotheek"
+ },
+ {
+  "sleutel": "theater",
+  "bestand": "theatre_stage_rehearsal.json",
+  "nr": 9,
+  "alt": "Een actrice op het toneel in rood licht"
+ },
+ {
+  "sleutel": "kamer",
+  "bestand": "student_room_Netherlands.json",
+  "nr": 3,
+  "alt": "Een ingerichte studentenkamer in Maastricht"
+ },
+ {
+  "sleutel": "collegezaal",
+  "bestand": "lecture_hall_university_Netherlands.json",
+  "nr": 0,
+  "alt": "Studenten in een collegezaal van het Educatorium in Utrecht"
+ },
+ {
+  "sleutel": "stad-eindhoven",
+  "bestand": "Eindhoven_University_of_Technology_Atlas.json",
+  "nr": 0,
+  "alt": "Het Atlas-gebouw van de TU Eindhoven"
+ },
+ {
+  "sleutel": "stad-nijmegen",
+  "bestand": "Radboud_University_Nijmegen_Grotius.json",
+  "nr": 0,
+  "alt": "Het Grotiusgebouw van de Radboud Universiteit in Nijmegen"
+ },
+ {
+  "sleutel": "heelal",
+  "bestand": "Westerbork_Synthesis_Radio_Telescope.json",
+  "nr": 0,
+  "alt": "De radiotelescopen van Westerbork"
+ },
+ {
+  "sleutel": "samenwerken",
+  "bestand": "students_group_work_university.json",
+  "nr": 0,
+  "alt": "Een groep studenten zit samen te praten"
+ },
+ {
+  "sleutel": "studeren",
+  "bestand": "students_group_work_university.json",
+  "nr": 2,
+  "alt": "Twee studenten lopen over de campus"
+ },
+ {
+  "sleutel": "museum",
+  "bestand": "Rijksmuseum_Eregalerij.json",
+  "nr": 7,
+  "alt": "Bezoekers in de Eregalerij van het Rijksmuseum"
+ },
+ {
+  "sleutel": "fietsen",
+  "bestand": "Roeterseiland_Amsterdam.json",
+  "nr": 6,
+  "alt": "Studenten lopen over de brug naar campus Roeterseiland in Amsterdam"
+ },
+ {
+  "sleutel": "ziekenhuis",
+  "bestand": "surgeons_operating_room.json",
+  "nr": 2,
+  "alt": "Chirurgen aan het werk in een operatiekamer"
+ }
+]

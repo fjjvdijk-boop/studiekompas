@@ -46,11 +46,11 @@ export function OpleidingKaart({
       {match.toelating.status === "nee" && <p className="text-xs text-rood">Niet direct toelaatbaar met je diploma</p>}
       <div className="mt-auto grid grid-cols-[1fr_1fr_auto] items-end gap-3 border-t border-line pt-3">
         <div>
-          <p className="bovenschrift">{k.thuisMogelijk ? "Thuis wonend" : "Op kamer"}</p>
+          <p className="text-[11px] font-medium text-muted">{k.thuisMogelijk ? "Thuis wonend" : "Op kamer"}</p>
           <p className="display text-lg tabular">{euro(k.advies)}</p>
         </div>
         <div>
-          <p className="bovenschrift">Zelf lenen</p>
+          <p className="text-[11px] font-medium text-muted">Zelf lenen</p>
           <p className={`display text-lg tabular ${geld.teLenen > 0 ? "" : "text-groen"}`}>
             {geld.teLenen > 0 ? euro(geld.teLenen) : "€ 0"}
           </p>

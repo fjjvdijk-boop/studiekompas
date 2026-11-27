@@ -1,96 +1,160 @@
 @import "tailwindcss";
 
-/* StudieKompas – redactioneel ontwerp: papier, inkt en één accentkleur */
-:root {
-  --bg: #f6f3ec;
-  --card: #fffdf8;
-  --card-2: #efebe1;
-  --ink: #17160f;
-  --muted: #625e55;
-  --line: #ddd7c9;
-  --brand: #1e4d3b;
-  --brand-2: #2f6b53;
-  --brand-soft: #e2ebe3;
-  --brand-ink: #fffdf8;
-  --accent: #b9472f;
-  --accent-soft: #f5e1da;
-  --groen: #2b7048;
-  --groen-soft: #e1eee4;
-  --oranje: #9a5a0c;
-  --oranje-soft: #f6ead3;
-  --rood: #a8322e;
-  --rood-soft: #f6dfdc;
-  --c-huur: #1e4d3b;
-  --c-leef: #8a9a5b;
-  --c-college: #b9472f;
-  --c-boeken: #d0a03e;
-  --c-gift: #2b7048;
-  --c-lening: #b9472f;
-  --schaduw: 0 1px 0 rgba(23, 22, 15, 0.04);
-  --schaduw-groot: 0 18px 40px -24px rgba(23, 22, 15, 0.28);
+/* StudieKompas – wit, inkt en één felle merkkleur; foto's doen de rest */
+:root,
+.licht-thema {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --card-2: #f3f4f7;
+  --ink: #0b0d12;
+  --muted: #5a6170;
+  --line: #e3e5ea;
+  --brand: #2541ff;
+  --brand-2: #1630d6;
+  --brand-soft: #eaedff;
+  --brand-ink: #ffffff;
+  --accent: #ff4d2e;
+  --accent-soft: #ffe8e3;
+  --groen: #138a4e;
+  --groen-soft: #e2f4ea;
+  --oranje: #b26200;
+  --oranje-soft: #fdf0dc;
+  --rood: #d1312a;
+  --rood-soft: #fde5e3;
+  --c-huur: #2541ff;
+  --c-leef: #8ea2ff;
+  --c-college: #ff4d2e;
+  --c-boeken: #ffb020;
+  --c-gift: #138a4e;
+  --c-lening: #ff4d2e;
+  --schaduw: 0 1px 2px rgba(11, 13, 18, 0.06);
+  --schaduw-groot: 0 20px 40px -24px rgba(11, 13, 18, 0.35);
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #12110d;
-    --card: #1a1914;
-    --card-2: #23221b;
-    --ink: #eeeae0;
-    --muted: #a39e91;
-    --line: #34322a;
-    --brand: #8fc4a7;
-    --brand-2: #b0d8c1;
-    --brand-soft: #1f3128;
-    --brand-ink: #12110d;
-    --accent: #e3907a;
-    --accent-soft: #3a2119;
-    --groen: #8fc4a7;
-    --groen-soft: #1c2c22;
-    --oranje: #e2b062;
-    --oranje-soft: #33270f;
-    --rood: #e88c84;
-    --rood-soft: #3a1c1a;
-    --c-huur: #8fc4a7;
-    --c-leef: #b7c48a;
-    --c-college: #e3907a;
-    --c-boeken: #e3c06e;
-    --c-gift: #8fc4a7;
-    --c-lening: #e3907a;
-    --schaduw: 0 1px 0 rgba(0, 0, 0, 0.3);
-    --schaduw-groot: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+    --bg: #0b0d12;
+    --card: #12151c;
+    --card-2: #1a1e27;
+    --ink: #f2f4f8;
+    --muted: #9aa1ae;
+    --line: #252a35;
+    --brand: #7d8dff;
+    --brand-2: #a3aeff;
+    --brand-soft: #1b2152;
+    --brand-ink: #0b0d12;
+    --accent: #ff7a5c;
+    --accent-soft: #3d1d16;
+    --groen: #4fd08f;
+    --groen-soft: #12301f;
+    --oranje: #f2b45a;
+    --oranje-soft: #33260f;
+    --rood: #ff8278;
+    --rood-soft: #3b1917;
+    --c-huur: #7d8dff;
+    --c-leef: #b5c0ff;
+    --c-college: #ff7a5c;
+    --c-boeken: #ffc657;
+    --c-gift: #4fd08f;
+    --c-lening: #ff7a5c;
+    --schaduw: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --schaduw-groot: 0 20px 40px -24px rgba(0, 0, 0, 0.8);
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #12110d;
-  --card: #1a1914;
-  --card-2: #23221b;
-  --ink: #eeeae0;
-  --muted: #a39e91;
-  --line: #34322a;
-  --brand: #8fc4a7;
-  --brand-2: #b0d8c1;
-  --brand-soft: #1f3128;
-  --brand-ink: #12110d;
-  --accent: #e3907a;
-  --accent-soft: #3a2119;
-  --groen: #8fc4a7;
-  --groen-soft: #1c2c22;
-  --oranje: #e2b062;
-  --oranje-soft: #33270f;
-  --rood: #e88c84;
-  --rood-soft: #3a1c1a;
-  --c-huur: #8fc4a7;
-  --c-leef: #b7c48a;
-  --c-college: #e3907a;
-  --c-boeken: #e3c06e;
-  --c-gift: #8fc4a7;
-  --c-lening: #e3907a;
-  --schaduw: 0 1px 0 rgba(0, 0, 0, 0.3);
-  --schaduw-groot: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+  --bg: #0b0d12;
+  --card: #12151c;
+  --card-2: #1a1e27;
+  --ink: #f2f4f8;
+  --muted: #9aa1ae;
+  --line: #252a35;
+  --brand: #7d8dff;
+  --brand-2: #a3aeff;
+  --brand-soft: #1b2152;
+  --brand-ink: #0b0d12;
+  --accent: #ff7a5c;
+  --accent-soft: #3d1d16;
+  --groen: #4fd08f;
+  --groen-soft: #12301f;
+  --oranje: #f2b45a;
+  --oranje-soft: #33260f;
+  --rood: #ff8278;
+  --rood-soft: #3b1917;
+  --c-huur: #7d8dff;
+  --c-leef: #b5c0ff;
+  --c-college: #ff7a5c;
+  --c-boeken: #ffc657;
+  --c-gift: #4fd08f;
+  --c-lening: #ff7a5c;
+  --schaduw: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --schaduw-groot: 0 20px 40px -24px rgba(0, 0, 0, 0.8);
   color-scheme: dark;
+}
+
+/* De studietest is altijd licht, ook in het donkere thema */
+:root .licht-thema,
+:root[data-theme="dark"] .licht-thema {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --card-2: #f3f4f7;
+  --ink: #0b0d12;
+  --muted: #5a6170;
+  --line: #e3e5ea;
+  --brand: #2541ff;
+  --brand-2: #1630d6;
+  --brand-soft: #eaedff;
+  --brand-ink: #ffffff;
+  --accent: #ff4d2e;
+  --accent-soft: #ffe8e3;
+  --groen: #138a4e;
+  --groen-soft: #e2f4ea;
+  --oranje: #b26200;
+  --oranje-soft: #fdf0dc;
+  --rood: #d1312a;
+  --rood-soft: #fde5e3;
+  --c-huur: #2541ff;
+  --c-leef: #8ea2ff;
+  --c-college: #ff4d2e;
+  --c-boeken: #ffb020;
+  --c-gift: #138a4e;
+  --c-lening: #ff4d2e;
+  --schaduw: 0 1px 2px rgba(11, 13, 18, 0.06);
+  --schaduw-groot: 0 20px 40px -24px rgba(11, 13, 18, 0.35);
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .licht-thema {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --card-2: #f3f4f7;
+    --ink: #0b0d12;
+    --muted: #5a6170;
+    --line: #e3e5ea;
+    --brand: #2541ff;
+    --brand-2: #1630d6;
+    --brand-soft: #eaedff;
+    --brand-ink: #ffffff;
+    --accent: #ff4d2e;
+    --accent-soft: #ffe8e3;
+    --groen: #138a4e;
+    --groen-soft: #e2f4ea;
+    --oranje: #b26200;
+    --oranje-soft: #fdf0dc;
+    --rood: #d1312a;
+    --rood-soft: #fde5e3;
+    --c-huur: #2541ff;
+    --c-leef: #8ea2ff;
+    --c-college: #ff4d2e;
+    --c-boeken: #ffb020;
+    --c-gift: #138a4e;
+    --c-lening: #ff4d2e;
+    --schaduw: 0 1px 2px rgba(11, 13, 18, 0.06);
+    --schaduw-groot: 0 20px 40px -24px rgba(11, 13, 18, 0.35);
+    color-scheme: light;
+  }
 }
 
 @theme inline {
@@ -114,7 +178,7 @@
   --color-rood-soft: var(--rood-soft);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-  --font-display: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --shadow-zacht: var(--schaduw);
   --shadow-groot: var(--schaduw-groot);
 }
@@ -127,22 +191,31 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
+  overflow-x: clip;
 }
 
-.display {
-  font-family: var(--font-display);
-  font-optical-sizing: auto;
-  font-weight: 500;
-  letter-spacing: -0.015em;
+/* Koppen: strak en vet */
+.display,
+.kop {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.kop {
+  letter-spacing: -0.025em;
+}
+.display em,
+.display i,
+.kop em {
+  font-style: normal;
+  color: var(--brand);
 }
 
-/* Klein bovenschrift in mono, zoals in een krant of tijdschrift */
+/* Klein label boven een kop */
 .bovenschrift {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--brand);
 }
 
 .tabular {
@@ -152,7 +225,7 @@ body {
 .kaart {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 1rem;
+  border-radius: 0.875rem;
 }
 
 .focus-ring:focus-visible {
@@ -180,7 +253,8 @@ body {
   text-decoration-color: var(--line);
 }
 .streep:hover {
-  text-decoration-color: var(--ink);
+  text-decoration-color: var(--brand);
+  color: var(--brand);
 }
 
 /* Schuifregelaar in de huisstijl */
@@ -188,7 +262,7 @@ input[type="range"].schuif {
   appearance: none;
   height: 4px;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--ink) var(--p, 50%), var(--line) var(--p, 50%));
+  background: linear-gradient(to right, var(--brand) var(--p, 50%), var(--line) var(--p, 50%));
   cursor: pointer;
 }
 input[type="range"].schuif::-webkit-slider-thumb {
@@ -197,14 +271,14 @@ input[type="range"].schuif::-webkit-slider-thumb {
   height: 22px;
   border-radius: 999px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--brand);
 }
 input[type="range"].schuif::-moz-range-thumb {
   width: 18px;
   height: 18px;
   border-radius: 999px;
   background: var(--card);
-  border: 2px solid var(--ink);
+  border: 2px solid var(--brand);
 }
 
 @keyframes binnenkomen {
@@ -262,7 +336,68 @@ input[type="range"].schuif::-moz-range-thumb {
   transform-origin: 50% 50%;
   animation: wiebel 6s ease-in-out infinite;
 }
+/* Story-quiz */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.fade-in {
+  animation: fade-in 0.6s ease both;
+}
+@keyframes kenburns {
+  from {
+    transform: scale(1.12);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+.kenburns {
+  animation: kenburns 1.4s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes story-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+}
+.story-in {
+  animation: story-in 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes laadbalk {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+.laadbalk {
+  animation: laadbalk 1.7s ease-in-out both;
+}
+/* Puntje onder het vraagwolkje */
+.wolkje::after {
+  content: "";
+  position: absolute;
+  left: 28px;
+  bottom: -11px;
+  border: 11px solid transparent;
+  border-bottom: 0;
+  border-top-color: rgba(255, 255, 255, 0.88);
+}
+/* Een blok dat de hele schermbreedte pakt, ook binnen de gecentreerde pagina */
+.volle-breedte {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .fade-in,
+  .kenburns,
+  .story-in,
   .binnenkomen,
   .inschuiven,
   .kompasnaald,

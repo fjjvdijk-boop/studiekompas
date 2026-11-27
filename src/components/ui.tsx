@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { Foto, FotoBron } from "@/components/Foto";
+import type { FotoSleutel } from "@/data/fotos";
 import { ArrowRight, Heart } from "lucide-react";
 import { SECTOR } from "@/data/sectoren";
 import type { Kosten, Stoplicht } from "@/lib/bereken";
@@ -26,7 +28,7 @@ export function StoplichtBadge({
 }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 font-mono text-xs tabular ${LICHT_KLEUR[licht]}`}
+      className={`inline-flex shrink-0 items-center gap-1.5 text-xs tabular ${LICHT_KLEUR[licht]}`}
       title={`${LICHT_LABEL[licht]}: ${schatting ? "± " : ""}${minuten} min enkele reis`}
     >
       <span className="h-2 w-2 rounded-full bg-current" />
@@ -77,7 +79,7 @@ export function TaalChip({ taal }: { taal: Opleiding["taal"] }) {
   if (!taal) return null;
   const label = taal === "EN" ? "Engels" : taal === "NL" ? "Nederlands" : "NL + EN";
   return (
-    <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide text-muted">
+    <span className="rounded border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted">
       {label}
     </span>
   );
@@ -128,18 +130,18 @@ export function Kop({
   label?: string;
 }) {
   return (
-    <div className="mb-5 flex items-end justify-between gap-4 border-b border-line pb-3">
+    <div className="mb-6 flex items-end justify-between gap-4">
       <div>
         {label && <p className="bovenschrift mb-1">{label}</p>}
-        <h2 className="display text-2xl sm:text-[30px]">{titel}</h2>
+        <h2 className="kop text-[26px] leading-tight sm:text-[34px]">{titel}</h2>
         {sub && <p className="mt-1 text-sm text-muted">{sub}</p>}
       </div>
       {actie && (
         <Link
           href={actie.href}
-          className="focus-ring group inline-flex shrink-0 items-center gap-1 text-sm font-medium"
+          className="focus-ring group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-brand"
         >
-          <span className="streep">{actie.label}</span>{" "}
+          <span className="group-hover:underline">{actie.label}</span>{" "}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
         </Link>
       )}
@@ -153,6 +155,7 @@ export function PaginaKop({
   label,
   children,
   compact = false,
+  foto,
 }: {
   titel: React.ReactNode;
   sub?: React.ReactNode;
@@ -160,12 +163,36 @@ export function PaginaKop({
   children?: React.ReactNode;
   /** Op mobiel kleiner, zodat de inhoud sneller in beeld is */
   compact?: boolean;
+  /** Met een foto wordt de kop een grote fotokop over de hele breedte */
+  foto?: FotoSleutel;
 }) {
+  if (foto)
+    return (
+      <section className="volle-breedte relative -mt-5 mb-10 overflow-hidden bg-black text-white sm:-mt-8 sm:mb-14">
+        <Foto
+          sleutel={foto}
+          className="kenburns absolute inset-0 h-full w-full object-cover"
+          sizes="100vw"
+          prioriteit
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" aria-hidden />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/15 to-transparent" aria-hidden />
+        <div className="relative mx-auto flex min-h-[380px] max-w-6xl flex-col justify-end px-4 pb-10 pt-24 sm:min-h-[440px] sm:px-6">
+          {label && <p className="text-sm font-semibold text-white/80">{label}</p>}
+          <h1 className="mt-2 max-w-3xl text-[40px] font-bold leading-[1.02] tracking-tight sm:text-[64px] [&_em]:not-italic [&_em]:text-[#9fb0ff]">
+            {titel}
+          </h1>
+          {sub && <p className="mt-4 max-w-2xl text-[15px] text-white/85 sm:text-[17px]">{sub}</p>}
+          {children}
+          <FotoBron sleutel={foto} className="mt-6 block text-[11px] text-white/60" />
+        </div>
+      </section>
+    );
   return (
     <div className={`flex flex-wrap items-end justify-between gap-4 ${compact ? "mb-4 sm:mb-8" : "mb-8"}`}>
       <div className="binnenkomen max-w-3xl">
         {label && <p className={`bovenschrift mb-3 ${compact ? "hidden sm:block" : ""}`}>{label}</p>}
-        <h1 className={`display leading-[1.02] sm:text-6xl ${compact ? "text-[32px]" : "text-[40px]"}`}>{titel}</h1>
+        <h1 className={`display leading-[1.02] sm:text-[56px] ${compact ? "text-[32px]" : "text-[40px]"}`}>{titel}</h1>
         {sub && (
           <p className={`mt-3 max-w-2xl text-[15px] text-muted sm:text-[17px] ${compact ? "hidden sm:block" : ""}`}>
             {sub}
@@ -198,7 +225,7 @@ export function LeegScherm({
       {actie && (
         <Link
           href={actie.href}
-          className="focus-ring mt-6 rounded-full bg-ink px-6 py-3 text-sm font-medium text-bg hover:opacity-90"
+          className="focus-ring mt-6 rounded-md bg-brand px-6 py-3 text-sm font-medium text-white hover:opacity-90"
         >
           {actie.label}
         </Link>
@@ -227,7 +254,7 @@ export function Segment<T extends string>({
           aria-pressed={waarde === o.waarde}
           onClick={() => kies(o.waarde)}
           className={`focus-ring rounded-full font-medium transition-colors ${klein ? "px-3 py-1 text-xs" : "px-4 py-1.5 text-sm"} ${
-            waarde === o.waarde ? "bg-ink text-bg" : "text-muted hover:text-ink"
+            waarde === o.waarde ? "bg-brand text-white" : "text-muted hover:text-ink"
           }`}
         >
           {o.label}
@@ -338,11 +365,11 @@ export function Knop({
 }) {
   const stijl =
     soort === "vol"
-      ? "bg-ink text-bg hover:opacity-90"
+      ? "bg-brand text-white hover:bg-brand-2"
       : soort === "rand"
-        ? "border border-ink text-ink hover:bg-ink hover:text-bg"
+        ? "border border-ink text-ink hover:bg-brand hover:border-brand hover:text-white"
         : "text-ink underline underline-offset-4 decoration-line hover:decoration-ink";
-  const klasse = `focus-ring inline-flex items-center gap-2 rounded-full ${soort === "tekst" ? "" : "px-5 py-3"} text-sm font-medium transition-colors ${stijl}`;
+  const klasse = `focus-ring inline-flex items-center gap-2 rounded-md ${soort === "tekst" ? "" : "px-5 py-3"} text-sm font-semibold transition-colors ${stijl}`;
   return href ? (
     <Link href={href} className={klasse}>
       {children}

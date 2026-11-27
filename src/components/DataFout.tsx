@@ -17,7 +17,7 @@ export function DataFout() {
       <button
         type="button"
         onClick={() => window.location.reload()}
-        className="rounded-full bg-ink px-4 py-2 text-sm font-semibold text-bg"
+        className="rounded-md bg-brand px-4 py-2 text-sm font-semibold text-white"
       >
         Opnieuw
       </button>

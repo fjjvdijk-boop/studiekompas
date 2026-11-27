@@ -19,7 +19,8 @@ import { useStore } from "@/lib/store";
 import type { Toelating } from "@/lib/toelating";
 import type { Opleiding } from "@/lib/types";
 import { GeldBlok } from "@/components/GeldBlok";
-import { Illustratie } from "@/components/Illustratie";
+import { Foto, FotoBron } from "@/components/Foto";
+import { SECTOR_FOTO, STAD_FOTO } from "@/data/fotos";
 import { KamerStadKaart } from "@/components/KamerStadKaart";
 import { OpleidingKaart } from "@/components/OpleidingKaart";
 import { FavorietKnop, LICHT_LABEL, ScoreRing, SectorLabel, Segment, TaalChip } from "@/components/ui";
@@ -100,7 +101,7 @@ export function OpleidingDetail({
                   href={site}
                   target="_blank"
                   rel="noreferrer"
-                  className="focus-ring inline-flex h-11 items-center gap-2 rounded-full bg-ink px-5 text-sm text-bg hover:opacity-90"
+                  className="focus-ring inline-flex h-11 items-center gap-2 rounded-md bg-brand px-5 text-sm text-white hover:opacity-90"
                 >
                   {o.url ? "Naar de opleiding" : "Website universiteit"} <ArrowUpRight className="h-4 w-4" />
                 </a>
@@ -116,7 +117,18 @@ export function OpleidingDetail({
             </div>
           </div>
           <div className="overflow-hidden rounded-2xl border border-line">
-            <Illustratie sector={o.sector} className="block aspect-[3/2] w-full" tekenen />
+            <div className="relative">
+              <Foto
+                sleutel={STAD_FOTO[o.plaats.naam] ?? SECTOR_FOTO[o.sector] ?? "campus"}
+                className="block aspect-[3/2] w-full object-cover"
+                sizes="(min-width: 1024px) 400px, 100vw"
+                prioriteit
+              />
+              <FotoBron
+                sleutel={STAD_FOTO[o.plaats.naam] ?? SECTOR_FOTO[o.sector] ?? "campus"}
+                className="absolute bottom-1.5 right-2 text-[10px] text-white/80 drop-shadow"
+              />
+            </div>
             <div className="flex items-center gap-4 bg-card p-4">
               <ScoreRing score={match.score} maat={56} />
               <p className="text-sm text-muted">
@@ -200,7 +212,7 @@ export function OpleidingDetail({
             {match.onderdelen.map((x) => (
               <li key={x.label} className="grid grid-cols-[1fr_auto] gap-x-4 py-4">
                 <span className="font-medium">{x.label}</span>
-                <span className="font-mono text-sm tabular">
+                <span className="text-sm tabular">
                   {x.punten}/{x.max}
                 </span>
                 <span className="col-span-2 mt-1 text-sm text-muted">{x.uitleg}</span>
@@ -364,7 +376,7 @@ export function OpleidingDetail({
                     onClick={() =>
                       downloadIcs(`open-dag-${o.naam}.ics`, maakIcs([{ datum: fav.openDag!, opleiding: o }]))
                     }
-                    className="inline-flex items-center gap-1.5 rounded-full border border-ink px-4 py-2 text-sm hover:bg-ink hover:text-bg"
+                    className="inline-flex items-center gap-1.5 rounded-full border border-ink px-4 py-2 text-sm hover:bg-brand hover:border-brand hover:text-white"
                   >
                     <CalendarPlus className="h-4 w-4" /> In mijn agenda
                   </button>
@@ -531,7 +543,7 @@ function Beoordeling({
                   type="button"
                   aria-pressed={cijfer === n}
                   onClick={() => void opslaan({ cijfer: cijfer === n ? null : n })}
-                  className={`aspect-square border-r border-line text-sm tabular last:border-r-0 ${cijfer === n ? "bg-ink text-bg" : "bg-card hover:bg-card-2"}`}
+                  className={`aspect-square border-r border-line text-sm tabular last:border-r-0 ${cijfer === n ? "bg-brand text-white" : "bg-card hover:bg-card-2"}`}
                 >
                   {n}
                 </button>

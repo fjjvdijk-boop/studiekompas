@@ -125,7 +125,7 @@ export default function OpenDagenPagina() {
                 <div
                   key={i}
                   className={`relative flex aspect-square flex-col items-center rounded-2xl p-1 pt-1.5 text-sm tabular ${
-                    op.length ? "bg-ink font-medium text-bg" : datum < nu ? "text-muted/40" : ""
+                    op.length ? "bg-brand font-medium text-white" : datum < nu ? "text-muted/40" : ""
                   } ${datum === nu && !op.length ? "ring-2 ring-brand" : ""}`}
                   title={op.map((x) => x.o.naam).join(", ")}
                 >
@@ -154,7 +154,7 @@ export default function OpenDagenPagina() {
                   maakIcs(gepland.map((x) => ({ datum: x.f.openDag!, opleiding: x.o }))),
                 )
               }
-              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink py-3 text-sm font-semibold text-bg"
+              className="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand py-3 text-sm font-semibold text-white"
             >
               <CalendarPlus className="h-4 w-4" /> Alle {gepland.length} open dagen in mijn agenda
             </button>
@@ -170,7 +170,7 @@ export default function OpenDagenPagina() {
                   const n = dagenTot(f.openDag!);
                   return (
                     <li key={o.id} className="kaart flex items-center gap-4 p-4">
-                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-ink text-bg">
+                      <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-brand text-white">
                         <span className="text-[10px] font-semibold uppercase">
                           {datumTekst(f.openDag!, { month: "short" }).replace(".", "")}
                         </span>

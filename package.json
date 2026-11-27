@@ -10,7 +10,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@fontsource-variable/fraunces": "^5.2.8",
     "@supabase/supabase-js": "^2.119.2",
     "geist": "^1.5.1",
     "lucide-react": "^0.544.0",

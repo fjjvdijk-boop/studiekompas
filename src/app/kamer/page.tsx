@@ -8,10 +8,11 @@ export default function KamerPagina() {
   return (
     <>
       <PaginaKop
+        foto="kamer"
         label="Kamer vinden"
         titel={
           <>
-            Aan een kamer komen <em className="italic">begint nu</em>
+            Aan een kamer komen <em>begint nu</em>
           </>
         }
         sub="Er zijn in Nederland tienduizenden studentenkamers te weinig. Wie zich vroeg inschrijft en slim zoekt, heeft de meeste kans. Dit is het stappenplan."
@@ -37,7 +38,7 @@ export default function KamerPagina() {
         <ol className="relative border-l border-line">
           {KAMER_STAPPEN.map((s) => (
             <li key={s.titel} className="relative pb-8 pl-8 last:pb-0">
-              <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-ink" />
+              <span className="absolute -left-[5px] top-1.5 h-2.5 w-2.5 rounded-full bg-brand" />
               <p className="bovenschrift">{s.wanneer}</p>
               <h3 className="display mt-1 text-xl">{s.titel}</h3>
               <p className="mt-1 max-w-2xl text-[15px] text-muted">{s.tekst}</p>

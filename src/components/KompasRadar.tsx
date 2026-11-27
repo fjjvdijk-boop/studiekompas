@@ -17,7 +17,7 @@ export default function KompasRadar({
     <ResponsiveContainer width="100%" height={hoogte}>
       <RadarChart data={data} outerRadius="70%" margin={{ top: 8, right: 36, bottom: 8, left: 36 }}>
         <PolarGrid stroke="var(--line)" />
-        <PolarAngleAxis dataKey="naam" tick={{ fill: "var(--muted)", fontSize: 11, fontFamily: "var(--font-mono)" }} />
+        <PolarAngleAxis dataKey="naam" tick={{ fill: "var(--muted)", fontSize: 12, fontFamily: "var(--font-sans)" }} />
         <Radar
           dataKey="waarde"
           stroke="var(--ink)"

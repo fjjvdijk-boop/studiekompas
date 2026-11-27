@@ -2,27 +2,19 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowRight, Check, RotateCcw, Share2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight, Check, RotateCcw, Share2, X } from "lucide-react";
 import { HOOFDRICHTINGEN, SECTOR } from "@/data/sectoren";
-import {
-  berekenUitslag,
-  DIT_OF_DAT,
-  LEGE_ANTWOORDEN,
-  SCHAAL,
-  SCHOOLVAKKEN,
-  STELLINGEN,
-  TOEKOMST,
-  type Antwoorden,
-} from "@/data/vragenlijst";
-import { bereken, reistijdTekst } from "@/lib/bereken";
+import { DOMEINEN, LEGE_ANTWOORDEN, VRAGEN, berekenUitslag, type Antwoorden } from "@/data/vragenlijst";
+import { SECTOR_FOTO, type FotoSleutel } from "@/data/fotos";
+import { bereken } from "@/lib/bereken";
 import { useData } from "@/lib/data-client";
 import { useStore } from "@/lib/store";
 import type { Profiel, SectorId, TaalVoorkeur, Wonen } from "@/lib/types";
 import { DiplomaKiezer, diplomaCompleet } from "@/components/DiplomaKiezer";
-import { Illustratie } from "@/components/Illustratie";
+import { Foto, FotoBron } from "@/components/Foto";
 import { KaartSkelet, OpleidingKaart } from "@/components/OpleidingKaart";
-import { Schuif } from "@/components/ui";
 import { WoonplaatsKiezer } from "@/components/WoonplaatsKiezer";
 
 const KompasRadar = dynamic(() => import("@/components/KompasRadar"), {
@@ -32,45 +24,56 @@ const KompasRadar = dynamic(() => import("@/components/KompasRadar"), {
 
 type Stap =
   | "intro"
+  | "domein"
+  | `vraag:${number}`
+  | "tussen"
   | "jij"
   | "diploma"
-  | "vakken"
-  | `keuze:${number}`
-  | "toekomst"
-  | `stelling:${SectorId}`
   | "wonen"
   | "taal"
-  | "geld"
+  | "inkomen"
+  | "lenen"
+  | "rekenen"
   | "resultaat";
 
-const STAPPEN: Stap[] = [
+const STORY: Stap[] = [
   "intro",
+  "domein",
+  ...[0, 1, 2, 3, 4, 5].map((i) => `vraag:${i}` as const),
+  "tussen",
   "jij",
   "diploma",
-  "vakken",
-  ...DIT_OF_DAT.map((_, i) => `keuze:${i}` as const),
-  "toekomst",
-  ...HOOFDRICHTINGEN.map((s) => `stelling:${s}` as const),
   "wonen",
   "taal",
-  "geld",
-  "resultaat",
+  "inkomen",
+  "lenen",
+  "rekenen",
 ];
-const VRAGEN = STAPPEN.length - 2;
-const TUSSENSTAND = "studiekompas:test-v3";
-const ANTWOORDEN_SLEUTEL = "studiekompas:antwoorden";
+const TUSSENSTAND = "studiekompas:test-v4";
+const ANTWOORDEN_SLEUTEL = "studiekompas:antwoorden-v4";
+const LETTERS = ["A", "B", "C", "D", "E"];
 
 const INKOMENS: { label: string; waarde: number | null }[] = [
   { label: "Minder dan € 45.000", waarde: 40000 },
-  { label: "€ 45.000 – € 70.000", waarde: 57500 },
-  { label: "€ 70.000 – € 100.000", waarde: 85000 },
+  { label: "€ 45.000 tot € 70.000", waarde: 57500 },
+  { label: "€ 70.000 tot € 100.000", waarde: 85000 },
   { label: "Meer dan € 100.000", waarde: 120000 },
   { label: "Weet ik niet", waarde: null },
 ];
-const LENEN: { label: string; tekst: string; waarde: number }[] = [
-  { label: "Liever niet", tekst: "Ik wil zo min mogelijk lenen", waarde: 0 },
-  { label: "Een beetje", tekst: "Tot ± € 200 per maand", waarde: 200 },
-  { label: "Als het moet", tekst: "Tot ± € 550 per maand", waarde: 550 },
+const LENEN: { label: string; waarde: number }[] = [
+  { label: "Liever helemaal niet", waarde: 0 },
+  { label: "Een beetje, tot zo'n € 200 per maand", waarde: 200 },
+  { label: "Als het moet, tot zo'n € 550 per maand", waarde: 550 },
+];
+const WONEN: [Wonen, string][] = [
+  ["kamer", "Op kamer, in de stad van mijn studie"],
+  ["thuis", "Thuis blijven en reizen"],
+  ["allebei", "Weet ik nog niet"],
+];
+const TALEN: [TaalVoorkeur, string][] = [
+  ["nl", "Liefst in het Nederlands"],
+  ["en", "Juist in het Engels"],
+  ["beide", "Maakt me niet uit"],
 ];
 
 function lees<T>(sleutel: string, opslag: Storage): T | null {
@@ -86,17 +89,16 @@ export default function Vragenlijst() {
   const [stap, setStap] = useState<Stap>("intro");
   const [concept, setConcept] = useState<Profiel>(profiel);
   const [a, setA] = useState<Antwoorden>(LEGE_ANTWOORDEN);
-  const [richting, setRichting] = useState(1);
   const [hersteld, setHersteld] = useState(false);
 
   useEffect(() => {
     if (!geladen || hersteld) return;
     setHersteld(true);
     setConcept(profiel);
-    const vorige = typeof window !== "undefined" ? lees<Antwoorden>(ANTWOORDEN_SLEUTEL, localStorage) : null;
-    if (vorige) setA({ ...LEGE_ANTWOORDEN, ...vorige });
+    const vorige = lees<Antwoorden>(ANTWOORDEN_SLEUTEL, localStorage);
+    if (vorige?.domein) setA(vorige);
     const t = lees<{ stap: Stap; concept: Profiel; a: Antwoorden }>(TUSSENSTAND, sessionStorage);
-    if (t && STAPPEN.includes(t.stap) && t.stap !== "resultaat") {
+    if (t && STORY.includes(t.stap) && t.stap !== "rekenen") {
       setConcept(t.concept);
       setA(t.a);
       setStap(t.stap);
@@ -110,20 +112,9 @@ export default function Vragenlijst() {
     } catch {}
   }, [hersteld, stap, concept, a]);
 
-  const nr = STAPPEN.indexOf(stap);
-  const ga = (n: number) => {
-    setRichting(n > nr ? 1 : -1);
-    setStap(STAPPEN[Math.max(0, Math.min(STAPPEN.length - 1, n))]);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-  const volgende = () => ga(nr + 1);
-  const vorige = () => ga(nr - 1);
-  const later = () => setTimeout(volgende, 320);
-  const zet = <K extends keyof Profiel>(k: K, v: Profiel[K]) => setConcept((c) => ({ ...c, [k]: v }));
-
   const uitslag = useMemo(() => berekenUitslag(a), [a]);
 
-  const afronden = async () => {
+  const afronden = useCallback(async () => {
     const p: Profiel = { ...concept, interesse: uitslag.interesse, vragenlijstKlaar: true };
     setConcept(p);
     await slaProfielOp(p);
@@ -131,537 +122,405 @@ export default function Vragenlijst() {
       localStorage.setItem(ANTWOORDEN_SLEUTEL, JSON.stringify(a));
       sessionStorage.removeItem(TUSSENSTAND);
     } catch {}
-    ga(STAPPEN.length - 1);
-  };
+    setStap("resultaat");
+    window.scrollTo({ top: 0 });
+  }, [a, concept, slaProfielOp, uitslag.interesse]);
 
-  const keuzeNr = stap.startsWith("keuze:") ? Number(stap.slice(6)) : null;
-  const stellingSector = stap.startsWith("stelling:") ? (stap.slice(9) as SectorId) : null;
+  if (stap === "resultaat")
+    return (
+      <Resultaat
+        profiel={concept}
+        redenen={uitslag.redenen}
+        opnieuw={() => {
+          setA(LEGE_ANTWOORDEN);
+          setStap("domein");
+        }}
+      />
+    );
 
-  // Toetsenbord: 1–5 bij stellingen, 1/2 bij dit-of-dat, Enter = volgende
+  return (
+    <Story
+      stap={stap}
+      setStap={setStap}
+      a={a}
+      setA={setA}
+      concept={concept}
+      setConcept={setConcept}
+      afronden={afronden}
+      eerderGedaan={profiel.vragenlijstKlaar}
+    />
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* De story: schermvullende foto, vraag in een wolkje, antwoorden A–D  */
+/* ------------------------------------------------------------------ */
+
+interface StoryProps {
+  stap: Stap;
+  setStap: (s: Stap) => void;
+  a: Antwoorden;
+  setA: React.Dispatch<React.SetStateAction<Antwoorden>>;
+  concept: Profiel;
+  setConcept: React.Dispatch<React.SetStateAction<Profiel>>;
+  afronden: () => void;
+  eerderGedaan: boolean;
+}
+
+function Story({ stap, setStap, a, setA, concept, setConcept, afronden, eerderGedaan }: StoryProps) {
+  const router = useRouter();
+  const nr = STORY.indexOf(stap);
+  const [gekozen, setGekozen] = useState<number | null>(null);
+  const bezig = useRef(false);
+  const vragen = a.domein ? VRAGEN[a.domein] : VRAGEN.twijfel;
+  const vraagNr = stap.startsWith("vraag:") ? Number(stap.slice(6)) : null;
+  const zet = <K extends keyof Profiel>(k: K, v: Profiel[K]) => setConcept((c) => ({ ...c, [k]: v }));
+
+  const ga = useCallback(
+    (n: number) => {
+      setGekozen(null);
+      bezig.current = false;
+      setStap(STORY[Math.max(0, Math.min(STORY.length - 1, n))]);
+    },
+    [setStap],
+  );
+  const volgende = useCallback(() => ga(nr + 1), [ga, nr]);
+  const vorige = useCallback(() => ga(nr - 1), [ga, nr]);
+
+  /** Eén tik: kort laten zien wat je koos, dan door */
+  const kies = useCallback(
+    (i: number, actie: () => void) => {
+      if (bezig.current) return;
+      bezig.current = true;
+      setGekozen(i);
+      actie();
+      setTimeout(() => ga(nr + 1), 380);
+    },
+    [ga, nr],
+  );
+
+  // Berekenen-scherm: even laten zien, dan de uitslag
+  useEffect(() => {
+    if (stap !== "rekenen") return;
+    const t = setTimeout(afronden, 1800);
+    return () => clearTimeout(t);
+  }, [stap, afronden]);
+
+  // Geen scrollen van de pagina eronder zolang de story open is
+  useEffect(() => {
+    const oud = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = oud;
+    };
+  }, []);
+
+  // Wat zijn de antwoorden op dit scherm?
+  let foto: FotoSleutel = "campus";
+  let vraag: React.ReactNode = null;
+  let opties: { tekst: string; aan: boolean; actie: () => void }[] = [];
+  let inhoud: React.ReactNode = null;
+  let knop: { tekst: string; actie: () => void; uit?: boolean } | null = null;
+
+  if (stap === "intro") {
+    foto = "campus";
+    vraag = (
+      <>
+        <p>
+          Twijfel je over je <b>studiekeuze</b>? Je bent niet de enige.
+        </p>
+        <p className="mt-3">
+          Beantwoord zeven vragen en ontdek welke richting bij je past. Daarna nog een paar korte vragen, zodat we uit
+          alle 433 universitaire bachelors jouw <b>beste matches</b> kunnen halen.
+        </p>
+        <p className="mt-3 text-[15px] opacity-70">Duurt zo&apos;n vier minuten.</p>
+      </>
+    );
+    knop = { tekst: eerderGedaan ? "Opnieuw beginnen" : "Start", actie: volgende };
+  } else if (stap === "domein") {
+    foto = a.domein ? DOMEINEN.find((d) => d.id === a.domein)!.foto : "collegezaal";
+    vraag = (
+      <>
+        Welke zin past het <b>best</b> bij jou?
+      </>
+    );
+    opties = DOMEINEN.map((d) => ({
+      tekst: d.tekst,
+      aan: a.domein === d.id,
+      actie: () =>
+        setA((x) => (x.domein === d.id ? x : { domein: d.id, keuzes: Array(VRAGEN[d.id].length).fill(null) })),
+    }));
+  } else if (vraagNr !== null) {
+    const v = vragen[vraagNr];
+    foto = v.foto;
+    vraag = <Nadruk tekst={v.vraag} nadruk={v.nadruk} />;
+    opties = v.antwoorden.map((x, i) => ({
+      tekst: x.tekst,
+      aan: a.keuzes[vraagNr] === i,
+      actie: () =>
+        setA((y) => {
+          const keuzes = [...y.keuzes];
+          keuzes[vraagNr] = i;
+          return { ...y, keuzes };
+        }),
+    }));
+  } else if (stap === "tussen") {
+    const top = HOOFDRICHTINGEN.map((s) => [s, berekenUitslag(a).interesse[s] ?? 0] as const).sort(
+      (x, y) => y[1] - x[1],
+    )[0][0];
+    foto = SECTOR_FOTO[top];
+    vraag = (
+      <>
+        <p>
+          Je kompas begint al ergens naartoe te wijzen. <b>Mooi.</b>
+        </p>
+        <p className="mt-3">
+          Nog een paar korte vragen over je diploma, wonen en geld. Dan rekenen we per studie uit of je toelaatbaar
+          bent, wat het kost en wat DUO betaalt.
+        </p>
+      </>
+    );
+    knop = { tekst: "Verder", actie: volgende };
+  } else if (stap === "jij") {
+    foto = "fietsen";
+    vraag = (
+      <>
+        Hoe heet je, en <b>waar woon je</b>? Dan rekenen we de reistijd naar elke universiteit uit.
+      </>
+    );
+    inhoud = (
+      <div className="space-y-3">
+        <input
+          value={concept.naam}
+          onChange={(e) => zet("naam", e.target.value)}
+          placeholder="Je voornaam (mag leeg blijven)"
+          autoComplete="given-name"
+          className="focus-ring w-full rounded-lg border border-line bg-card px-4 py-3 text-[15px]"
+        />
+        <WoonplaatsKiezer waarde={concept.woonplaats} kies={(w) => zet("woonplaats", w)} />
+      </div>
+    );
+    knop = { tekst: "Verder", actie: volgende };
+  } else if (stap === "diploma") {
+    foto = "studeren";
+    vraag = (
+      <>
+        Wat is jouw <b>route</b> naar de universiteit? Dan checken we per studie of je profiel en vakken kloppen.
+      </>
+    );
+    inhoud = <DiplomaKiezer waarde={concept} zet={(w) => setConcept((c) => ({ ...c, ...w }))} />;
+    knop = { tekst: "Verder", actie: volgende, uit: !diplomaCompleet(concept) };
+  } else if (stap === "wonen") {
+    foto = "kamer";
+    vraag = (
+      <>
+        Ga je <b>op kamer</b>, of blijf je thuis wonen?
+      </>
+    );
+    opties = WONEN.map(([w, t]) => ({ tekst: t, aan: concept.wonen === w, actie: () => zet("wonen", w) }));
+  } else if (stap === "taal") {
+    foto = "collegezaal";
+    vraag = (
+      <>
+        Veel bachelors zijn (ook) Engelstalig. In welke <b>taal</b> wil jij studeren?
+      </>
+    );
+    opties = TALEN.map(([w, t]) => ({ tekst: t, aan: concept.taal === w, actie: () => zet("taal", w) }));
+  } else if (stap === "inkomen") {
+    foto = "studeren";
+    vraag = (
+      <>
+        Wat verdienen je ouders <b>samen</b>, ongeveer per jaar? Daarmee schatten we je aanvullende beurs van DUO.
+      </>
+    );
+    opties = INKOMENS.map((i) => ({
+      tekst: i.label,
+      aan: concept.ouderInkomen === i.waarde,
+      actie: () => zet("ouderInkomen", i.waarde),
+    }));
+  } else if (stap === "lenen") {
+    foto = "fietsen";
+    vraag = (
+      <>
+        Hoe sta je tegenover <b>lenen</b> bij DUO?
+      </>
+    );
+    opties = LENEN.map((l) => ({
+      tekst: l.label,
+      aan: concept.maxLenen === l.waarde,
+      actie: () => zet("maxLenen", l.waarde),
+    }));
+  } else if (stap === "rekenen") {
+    foto = "campus";
+    vraag = (
+      <>
+        <p>
+          Bedankt! We zoeken nu jouw <b>beste matches</b> uit 433 bachelors.
+        </p>
+        <div className="mt-4 h-1 overflow-hidden rounded-full bg-black/10">
+          <div className="laadbalk h-full bg-brand" />
+        </div>
+      </>
+    );
+  }
+
+  // Toetsenbord: A–E of 1–5 kiest, pijltjes bladeren
   useEffect(() => {
     const toets = (e: KeyboardEvent) => {
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLTextAreaElement ||
-        e.target instanceof HTMLSelectElement
-      )
-        return;
-      if (stellingSector && /^[1-5]$/.test(e.key)) {
-        setA((x) => ({ ...x, stellingen: { ...x.stellingen, [stellingSector]: Number(e.key) - 1 } }));
-        later();
-      } else if (keuzeNr !== null && (e.key === "1" || e.key === "2")) {
-        kiesKeuze(keuzeNr, (Number(e.key) - 1) as 0 | 1);
-      }
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      const i = "abcde".indexOf(e.key.toLowerCase());
+      const n = /^[1-5]$/.test(e.key) ? Number(e.key) - 1 : i;
+      if (n >= 0 && n < opties.length) kies(n, opties[n].actie);
+      else if (e.key === "ArrowLeft" && nr > 0) vorige();
+      else if ((e.key === "ArrowRight" || e.key === "Enter") && knop && !knop.uit) knop.actie();
+      else if (e.key === "Escape") router.push("/");
     };
     window.addEventListener("keydown", toets);
     return () => window.removeEventListener("keydown", toets);
   });
 
-  const kiesKeuze = (i: number, k: 0 | 1 | 2 | 3) => {
-    setA((x) => {
-      const keuzes = [...x.keuzes];
-      keuzes[i] = k;
-      return { ...x, keuzes };
-    });
-    later();
-  };
-
-  if (stap === "intro")
-    return <Intro start={volgende} opnieuw={profiel.vragenlijstKlaar} naarResultaat={() => ga(STAPPEN.length - 1)} />;
-  if (stap === "resultaat") return <Resultaat profiel={concept} redenen={uitslag.redenen} opnieuw={() => ga(1)} />;
-
-  const magDoor =
-    stap === "diploma"
-      ? diplomaCompleet(concept)
-      : stap === "vakken"
-        ? a.vakken.length > 0
-        : stap === "toekomst"
-          ? a.toekomst.length > 0
-          : true;
-  const autoStap = keuzeNr !== null || stellingSector !== null;
+  const segmenten = STORY.length - 1;
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1fr_300px]">
-      <div className="mx-auto w-full max-w-2xl">
-        <div className="mb-8 flex items-center gap-4">
-          <button
-            type="button"
-            onClick={vorige}
-            aria-label="Vorige vraag"
-            className="focus-ring flex h-9 w-9 items-center justify-center rounded-full border border-line hover:border-ink"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </button>
-          <div className="h-[3px] flex-1 overflow-hidden bg-line">
-            <div className="h-full bg-ink transition-all duration-500" style={{ width: `${(nr / VRAGEN) * 100}%` }} />
-          </div>
-          <span className="font-mono text-xs text-muted tabular">
-            {String(nr).padStart(2, "0")} / {VRAGEN}
-          </span>
-        </div>
-
-        <div key={stap} className="inschuiven" style={{ ["--richting" as string]: richting }}>
-          {stap === "jij" && (
-            <Vraag
-              label="Even kennismaken"
-              titel="Hoe heet je, en waar woon je?"
-              sub="Vanaf je woonplaats rekenen we de reistijd naar elke universiteit uit."
-            >
-              <div className="space-y-3">
-                <input
-                  value={concept.naam}
-                  onChange={(e) => zet("naam", e.target.value)}
-                  placeholder="Je voornaam"
-                  autoComplete="given-name"
-                  className="focus-ring w-full rounded-xl border border-line bg-card px-4 py-3.5 text-[15px]"
-                />
-                <WoonplaatsKiezer waarde={concept.woonplaats} kies={(w) => zet("woonplaats", w)} />
-              </div>
-            </Vraag>
-          )}
-
-          {stap === "diploma" && (
-            <Vraag
-              label="Toelating"
-              titel="Wat is jouw route naar de universiteit?"
-              sub="Met je profiel en vakken checken we straks per studie of je toelaatbaar bent."
-            >
-              <DiplomaKiezer waarde={concept} zet={(w) => setConcept((c) => ({ ...c, ...w }))} />
-            </Vraag>
-          )}
-
-          {stap === "vakken" && (
-            <Vraag
-              label="Op school"
-              titel="Welke vakken vind je het leukst?"
-              sub={`Kies er maximaal drie. ${a.vakken.length}/3 gekozen.`}
-            >
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {SCHOOLVAKKEN.map((v) => {
-                  const aan = a.vakken.includes(v.naam);
-                  const vol = !aan && a.vakken.length >= 3;
-                  return (
-                    <button
-                      key={v.naam}
-                      type="button"
-                      aria-pressed={aan}
-                      disabled={vol}
-                      onClick={() =>
-                        setA((x) => ({
-                          ...x,
-                          vakken: aan ? x.vakken.filter((n) => n !== v.naam) : [...x.vakken, v.naam],
-                        }))
-                      }
-                      className={`focus-ring flex items-center justify-between gap-2 rounded-xl border px-4 py-3 text-left text-sm transition-colors disabled:opacity-35 ${
-                        aan ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink/40"
-                      }`}
-                    >
-                      {v.naam}
-                      {aan && <Check className="h-4 w-4 shrink-0" />}
-                    </button>
-                  );
-                })}
-              </div>
-            </Vraag>
-          )}
-
-          {keuzeNr !== null && (
-            <Vraag label={`Dit of dat · ${keuzeNr + 1} van ${DIT_OF_DAT.length}`} titel="Wat zou je liever doen?">
-              <div className="grid grid-cols-2 gap-3">
-                {DIT_OF_DAT[keuzeNr].map((k, i) => {
-                  const gekozen = a.keuzes[keuzeNr] === i || a.keuzes[keuzeNr] === 2;
-                  return (
-                    <button
-                      key={k.tekst}
-                      type="button"
-                      aria-pressed={gekozen}
-                      onClick={() => kiesKeuze(keuzeNr, i as 0 | 1)}
-                      className={`focus-ring group overflow-hidden rounded-2xl border text-left transition-all active:scale-[.98] ${
-                        gekozen ? "border-ink ring-1 ring-ink" : "border-line hover:border-ink/50"
-                      }`}
-                    >
-                      <Illustratie
-                        sector={k.sector}
-                        className="block aspect-[3/2] w-full transition-transform duration-500 group-hover:scale-[1.03]"
-                        tekenen
-                      />
-                      <span className="block bg-card p-4">
-                        <span className="bovenschrift">{i === 0 ? "A" : "B"}</span>
-                        <span className="display mt-1 block text-lg leading-snug sm:text-xl">{k.tekst}</span>
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="mt-4 flex justify-center gap-2 text-sm">
-                {(
-                  [
-                    [2, "Allebei leuk"],
-                    [3, "Geen van beide"],
-                  ] as const
-                ).map(([w, label]) => (
-                  <button
-                    key={w}
-                    type="button"
-                    aria-pressed={a.keuzes[keuzeNr] === w}
-                    onClick={() => kiesKeuze(keuzeNr, w)}
-                    className={`rounded-full border px-4 py-2 transition-colors ${a.keuzes[keuzeNr] === w ? "border-ink bg-ink text-bg" : "border-line hover:border-ink"}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </Vraag>
-          )}
-
-          {stap === "toekomst" && (
-            <Vraag
-              label="Over tien jaar"
-              titel="Waar zie je jezelf werken?"
-              sub={`Kies er één of twee. ${a.toekomst.length}/2 gekozen.`}
-            >
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {TOEKOMST.map((t) => {
-                  const aan = a.toekomst.includes(t.sector);
-                  const vol = !aan && a.toekomst.length >= 2;
-                  return (
-                    <button
-                      key={t.sector}
-                      type="button"
-                      aria-pressed={aan}
-                      disabled={vol}
-                      onClick={() =>
-                        setA((x) => ({
-                          ...x,
-                          toekomst: aan ? x.toekomst.filter((s) => s !== t.sector) : [...x.toekomst, t.sector],
-                        }))
-                      }
-                      className={`focus-ring relative overflow-hidden rounded-xl border text-left transition-all disabled:opacity-40 ${
-                        aan ? "border-ink ring-1 ring-ink" : "border-line hover:border-ink/50"
-                      }`}
-                    >
-                      <Illustratie sector={t.sector} className="block aspect-[3/2] w-full" />
-                      <span className="block bg-card p-3">
-                        <span className="block text-sm font-medium leading-tight">{t.titel}</span>
-                        <span className="text-xs text-muted">{t.tekst}</span>
-                      </span>
-                      {aan && (
-                        <span className="absolute right-2 top-2 flex h-6 w-6 items-center justify-center rounded-full bg-ink text-bg">
-                          <Check className="h-3.5 w-3.5" strokeWidth={3} />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </Vraag>
-          )}
-
-          {stellingSector && (
-            <section>
-              <p className="bovenschrift mb-6">
-                Stelling {HOOFDRICHTINGEN.indexOf(stellingSector) + 1} van {HOOFDRICHTINGEN.length}
-              </p>
-              <blockquote className="display text-[32px] leading-[1.15] sm:text-[44px]">
-                &ldquo;{STELLINGEN[stellingSector]}&rdquo;
-              </blockquote>
-              <div
-                className="mt-10 grid grid-cols-5 border border-line"
-                role="radiogroup"
-                aria-label={STELLINGEN[stellingSector]}
-              >
-                {SCHAAL.map((label, w) => {
-                  const gekozen = a.stellingen[stellingSector] === w;
-                  return (
-                    <button
-                      key={label}
-                      type="button"
-                      role="radio"
-                      aria-checked={gekozen}
-                      onClick={() => {
-                        setA((x) => ({ ...x, stellingen: { ...x.stellingen, [stellingSector]: w } }));
-                        later();
-                      }}
-                      className={`focus-ring flex flex-col items-center gap-2 border-r border-line px-1 py-4 text-center transition-colors last:border-r-0 ${
-                        gekozen ? "bg-ink text-bg" : "bg-card hover:bg-card-2"
-                      }`}
-                    >
-                      <span className="display text-2xl tabular">{w + 1}</span>
-                      <span className={`text-[11px] leading-tight sm:text-xs ${gekozen ? "" : "text-muted"}`}>
-                        {label}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="mt-3 hidden text-center text-xs text-muted sm:block">Tip: toets 1 t/m 5</p>
-            </section>
-          )}
-
-          {stap === "wonen" && (
-            <Vraag
-              label="Wonen"
-              titel="Ga je op kamer, of blijf je thuis wonen?"
-              sub="Dit maakt een groot verschil in wat je per maand kwijt bent."
-            >
-              <div className="grid grid-cols-3 gap-2">
-                {(
-                  [
-                    ["thuis", "Thuis blijven"],
-                    ["allebei", "Weet ik nog niet"],
-                    ["kamer", "Op kamer"],
-                  ] as [Wonen, string][]
-                ).map(([w, titel]) => (
-                  <button
-                    key={w}
-                    type="button"
-                    aria-pressed={concept.wonen === w}
-                    onClick={() => zet("wonen", w)}
-                    className={`rounded-xl border px-3 py-4 text-sm transition-colors ${concept.wonen === w ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink/40"}`}
-                  >
-                    {titel}
-                  </button>
-                ))}
-              </div>
-              <div className="mt-8">
-                <div className="mb-3 flex items-baseline justify-between">
-                  <span className="bovenschrift">Maximaal reizen per dag (enkele reis)</span>
-                  <span className="display text-2xl tabular">{reistijdTekst(concept.maxReistijd)}</span>
-                </div>
-                <Schuif
-                  label="Maximale reistijd"
-                  waarde={concept.maxReistijd}
-                  min={15}
-                  max={150}
-                  stap={5}
-                  zet={(n) => zet("maxReistijd", n)}
-                />
-              </div>
-            </Vraag>
-          )}
-
-          {stap === "taal" && (
-            <Vraag
-              label="Taal"
-              titel="Wil je in het Nederlands of in het Engels studeren?"
-              sub="Een groot deel van de universitaire bachelors is (ook) Engelstalig."
-            >
-              <div className="grid gap-2 sm:grid-cols-3">
-                {(
-                  [
-                    ["nl", "Nederlands", "Liefst in het Nederlands"],
-                    ["en", "Engels", "Ik wil juist in het Engels"],
-                    ["beide", "Maakt niet uit", "Allebei prima"],
-                  ] as [TaalVoorkeur, string, string][]
-                ).map(([w, titel, tekst]) => (
-                  <button
-                    key={w}
-                    type="button"
-                    aria-pressed={concept.taal === w}
-                    onClick={() => {
-                      zet("taal", w);
-                      later();
-                    }}
-                    className={`rounded-xl border p-4 text-left transition-colors ${concept.taal === w ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink/40"}`}
-                  >
-                    <span className="display block text-xl">{titel}</span>
-                    <span className={`text-sm ${concept.taal === w ? "opacity-80" : "text-muted"}`}>{tekst}</span>
-                  </button>
-                ))}
-              </div>
-            </Vraag>
-          )}
-
-          {stap === "geld" && (
-            <Vraag
-              label="Geld"
-              titel="Nog twee vragen over geld"
-              sub="Hiermee schatten we je studiefinanciering van DUO. Precies uitrekenen kan later bij Geld & DUO."
-            >
-              <p className="bovenschrift mb-2">Wat verdienen je ouders samen, ongeveer per jaar?</p>
-              <div className="flex flex-wrap gap-2">
-                {INKOMENS.map((i) => (
-                  <button
-                    key={i.label}
-                    type="button"
-                    aria-pressed={concept.ouderInkomen === i.waarde}
-                    onClick={() => zet("ouderInkomen", i.waarde)}
-                    className={`rounded-full border px-4 py-2 text-sm transition-colors ${concept.ouderInkomen === i.waarde ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink/40"}`}
-                  >
-                    {i.label}
-                  </button>
-                ))}
-              </div>
-              <p className="bovenschrift mb-2 mt-8">Hoe sta je tegenover lenen bij DUO?</p>
-              <div className="grid gap-2 sm:grid-cols-3">
-                {LENEN.map((l) => (
-                  <button
-                    key={l.label}
-                    type="button"
-                    aria-pressed={concept.maxLenen === l.waarde}
-                    onClick={() => zet("maxLenen", l.waarde)}
-                    className={`rounded-xl border p-4 text-left transition-colors ${concept.maxLenen === l.waarde ? "border-ink bg-ink text-bg" : "border-line bg-card hover:border-ink/40"}`}
-                  >
-                    <span className="display block text-lg">{l.label}</span>
-                    <span className={`text-sm ${concept.maxLenen === l.waarde ? "opacity-80" : "text-muted"}`}>
-                      {l.tekst}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </Vraag>
-          )}
-        </div>
-
-        <div className="mt-10 flex items-center justify-between gap-3">
-          {autoStap ? (
-            <button
-              type="button"
-              onClick={volgende}
-              className="text-sm text-muted underline-offset-4 hover:text-ink hover:underline"
-            >
-              Sla over
-            </button>
-          ) : (
-            <span />
-          )}
-          {stap === "geld" ? (
-            <button
-              type="button"
-              onClick={afronden}
-              className="focus-ring inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3.5 font-medium text-bg hover:opacity-90"
-            >
-              Bekijk mijn uitslag <ArrowRight className="h-4 w-4" />
-            </button>
-          ) : !autoStap ? (
-            <button
-              type="button"
-              onClick={volgende}
-              disabled={!magDoor}
-              className="focus-ring inline-flex items-center gap-2 rounded-full bg-ink px-7 py-3.5 font-medium text-bg transition-opacity hover:opacity-90 disabled:opacity-25"
-            >
-              Volgende <ArrowRight className="h-4 w-4" />
-            </button>
-          ) : null}
-        </div>
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#07080b] licht-thema">
+      {/* Op een groot scherm: dezelfde foto, vervaagd, als achtergrond */}
+      <div className="absolute inset-0 hidden overflow-hidden sm:block" aria-hidden>
+        <Foto
+          key={foto}
+          sleutel={foto}
+          className="h-full w-full scale-110 object-cover opacity-50 blur-2xl fade-in"
+          sizes="50vw"
+        />
       </div>
 
-      <LiveKompas interesse={uitslag.interesse} />
-    </div>
-  );
-}
+      <div className="relative flex h-full w-full flex-col overflow-hidden bg-black text-[#0b0d12] sm:h-[min(92vh,880px)] sm:w-[min(460px,94vw)] sm:rounded-[22px] sm:shadow-[0_30px_80px_-20px_rgba(0,0,0,.8)]">
+        <Foto
+          key={foto + "-scherp"}
+          sleutel={foto}
+          className="kenburns absolute inset-0 h-full w-full object-cover"
+          sizes="(min-width: 640px) 460px, 100vw"
+          prioriteit
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/5 to-black/55" aria-hidden />
 
-/** Zijkolom op de laptop: je kompas groeit mee terwijl je antwoordt */
-function LiveKompas({ interesse }: { interesse: Partial<Record<SectorId, number>> }) {
-  const lijst = HOOFDRICHTINGEN.map((s) => [s, interesse[s] ?? 0] as const).sort((x, y) => y[1] - x[1]);
-  const leeg = lijst.every(([, w]) => w === 0);
-  return (
-    <aside className="sticky top-24 hidden h-fit lg:block">
-      <p className="bovenschrift mb-4">Je kompas tot nu toe</p>
-      {leeg ? (
-        <p className="text-sm text-muted">Begin met antwoorden, dan zie je hier welke richtingen opvallen.</p>
-      ) : (
-        <ul className="space-y-3">
-          {lijst.map(([s, w]) => (
-            <li key={s}>
-              <div className="mb-1 flex justify-between text-sm">
-                <span>{SECTOR[s].naam}</span>
-                <span className="font-mono text-xs text-muted tabular">{Math.round(w * 100)}</span>
-              </div>
-              <div className="h-[3px] bg-line">
-                <div
-                  className="h-full transition-all duration-500"
-                  style={{ width: `${w * 100}%`, background: SECTOR[s].kleur }}
-                />
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </aside>
-  );
-}
-
-function Vraag({
-  label,
-  titel,
-  sub,
-  children,
-}: {
-  label: string;
-  titel: string;
-  sub?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section>
-      <p className="bovenschrift mb-3">{label}</p>
-      <h1 className="display text-[32px] leading-[1.1] sm:text-5xl">{titel}</h1>
-      {sub && <p className="mt-3 text-muted">{sub}</p>}
-      <div className="mt-8">{children}</div>
-    </section>
-  );
-}
-
-function Intro({ start, opnieuw, naarResultaat }: { start: () => void; opnieuw: boolean; naarResultaat: () => void }) {
-  return (
-    <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_1fr]">
-      <div className="binnenkomen">
-        <p className="bovenschrift mb-4">Studietest · ± 6 minuten</p>
-        <h1 className="display text-[44px] leading-[1.02] sm:text-7xl">
-          Welke studie <em className="italic">past</em> bij jou?
-        </h1>
-        <p className="mt-6 max-w-lg text-lg text-muted">
-          Geen saaie vragenlijst: je kiest je favoriete vakken, maakt acht keer een keuze tussen twee dingen, kiest waar
-          je jezelf ziet werken en reageert op tien stellingen. Daarna zie je je kompas, waarom het zo uitvalt, en de
-          bachelors die het beste bij je passen.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center gap-4">
-          <button
-            type="button"
-            onClick={start}
-            className="focus-ring inline-flex items-center gap-2 rounded-full bg-ink px-7 py-4 font-medium text-bg hover:opacity-90"
-          >
-            {opnieuw ? "Test opnieuw doen" : "Begin de test"} <ArrowRight className="h-4 w-4" />
-          </button>
-          {opnieuw && (
-            <button
-              type="button"
-              onClick={naarResultaat}
-              className="text-sm underline decoration-line underline-offset-4 hover:decoration-ink"
-            >
-              Mijn vorige uitslag bekijken
-            </button>
-          )}
-        </div>
-        <dl className="mt-10 grid max-w-md grid-cols-3 border-t border-line pt-5">
-          {[
-            ["4", "soorten vragen"],
-            ["10", "richtingen"],
-            ["433", "bachelors"],
-          ].map(([g, t]) => (
-            <div key={t}>
-              <dt className="display text-3xl tabular">{g}</dt>
-              <dd className="text-sm text-muted">{t}</dd>
+        {/* Voortgang in segmenten, zoals bij een story */}
+        <div className="relative z-10 flex gap-1 px-3 pt-3" aria-hidden>
+          {Array.from({ length: segmenten }, (_, i) => (
+            <div key={i} className="h-[3px] flex-1 overflow-hidden rounded-full bg-white/35">
+              <div
+                className="h-full bg-white transition-[width] duration-500"
+                style={{ width: i < nr ? "100%" : i === nr ? "45%" : "0%" }}
+              />
             </div>
           ))}
-        </dl>
-      </div>
-      <div className="grid grid-cols-2 gap-3" aria-hidden>
-        {(["beta", "taal", "zorg", "economie"] as SectorId[]).map((s, i) => (
-          <div
-            key={s}
-            className={`overflow-hidden rounded-2xl border border-line binnenkomen ${i % 2 ? "mt-8" : ""}`}
-            style={{ animationDelay: `${i * 90}ms` }}
+        </div>
+        <div className="relative z-10 flex items-center gap-2 px-3 pt-3 text-white">
+          {nr > 0 && stap !== "rekenen" ? (
+            <button
+              type="button"
+              onClick={vorige}
+              aria-label="Vorige vraag"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+          ) : (
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[13px] font-bold text-brand">
+              SK
+            </span>
+          )}
+          <p className="flex-1 text-sm font-semibold drop-shadow">
+            Studietest
+            <span className="ml-2 font-normal opacity-80">
+              {Math.min(nr + 1, segmenten)} / {segmenten}
+            </span>
+          </p>
+          <Link
+            href="/"
+            aria-label="Test sluiten"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-white/15 backdrop-blur hover:bg-white/25"
           >
-            <Illustratie sector={s} className="block aspect-[3/2] w-full" tekenen />
-            <p className="bg-card px-3 py-2 text-sm">{SECTOR[s].naam}</p>
+            <X className="h-4 w-4" />
+          </Link>
+        </div>
+
+        {/* Inhoud */}
+        <div key={stap} className="story-in relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-5">
+          <div className="wolkje relative rounded-md bg-white/88 px-5 py-4 text-[17px] leading-relaxed shadow-lg backdrop-blur-md">
+            {vraag}
           </div>
-        ))}
+
+          {inhoud && (
+            <div className="mt-6 rounded-md bg-white/92 p-4 text-[15px] shadow-lg backdrop-blur-md">{inhoud}</div>
+          )}
+
+          {opties.length > 0 && (
+            <ul className="mt-6 space-y-2.5" role="list">
+              {opties.map((o, i) => {
+                const aan = gekozen === i || (gekozen === null && o.aan);
+                return (
+                  <li key={o.tekst} style={{ animationDelay: `${120 + i * 60}ms` }} className="story-in">
+                    <button
+                      type="button"
+                      aria-pressed={aan}
+                      onClick={() => kies(i, o.actie)}
+                      className={`group flex w-full items-stretch overflow-hidden rounded-md text-left shadow-md backdrop-blur-md transition-all active:scale-[.985] ${
+                        aan ? "bg-brand text-white" : "bg-white/82 hover:bg-white"
+                      }`}
+                    >
+                      <span
+                        className={`flex w-12 shrink-0 items-center justify-center text-[15px] font-bold ${
+                          aan ? "bg-black/15 text-white" : "bg-brand text-white"
+                        }`}
+                      >
+                        {aan ? <Check className="h-4 w-4" strokeWidth={3} /> : LETTERS[i]}
+                      </span>
+                      <span className="flex-1 px-4 py-3.5 text-[15.5px] leading-snug">{o.tekst}</span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <div className="mt-auto flex items-end justify-between gap-3 pt-6">
+            <FotoBron sleutel={foto} className="text-[10.5px] text-white/75" />
+            {knop && (
+              <button
+                type="button"
+                onClick={knop.actie}
+                disabled={knop.uit}
+                className="inline-flex shrink-0 items-center gap-2 rounded-md bg-white px-5 py-3 font-semibold shadow-lg transition-opacity hover:bg-white/90 disabled:opacity-50"
+              >
+                {knop.tekst}
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-brand text-white">
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </span>
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
 }
+
+/** Vraagtekst met één vetgedrukt stuk */
+function Nadruk({ tekst, nadruk }: { tekst: string; nadruk?: string }) {
+  if (!nadruk || !tekst.includes(nadruk)) return <>{tekst}</>;
+  const [voor, na] = tekst.split(nadruk);
+  return (
+    <>
+      {voor}
+      <b>{nadruk}</b>
+      {na}
+    </>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Uitslag                                                              */
+/* ------------------------------------------------------------------ */
 
 function Resultaat({
   profiel,
@@ -689,73 +548,104 @@ function Resultaat({
       .filter((r) => (gezien.has(r.opleiding.naam) ? false : (gezien.add(r.opleiding.naam), true)))
       .slice(0, 6);
   }, [data, profiel]);
+  const [eerste] = top;
 
   return (
-    <div className="space-y-16">
-      <section className="grid items-center gap-10 lg:grid-cols-[1fr_420px]">
-        <div className="binnenkomen">
-          <p className="bovenschrift mb-4">Jouw uitslag</p>
-          <h1 className="display text-[40px] leading-[1.05] sm:text-6xl">
-            {profiel.naam ? `${profiel.naam}, je` : "Je"} kompas wijst naar{" "}
-            <em className="italic">{top[0] ? SECTOR[top[0][0]].naam.toLowerCase() : "…"}</em>
-          </h1>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <DeelKnop profiel={profiel} />
-            <button
-              type="button"
-              onClick={opnieuw}
-              className="focus-ring inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 text-sm hover:border-ink"
-            >
-              <RotateCcw className="h-3.5 w-3.5" /> Antwoorden aanpassen
-            </button>
+    <div className="space-y-14">
+      {eerste && (
+        <section className="volle-breedte relative -mt-5 overflow-hidden bg-black text-white sm:-mt-8">
+          <Foto
+            sleutel={SECTOR_FOTO[eerste[0]]}
+            className="kenburns absolute inset-0 h-full w-full object-cover opacity-80"
+            sizes="100vw"
+            prioriteit
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10" aria-hidden />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/15 to-transparent" aria-hidden />
+          <div className="relative mx-auto flex min-h-[440px] max-w-6xl flex-col justify-end px-4 pb-10 pt-28 sm:min-h-[520px] sm:px-6">
+            <p className="text-sm font-semibold text-white/80">
+              {profiel.naam ? `${profiel.naam}, jouw` : "Jouw"} richting
+            </p>
+            <h1 className="mt-2 max-w-3xl text-[42px] font-bold leading-[1.02] tracking-tight sm:text-7xl">
+              {SECTOR[eerste[0]].naam}
+            </h1>
+            <p className="mt-3 max-w-xl text-lg text-white/85">{SECTOR[eerste[0]].tekst}</p>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <span className="rounded-md bg-brand px-3 py-1.5 text-sm font-semibold tabular">
+                {Math.round(eerste[1] * 100)}% match
+              </span>
+              {top.slice(1).map(([s, w]) => (
+                <span key={s} className="rounded-md bg-white/15 px-3 py-1.5 text-sm backdrop-blur tabular">
+                  {SECTOR[s].naam} · {Math.round(w * 100)}%
+                </span>
+              ))}
+            </div>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <DeelKnop profiel={profiel} />
+              <button
+                type="button"
+                onClick={opnieuw}
+                className="inline-flex items-center gap-2 rounded-md bg-white/15 px-4 py-2.5 text-sm font-medium backdrop-blur hover:bg-white/25"
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Test opnieuw doen
+              </button>
+            </div>
+            <FotoBron sleutel={SECTOR_FOTO[eerste[0]]} className="mt-6 text-[11px] text-white/60" />
+          </div>
+        </section>
+      )}
+
+      <section className="grid gap-8 lg:grid-cols-[1fr_380px]">
+        <div>
+          <h2 className="kop text-3xl">Waarom deze richtingen?</h2>
+          <p className="mt-1 text-muted">Op basis van wat je antwoordde.</p>
+          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+            {top.map(([s, w], i) => (
+              <article key={s} className="kaart overflow-hidden">
+                <Foto sleutel={SECTOR_FOTO[s]} className="aspect-[4/3] w-full object-cover" sizes="300px" />
+                <div className="p-4">
+                  <p className="text-sm font-semibold text-brand tabular">
+                    {i + 1}. {Math.round(w * 100)}%
+                  </p>
+                  <h3 className="kop mt-0.5 text-lg leading-tight">{SECTOR[s].naam}</h3>
+                  {(redenen[s] ?? []).length > 0 ? (
+                    <ul className="mt-3 space-y-1.5 text-sm">
+                      {[...new Set(redenen[s])].slice(0, 3).map((r) => (
+                        <li key={r} className="flex gap-2">
+                          <Check className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" strokeWidth={3} />
+                          {r.charAt(0).toUpperCase() + r.slice(1)}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-3 text-sm text-muted">{SECTOR[s].tekst}</p>
+                  )}
+                  <Link
+                    href={`/zoeken?sector=${s}`}
+                    className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:underline"
+                  >
+                    Bekijk bachelors <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </article>
+            ))}
           </div>
         </div>
         <div className="kaart p-3">
+          <p className="px-2 pt-2 text-sm font-semibold">Je hele kompas</p>
           <KompasRadar interesse={profiel.interesse} />
         </div>
       </section>
 
       <section>
-        <p className="bovenschrift mb-2">Je top 3</p>
-        <h2 className="display mb-6 text-3xl">Waarom deze richtingen?</h2>
-        <div className="grid gap-4 md:grid-cols-3">
-          {top.map(([s, w], i) => (
-            <article key={s} className="kaart overflow-hidden">
-              <Illustratie sector={s} className="block aspect-[3/2] w-full" tekenen />
-              <div className="p-5">
-                <div className="flex items-baseline justify-between gap-3">
-                  <p className="bovenschrift">Nummer {i + 1}</p>
-                  <p className="display text-2xl tabular">{Math.round(w * 100)}%</p>
-                </div>
-                <h3 className="display mt-1 text-2xl">{SECTOR[s].naam}</h3>
-                <p className="mt-1 text-sm text-muted">{SECTOR[s].tekst}</p>
-                {(redenen[s] ?? []).length > 0 && (
-                  <ul className="mt-4 space-y-1.5 border-t border-line pt-4 text-sm">
-                    {(redenen[s] ?? []).slice(0, 3).map((r) => (
-                      <li key={r} className="flex gap-2">
-                        <span className="text-muted">–</span>
-                        {r}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                <p className="mt-4 text-xs text-muted">Bijvoorbeeld: {SECTOR[s].voorbeelden}</p>
-                <Link href={`/zoeken?sector=${s}`} className="mt-3 inline-block text-sm streep">
-                  Bekijk deze bachelors
-                </Link>
-              </div>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="mb-5 flex items-end justify-between gap-4 border-b border-line pb-3">
+        <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="bovenschrift mb-1">Uit {data ? data.opleidingen.length : "…"} bachelors</p>
-            <h2 className="display text-3xl">Je beste matches</h2>
+            <h2 className="kop text-3xl">Je beste matches</h2>
+            <p className="mt-1 text-muted">
+              Uit {data ? data.opleidingen.length : "…"} bachelors, met toelating, kosten en reistijd erbij.
+            </p>
           </div>
-          <Link href="/zoeken" className="text-sm streep">
+          <Link href="/zoeken" className="shrink-0 text-sm font-semibold text-brand hover:underline">
             Alle matches
           </Link>
         </div>
@@ -764,7 +654,7 @@ function Resultaat({
         </div>
         <p className="mt-6 text-sm text-muted">
           Je match-score rekent ook met geld, op basis van een schatting van je studiefinanciering.{" "}
-          <Link href="/geld" className="streep text-ink">
+          <Link href="/geld" className="font-medium text-brand hover:underline">
             Reken het precies uit bij Geld & DUO
           </Link>
           .
@@ -797,7 +687,7 @@ function DeelKnop({ profiel }: { profiel: Profiel }) {
     <button
       type="button"
       onClick={deel}
-      className="focus-ring inline-flex items-center gap-2 rounded-full bg-ink px-5 py-2.5 text-sm text-bg hover:opacity-90"
+      className="inline-flex items-center gap-2 rounded-md bg-white px-4 py-2.5 text-sm font-semibold text-[#0b0d12] hover:bg-white/90"
     >
       {gekopieerd ? <Check className="h-3.5 w-3.5" /> : <Share2 className="h-3.5 w-3.5" />}
       {gekopieerd ? "Gekopieerd" : "Deel je uitslag"}
