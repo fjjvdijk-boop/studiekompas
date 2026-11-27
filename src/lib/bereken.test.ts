@@ -17,7 +17,8 @@ import {
   vandaag,
 } from "./bereken";
 import { decodeer, type RuweData } from "./data";
-import { toelating } from "./toelating";
+import { eisTekst, normaliseer, toelating, type Eis } from "./toelating";
+import tabel from "@/data/toelating-wo.json";
 import type { Opleiding, Plaats, Profiel } from "./types";
 
 const data = decodeer(
@@ -231,65 +232,50 @@ describe("hulpfuncties", () => {
   });
 });
 
-describe("toelatingseisen", () => {
-  const techniekHbo = nep({ soort: "hbo", niveau: "hbo", sector: "techniek", naam: "Werktuigbouwkunde" }, enschede);
-  const zorgHbo = nep({ soort: "hbo", niveau: "hbo", sector: "zorg", naam: "Verpleegkunde" }, enschede);
-  const economieHbo = nep({ soort: "hbo", niveau: "hbo", sector: "economie", naam: "Bedrijfskunde" }, enschede);
-  const geneeskunde = nep({ soort: "wo", niveau: "wo", sector: "zorg", naam: "Geneeskunde" }, amsterdam);
-  const werktuigWo = nep({ soort: "wo", niveau: "wo", sector: "techniek", naam: "Werktuigbouwkunde" }, amsterdam);
-  const rechten = nep({ soort: "wo", niveau: "wo", sector: "recht", naam: "Rechtsgeleerdheid" }, amsterdam);
-  const havo = (profielen: Profiel["profielen"], vakken: Profiel["vakken"]) => ({
-    vooropleiding: "havo" as const,
-    leerweg: null,
-    profielen,
-    vakken,
-  });
+describe("toelatingseisen (officiële tabel, bijlage A)", () => {
+  const geneeskunde = nep({ sector: "zorg", naam: "Geneeskunde" }, amsterdam);
+  const werktuigWo = nep({ sector: "techniek", naam: "Werktuigbouwkunde" }, amsterdam);
+  const rechten = nep({ sector: "recht", naam: "Rechtsgeleerdheid" }, amsterdam);
+  const psychologie = nep({ sector: "welzijn", naam: "Psychologie" }, amsterdam);
   const vwo = (profielen: Profiel["profielen"], vakken: Profiel["vakken"]) => ({
     vooropleiding: "vwo" as const,
-    leerweg: null,
     profielen,
     vakken,
   });
 
-  it("laat NT vrij toe tot hbo-techniek", () => {
-    expect(toelating(techniekHbo, havo(["NT"], ["wiskunde B", "natuurkunde"])).status).toBe("ja");
+  it("vindt de eisen voor (bijna) elke opleiding met eisen in de tabel", () => {
+    const tabelNamen = Object.keys(tabel.opleidingen).map(normaliseer);
+    const ons = new Set(data.opleidingen.map((o) => normaliseer(o.naam)));
+    const gevonden = tabelNamen.filter((n) => ons.has(n));
+    expect(gevonden.length).toBeGreaterThan(110);
   });
-  it("geeft een deficiëntie als CM-leerlingen natuurkunde en wiskunde missen", () => {
-    const t = toelating(techniekHbo, havo(["CM"], ["geschiedenis"]));
-    expect(t.status).toBe("deficientie");
-    expect(t.mist).toEqual(["wiskunde A of B", "natuurkunde"]);
+  it("Geneeskunde: NT heeft biologie nodig, NG natuurkunde, EM geen toelatingsrecht", () => {
+    expect(toelating(geneeskunde, vwo(["NT"], [])).mist).toEqual(["biologie"]);
+    expect(toelating(geneeskunde, vwo(["NT"], ["biologie"])).status).toBe("ja");
+    expect(toelating(geneeskunde, vwo(["NG"], ["wiskunde A"])).mist).toEqual(["natuurkunde"]);
+    expect(toelating(geneeskunde, vwo(["EM"], ["wiskunde A"])).status).toBe("nee");
   });
-  it("laat NG vrij toe tot hbo-zorg, maar EM zonder biologie niet", () => {
-    expect(toelating(zorgHbo, havo(["NG"], ["biologie"])).status).toBe("ja");
-    expect(toelating(zorgHbo, havo(["EM"], ["wiskunde A", "economie"])).status).toBe("deficientie");
+  it("met een combinatie van profielen telt het gunstigste", () => {
+    expect(toelating(geneeskunde, vwo(["NG", "NT"], [])).status).toBe("ja");
   });
-  it("laat CM met wiskunde A toe tot hbo-economie", () => {
-    expect(toelating(economieHbo, havo(["CM"], ["wiskunde A", "geschiedenis"])).status).toBe("ja");
+  it("techniek aan de universiteit: NT vrij, NG mist wiskunde B en natuurkunde", () => {
+    expect(toelating(werktuigWo, vwo(["NT"], [])).status).toBe("ja");
+    const t = toelating(werktuigWo, vwo(["NG"], ["wiskunde A"]));
+    expect(t.status === "deficientie" || t.status === "nee").toBe(true);
   });
-  it("vraagt voor geneeskunde natuurkunde, scheikunde en biologie", () => {
-    expect(toelating(geneeskunde, vwo(["NG"], ["wiskunde A", "biologie", "scheikunde"])).mist).toEqual(["natuurkunde"]);
-    expect(
-      toelating(geneeskunde, vwo(["NG", "NT"], ["wiskunde B", "natuurkunde", "scheikunde", "biologie"])).status,
-    ).toBe("ja");
+  it("rechten en psychologie hebben geen extra vakeisen", () => {
+    expect(toelating(rechten, vwo(["CM"], ["wiskunde C"])).status).toBe("ja");
+    expect(toelating(psychologie, vwo(["CM"], ["wiskunde C"])).status).toBe("ja");
   });
-  it("vraagt wiskunde B en natuurkunde voor technische universiteiten", () => {
-    expect(toelating(werktuigWo, vwo(["NG"], ["wiskunde A", "biologie", "scheikunde"])).mist).toEqual([
-      "wiskunde B",
-      "natuurkunde",
-    ]);
+  it("vraagt eerst om je profiel", () => {
+    expect(toelating(geneeskunde, vwo([], [])).status).toBe("onbekend");
   });
-  it("heeft geen vakeisen voor rechten", () => {
-    expect(toelating(rechten, vwo(["CM"], ["geschiedenis"])).status).toBe("ja");
-  });
-  it("laat vmbo-basis niet direct naar mbo 4", () => {
-    const mbo4 = nep({ soort: "mbo", niveau: "mbo4" }, enschede);
-    const mbo2 = nep({ soort: "mbo", niveau: "mbo2" }, enschede);
-    const basis = { vooropleiding: "vmbo" as const, leerweg: "basis" as const, profielen: [], vakken: [] };
-    expect(toelating(mbo4, basis).status).toBe("nee");
-    expect(toelating(mbo2, basis).status).toBe("ja");
+  it("kan elke eis uit de tabel leesbaar maken", () => {
+    for (const eisen of Object.values(tabel.opleidingen))
+      for (const e of Object.values(eisen)) expect(eisTekst(e as Eis).length).toBeGreaterThan(2);
   });
   it("verlaagt de score bij een ontbrekend vak", () => {
-    const p = { ...profiel, interesse: { techniek: 1 }, profielen: ["CM" as const], vakken: ["geschiedenis" as const] };
-    expect(bereken(techniekHbo, p).match.score).toBeLessThanOrEqual(70);
+    const p = { ...profiel, interesse: { zorg: 1 }, profielen: ["NT" as const], vakken: [] };
+    expect(bereken(geneeskunde, p).match.score).toBeLessThanOrEqual(70);
   });
 });

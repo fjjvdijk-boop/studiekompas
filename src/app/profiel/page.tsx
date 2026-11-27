@@ -229,7 +229,10 @@ function Blok({
       <div className="mb-5 flex items-end justify-between border-b border-line pb-2">
         <h2 className="display text-2xl">{titel}</h2>
         {actie && (
-          <Link href={actie.href} className="text-sm streep">
+          <Link
+            href={actie.href}
+            className="inline-flex min-h-10 items-center text-sm font-semibold text-brand hover:underline"
+          >
             {actie.label}
           </Link>
         )}

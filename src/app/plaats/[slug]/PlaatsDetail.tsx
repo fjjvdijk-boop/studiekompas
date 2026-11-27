@@ -102,7 +102,7 @@ export function PlaatsDetail({ plaats, opleidingen }: { plaats: Plaats; opleidin
         </dl>
         <Link
           href={`/zoeken?plaats=${encodeURIComponent(plaats.naam)}`}
-          className="mt-6 inline-flex items-center gap-1.5 text-sm"
+          className="mt-4 inline-flex min-h-10 items-center gap-1.5 text-sm"
         >
           <span className="streep">Alle bachelors in {naam}</span> <ArrowUpRight className="h-3.5 w-3.5" />
         </Link>
@@ -128,12 +128,12 @@ export function PlaatsDetail({ plaats, opleidingen }: { plaats: Plaats; opleidin
             <p className="bovenschrift mb-1">Aanbod</p>
             <h2 className="display text-3xl">Richtingen</h2>
           </div>
-          <ul className="space-y-3">
+          <ul className="space-y-1">
             {sectoren.map(([s, n]) => (
               <li key={s}>
                 <Link
                   href={`/zoeken?plaats=${encodeURIComponent(plaats.naam)}&sector=${s}`}
-                  className="group grid grid-cols-[11rem_1fr_2rem] items-center gap-3 text-sm"
+                  className="group grid min-h-10 grid-cols-[minmax(0,10rem)_1fr_2rem] items-center gap-3 text-sm"
                 >
                   <span className="truncate group-hover:underline group-hover:underline-offset-4">
                     {SECTOR[s].naam}
@@ -169,7 +169,7 @@ export function PlaatsDetail({ plaats, opleidingen }: { plaats: Plaats; opleidin
                         target="_blank"
                         rel="noreferrer"
                         aria-label={`Website ${n}`}
-                        className="text-muted hover:text-ink"
+                        className="-m-3 inline-flex p-3 text-muted hover:text-ink"
                       >
                         <ArrowUpRight className="h-4 w-4" />
                       </a>

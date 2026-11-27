@@ -104,12 +104,12 @@ export default function KaartPagina() {
           </div>
         </div>
 
-        <aside ref={paneel} className="kaart h-fit scroll-mt-20 p-5 sm:p-6">
+        <aside ref={paneel} className="kaart h-fit scroll-mt-20 p-4 sm:p-6">
           {info ? (
             <PlaatsPaneel info={info} sluit={() => setGekozen(null)} />
           ) : (
             <div>
-              <h2 className="display text-3xl">Universiteitssteden</h2>
+              <h2 className="display text-2xl sm:text-3xl">Universiteitssteden</h2>
               <p className="mb-4 text-sm text-muted">Tik op een stad voor alle details.</p>
               {!data ? (
                 <div className="space-y-2">
@@ -124,12 +124,12 @@ export default function KaartPagina() {
                       <button
                         type="button"
                         onClick={() => setGekozen(p.plaats.naam)}
-                        className="focus-ring flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left transition-colors hover:bg-card-2"
+                        className="focus-ring flex min-h-14 w-full items-center gap-2.5 rounded-xl px-2 py-2.5 text-left transition-colors hover:bg-card-2 sm:gap-3 sm:px-3"
                       >
-                        <span className="display w-6 text-center font-bold text-muted tabular">{i + 1}</span>
-                        <MapPin className="h-4 w-4 text-brand" />
+                        <span className="hidden w-6 text-center font-bold text-muted tabular sm:inline">{i + 1}</span>
+                        <MapPin className="h-4 w-4 shrink-0 text-brand" />
                         <span className="min-w-0 flex-1">
-                          <span className="block truncate font-semibold">{plaatsNaam(p.plaats.naam)}</span>
+                          <span className="block font-semibold leading-tight">{plaatsNaam(p.plaats.naam)}</span>
                           <span className="text-xs text-muted tabular">
                             {getal(p.aantal)} bachelors · kamer {euro(p.kosten.huur)}
                           </span>

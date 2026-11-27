@@ -382,7 +382,7 @@ function Story({ stap, setStap, a, setA, concept, setConcept, afronden, eerderGe
   const segmenten = STORY.length - 1;
 
   return (
-    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#07080b] licht-thema">
+    <div className="fixed inset-0 z-[2000] flex items-center justify-center bg-[#07080b] pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] licht-thema">
       {/* Op een groot scherm: dezelfde foto, vervaagd, als achtergrond */}
       <div className="absolute inset-0 hidden overflow-hidden sm:block" aria-hidden>
         <Foto
@@ -446,16 +446,16 @@ function Story({ stap, setStap, a, setA, concept, setConcept, afronden, eerderGe
 
         {/* Inhoud */}
         <div key={stap} className="story-in relative z-10 flex min-h-0 flex-1 flex-col overflow-y-auto px-4 pb-4 pt-5">
-          <div className="wolkje relative rounded-md bg-white/88 px-5 py-4 text-[17px] leading-relaxed shadow-lg backdrop-blur-md">
+          <div className="wolkje relative rounded-md bg-white/88 px-4 py-3.5 text-[16px] leading-relaxed shadow-lg backdrop-blur-md min-[380px]:px-5 min-[380px]:py-4 min-[380px]:text-[17px]">
             {vraag}
           </div>
 
           {inhoud && (
-            <div className="mt-6 rounded-md bg-white/92 p-4 text-[15px] shadow-lg backdrop-blur-md">{inhoud}</div>
+            <div className="mt-5 rounded-md bg-white/92 p-4 text-[15px] shadow-lg backdrop-blur-md">{inhoud}</div>
           )}
 
           {opties.length > 0 && (
-            <ul className="mt-6 space-y-2.5" role="list">
+            <ul className="mt-5 space-y-2 min-[380px]:mt-6 min-[380px]:space-y-2.5" role="list">
               {opties.map((o, i) => {
                 const aan = gekozen === i || (gekozen === null && o.aan);
                 return (
@@ -475,7 +475,9 @@ function Story({ stap, setStap, a, setA, concept, setConcept, afronden, eerderGe
                       >
                         {aan ? <Check className="h-4 w-4" strokeWidth={3} /> : LETTERS[i]}
                       </span>
-                      <span className="flex-1 px-4 py-3.5 text-[15.5px] leading-snug">{o.tekst}</span>
+                      <span className="flex-1 px-3.5 py-3 text-[15px] leading-snug min-[380px]:px-4 min-[380px]:py-3.5 min-[380px]:text-[15.5px]">
+                        {o.tekst}
+                      </span>
                     </button>
                   </li>
                 );
@@ -483,8 +485,11 @@ function Story({ stap, setStap, a, setA, concept, setConcept, afronden, eerderGe
             </ul>
           )}
 
-          <div className="mt-auto flex items-end justify-between gap-3 pt-6">
-            <FotoBron sleutel={foto} className="text-[10.5px] text-white/75" />
+          <div className="sticky bottom-0 -mx-4 mt-auto flex items-end justify-between gap-3 bg-gradient-to-t from-black/50 via-black/25 to-transparent px-4 pb-1 pt-8">
+            <FotoBron
+              sleutel={foto}
+              className="rounded bg-black/45 px-1.5 py-0.5 text-[11px] leading-tight text-white/85"
+            />
             {knop && (
               <button
                 type="button"

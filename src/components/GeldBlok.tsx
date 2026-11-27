@@ -97,7 +97,7 @@ export function GeldBlok({ kosten: k, thuis, jaren = 3 }: { kosten: Kosten; thui
           href={DUO_LINKS.rekenhulp}
           target="_blank"
           rel="noreferrer"
-          className="streep inline-flex items-center gap-1 text-ink"
+          className="streep inline-flex min-h-10 items-center gap-1 text-ink"
         >
           Rekenhulp DUO <ExternalLink className="h-3 w-3" />
         </a>

@@ -1,7 +1,7 @@
 "use client";
 
 import { Check } from "lucide-react";
-import { PROFIEL_LABEL, PROFIEL_VAKKEN } from "@/lib/toelating";
+import { PROFIEL_LABEL, PROFIEL_VAKKEN, PROFIELEN } from "@/lib/toelating";
 import { VAKKEN, type Profiel, type ProfielNaam, type Vak } from "@/lib/types";
 
 type Diploma = Pick<Profiel, "vooropleiding" | "leerweg" | "profielen" | "vakken">;
@@ -12,9 +12,11 @@ export function DiplomaKiezer({ waarde, zet }: { waarde: Diploma; zet: (w: Parti
   const wisselProfiel = (pr: ProfielNaam) => {
     const aan = waarde.profielen.includes(pr);
     const profielen = aan ? waarde.profielen.filter((x) => x !== pr) : [...waarde.profielen, pr];
-    const vakken = aan ? waarde.vakken : [...new Set([...waarde.vakken, ...PROFIEL_VAKKEN[pr]])];
-    zet({ profielen, vakken });
+    zet({ profielen });
   };
+  const vast = new Set(waarde.profielen.flatMap((pr) => PROFIEL_VAKKEN[pr]));
+  const wiskunde = WISKUNDE.find((w) => waarde.vakken.includes(w)) ?? (vast.has("wiskunde B") ? "wiskunde B" : null);
+  const kiesWiskunde = (w: Vak) => zet({ vakken: [...waarde.vakken.filter((x) => !WISKUNDE.includes(x)), w] });
   const wisselVak = (vak: Vak) =>
     zet({ vakken: waarde.vakken.includes(vak) ? waarde.vakken.filter((x) => x !== vak) : [...waarde.vakken, vak] });
 
@@ -57,7 +59,7 @@ export function DiplomaKiezer({ waarde, zet }: { waarde: Diploma; zet: (w: Parti
           <div>
             <p className="bovenschrift mb-3">Je profiel · een combinatie kan ook</p>
             <div className="grid grid-cols-2 gap-2">
-              {(Object.keys(PROFIEL_LABEL) as ProfielNaam[]).map((pr) => {
+              {PROFIELEN.map((pr) => {
                 const aan = waarde.profielen.includes(pr);
                 return (
                   <button
@@ -65,37 +67,70 @@ export function DiplomaKiezer({ waarde, zet }: { waarde: Diploma; zet: (w: Parti
                     type="button"
                     aria-pressed={aan}
                     onClick={() => wisselProfiel(pr)}
-                    className={`focus-ring flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-colors ${
+                    className={`focus-ring flex min-h-14 flex-col items-start justify-center gap-0.5 rounded-xl border px-3.5 py-2.5 text-left transition-colors min-[400px]:flex-row min-[400px]:items-center min-[400px]:gap-3 ${
                       aan ? "border-ink bg-brand text-white" : "border-line bg-card hover:border-ink/40"
                     }`}
                   >
-                    <span className="display text-xl">{pr}</span>
-                    <span className="text-sm leading-tight">{PROFIEL_LABEL[pr]}</span>
+                    <span className="display text-xl leading-none">{pr}</span>
+                    <span className="text-[13px] leading-tight min-[400px]:text-sm">{PROFIEL_LABEL[pr]}</span>
                   </button>
                 );
               })}
             </div>
           </div>
           <div>
-            <p className="bovenschrift mb-1.5">Je vakken</p>
+            <p className="bovenschrift mb-3">Welke wiskunde heb je?</p>
+            <div className="grid grid-cols-3 gap-2" role="radiogroup" aria-label="Welke wiskunde heb je?">
+              {WISKUNDE.map((w) => {
+                const aan = wiskunde === w;
+                const uit = w !== "wiskunde B" && vast.has("wiskunde B");
+                return (
+                  <button
+                    key={w}
+                    type="button"
+                    role="radio"
+                    aria-checked={aan}
+                    disabled={uit}
+                    onClick={() => kiesWiskunde(w)}
+                    className={`focus-ring min-h-12 rounded-xl border px-2 py-2.5 text-center font-semibold transition-colors disabled:opacity-35 ${
+                      aan ? "border-brand bg-brand text-white" : "border-line bg-card hover:border-ink/40"
+                    }`}
+                  >
+                    <span className="block text-[11px] font-medium opacity-75">Wiskunde</span>
+                    <span className="block text-xl leading-tight">{w.slice(-1)}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {vast.has("wiskunde B") && (
+              <p className="mt-2 text-xs text-muted">In het profiel NT zit altijd wiskunde B.</p>
+            )}
+          </div>
+          <div>
+            <p className="bovenschrift mb-1.5">Je andere vakken</p>
             <p className="mb-3 text-sm text-muted">
-              Voor veel studies heb je bepaalde vakken nodig, zoals wiskunde B en natuurkunde voor techniek.
+              Kies alles wat in je pakket zit, ook je keuzevakken. Voor veel studies heb je bepaalde vakken nodig, zoals
+              biologie voor Geneeskunde met een NT-profiel.
             </p>
-            <div className="flex flex-wrap gap-1.5">
-              {VAKKEN.map((vak) => {
-                const aan = waarde.vakken.includes(vak);
+            <div className="flex flex-wrap gap-2">
+              {VAKKEN.filter((v) => !WISKUNDE.includes(v)).map((vak) => {
+                const inProfiel = vast.has(vak);
+                const aan = inProfiel || waarde.vakken.includes(vak);
                 return (
                   <button
                     key={vak}
                     type="button"
                     aria-pressed={aan}
+                    disabled={inProfiel}
+                    title={inProfiel ? "Zit al in je profiel" : undefined}
                     onClick={() => wisselVak(vak)}
-                    className={`focus-ring inline-flex items-center gap-1 rounded-full border px-3 py-1.5 text-sm transition-colors ${
-                      aan ? "border-ink bg-brand text-white" : "border-line bg-card hover:border-ink/40"
-                    }`}
+                    className={`focus-ring inline-flex min-h-10 items-center gap-1.5 rounded-full border px-3.5 py-2 text-sm transition-colors ${
+                      aan ? "border-brand bg-brand text-white" : "border-line bg-card hover:border-ink/40"
+                    } ${inProfiel ? "cursor-default opacity-80" : ""}`}
                   >
                     {aan && <Check className="h-3.5 w-3.5" />}
                     {vak.charAt(0).toUpperCase() + vak.slice(1)}
+                    {inProfiel && <span className="text-[11px] opacity-80">· profiel</span>}
                   </button>
                 );
               })}
@@ -113,8 +148,11 @@ export function DiplomaKiezer({ waarde, zet }: { waarde: Diploma; zet: (w: Parti
   );
 }
 
-/** Is het diploma compleet genoeg ingevuld om door te gaan? */
-export function diplomaCompleet(d: Pick<Profiel, "vooropleiding" | "profielen">): boolean {
-  if (d.vooropleiding === "vwo" || d.vooropleiding === null) return d.profielen.length > 0;
+const WISKUNDE: Vak[] = ["wiskunde A", "wiskunde B", "wiskunde C"];
+
+/** Is het diploma compleet genoeg ingevuld om door te gaan? (vwo: profiel én wiskunde gekozen) */
+export function diplomaCompleet(d: Pick<Profiel, "vooropleiding" | "profielen" | "vakken">): boolean {
+  if (d.vooropleiding === "vwo" || d.vooropleiding === null)
+    return d.profielen.length > 0 && (d.profielen.includes("NT") || WISKUNDE.some((w) => d.vakken.includes(w)));
   return true;
 }

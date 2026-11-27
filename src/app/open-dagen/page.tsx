@@ -171,7 +171,7 @@ export default function OpenDagenPagina() {
                   return (
                     <li key={o.id} className="kaart flex items-center gap-4 p-4">
                       <div className="flex h-14 w-14 shrink-0 flex-col items-center justify-center rounded-lg bg-brand text-white">
-                        <span className="text-[10px] font-semibold uppercase">
+                        <span className="text-[11px] font-semibold uppercase">
                           {datumTekst(f.openDag!, { month: "short" }).replace(".", "")}
                         </span>
                         <span className="display text-xl font-medium leading-none tabular">

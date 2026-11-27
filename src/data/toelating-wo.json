@@ -1,0 +1,3488 @@
+{
+  "bron": "Regeling aanmelding en toelating hoger onderwijs (BWBR0035059), bijlage A",
+  "geldigVanaf": "2026-09-01",
+  "opleidingen": {
+    "Aarde, Economie en Duurzaamheid": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Aardwetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Actuariële Wetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Advanced Technology": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Agrotechnologie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Animal Sciences": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Applied Mathematics": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Artificial Intelligence": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Bedrijfs- en Consumentenwetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Bedrijfseconomie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Bedrijfskunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Bewegingswetenschappen": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "BioFarmaceutische Wetenschappen": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Biologie": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Biology": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Biomedische Technologie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "wiskunde B"
+          },
+          {
+            "vak": "natuurkunde"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "wiskunde B"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "wiskunde B"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      }
+    },
+    "Biomedische Wetenschappen": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Biotechnologie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Bos- en Natuurbeheer": {
+      "NT": {
+        "of": [
+          {
+            "vak": "aardrijkskunde"
+          },
+          {
+            "vak": "biologie"
+          }
+        ]
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "of": [
+          {
+            "vak": "aardrijkskunde"
+          },
+          {
+            "vak": "biologie"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "aardrijkskunde"
+              },
+              {
+                "vak": "biologie"
+              }
+            ]
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Bouwkunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Brain Science": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Business Administration": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Business Analytics": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Business Engineering": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Business Information Technology": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Bèta-gamma": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Chemistry": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Circular Engineering": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Civiele Techniek": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Civil Engineering": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Cognitive Science and Artificial Intelligence": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Computational Social Science": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Computing Science": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Cybersecurity & Cybercrime": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Data Science (joint degree)": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Data Science and Artificial Intelligence": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Data Science and Society": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Data Science for Global Challenges": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "of": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Diergeneeskunde": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Econometrics and Data Science": {
+      "NT": {
+        "vak": "wiskunde B"
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Econometrie en Operationele Research": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Economics and Business Economics": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Economie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Economie & Samenleving": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Economie en Bedrijfseconomie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Economie en Beleid": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Electrical Engineering": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Environmental Sciences": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Farmaceutische Wetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Farmacie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Fiscale Economie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Food Technology": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Future Planet Studies": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "of": [
+          {
+            "vak": "aardrijkskunde"
+          },
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          },
+          {
+            "min": 2,
+            "uit": [
+              {
+                "vak": "aardrijkskunde"
+              },
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "economie"
+              },
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "scheikunde"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Geneeskunde": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Gezondheid en Leven": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Gezondheid en Maatschappij": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Global Sustainability Science": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "of": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          },
+          {
+            "min": 2,
+            "uit": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "scheikunde"
+              },
+              {
+                "of": [
+                  {
+                    "vak": "economie"
+                  },
+                  {
+                    "vak": "aardrijkskunde"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Griekse en Latijnse Taal en Cultuur": {
+      "NT": {
+        "of": [
+          {
+            "vak": "Grieks"
+          },
+          {
+            "vak": "Latijn"
+          }
+        ]
+      },
+      "NG": {
+        "of": [
+          {
+            "vak": "Grieks"
+          },
+          {
+            "vak": "Latijn"
+          }
+        ]
+      },
+      "EM": {
+        "of": [
+          {
+            "vak": "Grieks"
+          },
+          {
+            "vak": "Latijn"
+          }
+        ]
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "Grieks"
+          },
+          {
+            "vak": "Latijn"
+          }
+        ]
+      }
+    },
+    "Humane Neurowetenschappen": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "of": [
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "scheikunde"
+              }
+            ]
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "of": [
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "scheikunde"
+              }
+            ]
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Industrial Design": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Industrial Design Engineering": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Industrieel Ontwerpen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Informatica": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Informatiekunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "International Business": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "International Business Administration": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "International Land and Water Management": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "vak": "natuurkunde"
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Internationale Ontwikkelingsstudies": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Klinische Technologie": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Klinische Technologie (joint degree)": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Kunstmatige Intelligentie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Landschapsarchitectuur en ruimtelijke planning": {
+      "NT": {
+        "of": [
+          {
+            "vak": "aardrijkskunde"
+          },
+          {
+            "vak": "biologie"
+          }
+        ]
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "of": [
+          {
+            "vak": "aardrijkskunde"
+          },
+          {
+            "vak": "biologie"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "aardrijkskunde"
+              },
+              {
+                "vak": "biologie"
+              }
+            ]
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Life Science and Technology": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Life Science and Technology (joint degree)": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Luchtvaart- en Ruimtevaarttechniek": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Marine Sciences": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Maritieme Techniek": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Mathematics": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Mechanical Engineering": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Medische Informatiekunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "vak": "natuurkunde"
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Medische Natuurwetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Moleculaire Levenswetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "NLT"
+              }
+            ]
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "NLT"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "NLT"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Molecular Life Sciences": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Molecular Science and Technology (joint degree)": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Molecular and Biophysical Life Sciences": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Nanobiologie (joint degree)": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Natuur- en Sterrenkunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Natuur- en Sterrenkunde (joint degree)": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Natuurkunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Natuurwetenschap en Innovatiemanagement": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "min": 2,
+        "uit": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          },
+          {
+            "min": 2,
+            "uit": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "scheikunde"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Philosophy, Politics & Economics": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Philosophy, Politics and Economics": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Plantenwetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Politics, Psychology, Law and Economics": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Psychobiologie": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Psychology & Technology": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Regenerative Medicine and Technology": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Scheikunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Scheikunde (joint degree)": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Scheikundige Technologie": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Science": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Science for Sustainable Societies": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "of": [
+          {
+            "vak": "aardrijkskunde"
+          },
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          },
+          {
+            "of": [
+              {
+                "vak": "aardrijkskunde"
+              },
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "economie"
+              },
+              {
+                "vak": "natuurkunde"
+              },
+              {
+                "vak": "scheikunde"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Science, Business & Innovation": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Soil, Water, Atmosphere": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Spatial Planning and Design": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "vrij": true
+      },
+      "CM": {
+        "of": [
+          {
+            "vak": "wiskunde A"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Sterrenkunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Sustainable Bioscience": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "biologie"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Tandheelkunde": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    },
+    "Technical Computer Science": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Technische Aardwetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Technische Bedrijfskunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Technische Bestuurskunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Technische Informatica": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Technische Innovatiewetenschappen": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Technische Natuurkunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Technische Wiskunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Voeding en Gezondheid": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vrij": true
+      },
+      "EM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "of": [
+              {
+                "vak": "biologie"
+              },
+              {
+                "vak": "natuurkunde"
+              }
+            ]
+          },
+          {
+            "vak": "scheikunde"
+          },
+          {
+            "of": [
+              {
+                "vak": "wiskunde A"
+              },
+              {
+                "vak": "wiskunde B"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    "Werktuigbouwkunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "EM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      },
+      "CM": {
+        "en": [
+          {
+            "vak": "natuurkunde"
+          },
+          {
+            "vak": "wiskunde B"
+          }
+        ]
+      }
+    },
+    "Wiskunde": {
+      "NT": {
+        "vrij": true
+      },
+      "NG": {
+        "vak": "wiskunde B"
+      },
+      "EM": {
+        "vak": "wiskunde B"
+      },
+      "CM": {
+        "vak": "wiskunde B"
+      }
+    },
+    "Zorg, Gezondheid & Samenleving": {
+      "NT": {
+        "vak": "biologie"
+      },
+      "NG": {
+        "vak": "natuurkunde"
+      },
+      "EM": {
+        "geen": true
+      },
+      "CM": {
+        "geen": true
+      }
+    }
+  }
+}

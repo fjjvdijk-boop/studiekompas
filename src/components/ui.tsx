@@ -78,11 +78,7 @@ export function ScoreRing({ score, maat = 52, dik = 3 }: { score: number; maat?:
 export function TaalChip({ taal }: { taal: Opleiding["taal"] }) {
   if (!taal) return null;
   const label = taal === "EN" ? "Engels" : taal === "NL" ? "Nederlands" : "NL + EN";
-  return (
-    <span className="rounded border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted">
-      {label}
-    </span>
-  );
+  return <span className="rounded border border-line px-1.5 py-0.5 text-[11px] font-medium text-muted">{label}</span>;
 }
 
 export function SectorLabel({ sector }: { sector: SectorId }) {
@@ -139,7 +135,7 @@ export function Kop({
       {actie && (
         <Link
           href={actie.href}
-          className="focus-ring group inline-flex shrink-0 items-center gap-1 text-sm font-semibold text-brand"
+          className="focus-ring group inline-flex min-h-10 shrink-0 items-center gap-1 text-sm font-semibold text-brand"
         >
           <span className="group-hover:underline">{actie.label}</span>{" "}
           <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />

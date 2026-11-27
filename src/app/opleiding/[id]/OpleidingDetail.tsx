@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ArrowUpRight, CalendarPlus, Star } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, CalendarPlus, Check, Star, X } from "lucide-react";
 import { SECTOR } from "@/data/sectoren";
 import { KAMER_PER_PLAATS } from "@/data/kamers";
 import {
@@ -16,7 +16,7 @@ import {
 import { bereken, datumTekst, duurTekst, getal, plaatsNaam, plaatsSlug, reistijdTekst, vandaag } from "@/lib/bereken";
 import { downloadIcs, maakIcs } from "@/lib/ics";
 import { useStore } from "@/lib/store";
-import type { Toelating } from "@/lib/toelating";
+import { eisTekst, jouwVakken, PROFIEL_LABEL, PROFIELEN, TOELATING_BRON, type Toelating } from "@/lib/toelating";
 import type { Opleiding } from "@/lib/types";
 import { GeldBlok } from "@/components/GeldBlok";
 import { Foto, FotoBron } from "@/components/Foto";
@@ -75,7 +75,7 @@ export function OpleidingDetail({
       <div>
         <Link
           href="/zoeken"
-          className="focus-ring mb-8 inline-flex items-center gap-1.5 text-sm text-muted hover:text-ink"
+          className="focus-ring mb-6 inline-flex min-h-10 items-center gap-1.5 text-sm text-muted hover:text-ink"
         >
           <ArrowLeft className="h-4 w-4" /> Alle bachelors
         </Link>
@@ -110,7 +110,7 @@ export function OpleidingDetail({
                 href="https://www.studiekeuze123.nl"
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-1 text-sm"
+                className="inline-flex min-h-10 items-center gap-1 text-sm"
               >
                 <span className="streep">Studiekeuze123</span> <ArrowUpRight className="h-3.5 w-3.5" />
               </a>
@@ -126,7 +126,7 @@ export function OpleidingDetail({
               />
               <FotoBron
                 sleutel={STAD_FOTO[o.plaats.naam] ?? SECTOR_FOTO[o.sector] ?? "campus"}
-                className="absolute bottom-1.5 right-2 text-[10px] text-white/80 drop-shadow"
+                className="absolute bottom-1.5 right-2 text-[11px] text-white/85 drop-shadow"
               />
             </div>
             <div className="flex items-center gap-4 bg-card p-4">
@@ -316,7 +316,7 @@ export function OpleidingDetail({
                   href={(uuPagina ?? studieOverzicht)!.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="mt-1 inline-flex items-center gap-1 text-sm"
+                  className="mt-1 inline-flex min-h-10 items-center gap-1 text-sm"
                 >
                   <span className="streep">
                     {uuPagina ? "Studieverenigingen van deze opleiding" : studieOverzicht!.label}
@@ -349,7 +349,7 @@ export function OpleidingDetail({
             <h2 className="display text-3xl sm:text-4xl">Plan je bezoek</h2>
           </div>
           {site && (
-            <a href={site} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm">
+            <a href={site} target="_blank" rel="noreferrer" className="inline-flex min-h-10 items-center gap-1 text-sm">
               <span className="streep">Open dagen op de site van de universiteit</span>{" "}
               <ArrowUpRight className="h-3.5 w-3.5" />
             </a>
@@ -444,63 +444,119 @@ const STATUS = {
   onbekend: { kleur: "text-ink", rand: "border-ink", titel: "Check je toelating" },
 } as const;
 
-function ToelatingBlok({ t, opleiding: o }: { t: Toelating; opleiding: Opleiding }) {
+function ToelatingBlok({ t }: { t: Toelating; opleiding: Opleiding }) {
   const { profiel } = useStore();
   const st = STATUS[t.status];
   const e = t.eisen;
-  const heeftEisen = !!e && (e.vakken.length > 0 || e.notities.length > 0);
-  if (t.status === "ja" && !heeftEisen) return null;
+  const vakken = jouwVakken(profiel);
   return (
-    <section className={`grid gap-8 border-l-2 pl-6 lg:grid-cols-[1fr_1fr] ${st.rand}`}>
-      <div>
-        <p className="bovenschrift mb-1">Toelating</p>
-        <h2 className={`display text-3xl ${st.kleur}`}>{st.titel}</h2>
-        <p className="mt-2 text-muted">{t.reden}</p>
-        {(t.status === "onbekend" || t.status === "deficientie") && (
-          <Link href="/profiel" className="mt-4 inline-block text-sm streep">
-            {t.status === "onbekend" ? "Vul je profiel en vakken in" : "Vakken aanpassen"}
-          </Link>
-        )}
-      </div>
-      {heeftEisen && (
-        <div className="space-y-4">
-          {e!.vakken.length > 0 && (
-            <div>
-              <p className="bovenschrift mb-2">Nodig</p>
-              <ul className="flex flex-wrap gap-1.5">
-                {e!.vakken.map((g) => {
-                  const tekst = g.join(" of ");
-                  const mist = !g.some((v) => profiel.vakken.includes(v));
+    <section className={`rounded-2xl border-2 p-5 sm:p-7 ${st.rand}`}>
+      <div className="grid gap-6 lg:grid-cols-[1fr_1.1fr]">
+        <div>
+          <p className="bovenschrift mb-1">Toelating met jouw vakken</p>
+          <h2 className={`kop text-2xl sm:text-3xl ${st.kleur}`}>{st.titel}</h2>
+          <p className="mt-2 text-[15px] text-muted">{t.reden}</p>
+          {t.mist.length > 0 && (
+            <ul className="mt-3 flex flex-wrap gap-2">
+              {t.mist.map((m) => (
+                <li key={m} className="rounded-full bg-oranje-soft px-3 py-1.5 text-sm font-medium text-oranje">
+                  Mist: {m}
+                </li>
+              ))}
+            </ul>
+          )}
+          {t.status !== "ja" && (
+            <Link
+              href="/profiel"
+              className="mt-4 inline-flex min-h-10 items-center text-sm font-semibold text-brand hover:underline"
+            >
+              {t.status === "onbekend" ? "Vul je profiel en vakken in" : "Klopt je vakkenpakket? Pas het aan"}
+            </Link>
+          )}
+        </div>
+        <div>
+          {e ? (
+            <>
+              <p className="mb-2 text-sm font-semibold">Wat je per profiel nodig hebt</p>
+              <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line">
+                {PROFIELEN.map((pr) => {
+                  const eis = e[pr];
+                  const jij = profiel.profielen.includes(pr);
                   return (
                     <li
-                      key={tekst}
-                      className={`rounded-full border px-3 py-1 text-sm ${t.status === "deficientie" && mist ? "border-oranje text-oranje" : "border-line"}`}
+                      key={pr}
+                      className={`grid grid-cols-[3rem_1fr] items-start gap-3 px-3.5 py-3 ${jij ? "bg-brand-soft" : "bg-card"}`}
                     >
-                      {t.status === "deficientie" ? (mist ? "✕ " : "✓ ") : ""}
-                      {tekst}
+                      <span className="pt-0.5">
+                        <span className="block text-lg font-bold leading-none">{pr}</span>
+                        {jij && <span className="text-[11px] font-semibold text-brand">jij</span>}
+                      </span>
+                      <span className="text-sm">
+                        <span className="sr-only">{PROFIEL_LABEL[pr]}: </span>
+                        {"vrij" in eis ? (
+                          <span className="font-medium text-groen">Toegang, geen extra vakken nodig</span>
+                        ) : "geen" in eis ? (
+                          <span className="text-muted">
+                            Geen toelatingsrecht (alleen via een toets van de universiteit)
+                          </span>
+                        ) : (
+                          <>
+                            <span className="font-medium">Extra nodig: </span>
+                            {jij ? <EisMetVinkjes eis={eis} vakken={vakken} /> : eisTekst(eis)}
+                          </>
+                        )}
+                      </span>
                     </li>
                   );
                 })}
               </ul>
-            </div>
-          )}
-          {e!.notities.map((n) => (
-            <p key={n} className="text-sm">
-              {n}
-            </p>
-          ))}
-          {t.status === "deficientie" && (
-            <p className="text-sm text-muted">
-              Een ontbrekend vak heet een deficiëntie. Vaak kun je die wegwerken met een toets of zomercursus.
+            </>
+          ) : (
+            <p className="rounded-xl bg-card-2 p-4 text-sm">
+              Voor deze opleiding gelden geen extra vakeisen: met elk vwo-profiel mag je je inschrijven.
             </p>
           )}
-          <p className="text-xs text-muted">
-            Landelijke profieleisen voor {o.soort === "wo" ? "de universiteit" : "het hbo"}, vereenvoudigd. Check altijd
-            de toelatingseisen op de site van de opleiding.
+          <p className="mt-3 text-xs text-muted">
+            Bron:{" "}
+            <a href={TOELATING_BRON.url} target="_blank" rel="noopener noreferrer" className="underline">
+              {TOELATING_BRON.naam}
+            </a>{" "}
+            (versie vanaf {TOELATING_BRON.geldigVanaf.split("-").reverse().join("-")}). Selectie of een numerus fixus
+            staat hier los van: check altijd de site van de opleiding.
           </p>
         </div>
-      )}
+      </div>
     </section>
+  );
+}
+
+/** Eis met per vak een vinkje of kruisje (voor je eigen profiel) */
+function EisMetVinkjes({ eis, vakken }: { eis: Parameters<typeof eisTekst>[0]; vakken: Set<string> }) {
+  const delen = "en" in eis ? eis.en : [eis];
+  return (
+    <span className="mt-1 flex flex-wrap gap-1.5">
+      {delen.map((d) => {
+        const ok =
+          "vak" in d
+            ? vakken.has(d.vak)
+            : "of" in d
+              ? d.of.some((x) => "vak" in x && vakken.has(x.vak))
+              : "min" in d
+                ? d.uit.filter((x) =>
+                    "vak" in x ? vakken.has(x.vak) : "of" in x && x.of.some((y) => "vak" in y && vakken.has(y.vak)),
+                  ).length >= d.min
+                : false;
+        return (
+          <span
+            key={eisTekst(d)}
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[13px] ${ok ? "bg-groen-soft text-groen" : "bg-oranje-soft text-oranje"}`}
+          >
+            {ok ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : <X className="h-3.5 w-3.5" strokeWidth={3} />}
+            {eisTekst(d)}
+          </span>
+        );
+      })}
+    </span>
   );
 }
 

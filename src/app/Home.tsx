@@ -186,8 +186,10 @@ export function Home({ stat }: { stat: Statistiek }) {
                 sizes="(min-width: 1024px) 230px, 50vw"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-3.5">
-                <p className="text-[17px] font-bold leading-tight tracking-tight">{SECTOR[s].naam}</p>
+              <div className="absolute inset-x-0 bottom-0 p-3 sm:p-3.5">
+                <p className="afbreken text-[15px] font-bold leading-tight tracking-tight sm:text-[17px]">
+                  {SECTOR[s].naam}
+                </p>
                 <p className="mt-0.5 text-xs text-white/75">{stat.perSector[s] ?? 0} bachelors</p>
               </div>
             </Link>
@@ -220,7 +222,10 @@ export function Home({ stat }: { stat: Statistiek }) {
               <dd className="display text-3xl tabular">{euro(voorbeeld.teLenen)}</dd>
             </div>
           </dl>
-          <Link href="/geld" className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium">
+          <Link
+            href="/geld"
+            className="mt-6 inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-brand"
+          >
             <span className="streep">Reken je eigen situatie uit</span> <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>
@@ -240,7 +245,10 @@ export function Home({ stat }: { stat: Statistiek }) {
               </li>
             ))}
           </ol>
-          <Link href="/kamer" className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium">
+          <Link
+            href="/kamer"
+            className="mt-6 inline-flex min-h-10 items-center gap-1.5 text-sm font-semibold text-brand"
+          >
             <span className="streep">Het hele stappenplan en alle steden</span> <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

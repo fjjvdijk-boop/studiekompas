@@ -15,30 +15,30 @@ export function Voettekst() {
             kamerhuur van de Kamernet Huurmonitor. Alles zonder garantie: check altijd de officiële bron.
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-x-12 gap-y-2 text-sm">
-          <Link className="text-muted hover:text-ink" href="/vragenlijst">
+        <div className="grid grid-cols-2 gap-x-12 text-sm">
+          <Link className="block py-2 text-muted hover:text-ink" href="/vragenlijst">
             Studietest
           </Link>
-          <Link className="text-muted hover:text-ink" href="/zoeken">
+          <Link className="block py-2 text-muted hover:text-ink" href="/zoeken">
             Opleidingen
           </Link>
-          <Link className="text-muted hover:text-ink" href="/geld">
+          <Link className="block py-2 text-muted hover:text-ink" href="/geld">
             Geld & DUO
           </Link>
-          <Link className="text-muted hover:text-ink" href="/kamer">
+          <Link className="block py-2 text-muted hover:text-ink" href="/kamer">
             Kamer vinden
           </Link>
-          <Link className="text-muted hover:text-ink" href="/kaart">
+          <Link className="block py-2 text-muted hover:text-ink" href="/kaart">
             Studiesteden
           </Link>
-          <Link className="text-muted hover:text-ink" href="/open-dagen">
+          <Link className="block py-2 text-muted hover:text-ink" href="/open-dagen">
             Open dagen
           </Link>
-          <a className="text-muted hover:text-ink" href="https://duo.nl" target="_blank" rel="noreferrer">
+          <a className="block py-2 text-muted hover:text-ink" href="https://duo.nl" target="_blank" rel="noreferrer">
             duo.nl
           </a>
           <a
-            className="text-muted hover:text-ink"
+            className="block py-2 text-muted hover:text-ink"
             href="https://github.com/fjjvdijk-boop/studiekompas"
             target="_blank"
             rel="noreferrer"

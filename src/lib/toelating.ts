@@ -1,20 +1,25 @@
 /**
- * Toelatingseisen: mag je met jouw diploma, profiel en vakken naar deze opleiding?
+ * Toelatingseisen: mag je met jouw vwo-profiel en vakken naar deze bachelor?
  *
- * Gebaseerd op de LANDELIJKE profielvereisten voor hbo en wo en de toelatingsregels voor het mbo.
- * Dit is een vereenvoudiging: hogescholen en universiteiten kunnen afwijken, en een ontbrekend vak
- * kun je vaak wegwerken (een "deficiëntie") met een toets of zomercursus. Check altijd de site van de opleiding.
+ * Bron: de officiële "nadere vooropleidingseisen" voor het wetenschappelijk onderwijs, uit bijlage A van de
+ * Regeling aanmelding en toelating hoger onderwijs (BWBR0035059). Die tabel staat in src/data/toelating-wo.json
+ * en wordt opgehaald met scripts/toelating-wo.py.
+ *
+ * Staat een opleiding niet in de tabel, dan zijn er geen extra eisen: met elk vwo-profiel mag je erin.
+ * Een ontbrekend vak (een "deficiëntie") kun je vaak nog wegwerken; selectie of een numerus fixus staat hier los van.
  */
-import type { Leerweg, Opleiding, Profiel, ProfielNaam, Vak } from "./types";
+import tabel from "@/data/toelating-wo.json";
+import type { Opleiding, Profiel, ProfielNaam, Vak } from "./types";
 
-export interface Eisen {
-  /** Met deze profielen kun je zonder extra vakken naar binnen */
-  vrij: ProfielNaam[];
-  /** Anders: van elke groep minstens één vak (bijv. [["wiskunde A","wiskunde B"],["natuurkunde"]]) */
-  vakken: Vak[][];
-  /** Extra informatie, zoals toelatingsexamen of selectie */
-  notities: string[];
-}
+export type Eis =
+  | { vrij: true }
+  | { geen: true }
+  | { vak: Vak }
+  | { en: Eis[] }
+  | { of: Eis[] }
+  | { min: number; uit: Eis[] };
+/** Per profiel wat je naast je profiel nodig hebt */
+export type Eisen = Record<ProfielNaam, Eis>;
 
 export type ToelatingStatus = "ja" | "deficientie" | "nee" | "onbekend";
 
@@ -23,8 +28,11 @@ export interface Toelating {
   /** Wat je mist, leesbaar: ["natuurkunde", "wiskunde A of B"] */
   mist: string[];
   reden: string;
+  /** De officiële eisen per profiel, of null als er geen extra eisen zijn */
   eisen: Eisen | null;
 }
+
+export const PROFIELEN: ProfielNaam[] = ["NT", "NG", "EM", "CM"];
 
 export const PROFIEL_LABEL: Record<ProfielNaam, string> = {
   NT: "Natuur & Techniek",
@@ -33,214 +41,124 @@ export const PROFIEL_LABEL: Record<ProfielNaam, string> = {
   CM: "Cultuur & Maatschappij",
 };
 
-export const LEERWEG_LABEL: Record<Leerweg, string> = {
-  basis: "Basisberoepsgerichte leerweg",
-  kader: "Kaderberoepsgerichte leerweg",
-  gl: "Gemengde leerweg",
-  tl: "Theoretische leerweg (mavo)",
-};
-
-/** Vakken die (bijna) altijd in een profiel zitten, als startpunt */
+/** Vakken die altijd in een profiel zitten (het "profieldeel") */
 export const PROFIEL_VAKKEN: Record<ProfielNaam, Vak[]> = {
   NT: ["wiskunde B", "natuurkunde", "scheikunde"],
-  NG: ["biologie", "scheikunde", "wiskunde A"],
-  EM: ["wiskunde A", "economie", "geschiedenis"],
+  NG: ["biologie", "scheikunde"],
+  EM: ["economie", "geschiedenis"],
   CM: ["geschiedenis"],
 };
 
-const W = ["wiskunde A", "wiskunde B"] as Vak[];
-const WB = ["wiskunde B"] as Vak[];
+export const TOELATING_BRON = {
+  naam: "Regeling aanmelding en toelating hoger onderwijs, bijlage A",
+  url: "https://wetten.overheid.nl/BWBR0035059",
+  geldigVanaf: tabel.geldigVanaf,
+};
 
-interface Regel {
-  test: RegExp;
-  eisen: Eisen;
+/** Namen vergelijken zonder accenten, leestekens en hoofdletters ("Actuariële" = "Actuariele", "&" = "and") */
+export const normaliseer = (n: string) =>
+  n
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9]+/g, "");
+
+const PER_NAAM = new Map<string, Eisen>(
+  Object.entries(tabel.opleidingen).map(([naam, eisen]) => [normaliseer(naam), eisen as Eisen]),
+);
+
+/** De officiële eisen voor deze opleiding, of null als er geen extra eisen zijn */
+export function eisenVoor(o: Pick<Opleiding, "naam">): Eisen | null {
+  return PER_NAAM.get(normaliseer(o.naam)) ?? null;
 }
 
-const e = (vrij: ProfielNaam[], vakken: Vak[][], notities: string[] = []): Eisen => ({ vrij, vakken, notities });
+const wiskunde = (a: string, b: string) => a.startsWith("wiskunde ") && b.startsWith("wiskunde ");
 
-// ---------------------------------------------------------------- wo (met een vwo-diploma)
-const WO: Regel[] = [
-  {
-    test: /geneeskunde|tandheelkunde|farmacie|farmaceutische|biomedische wetenschappen|biomedical sciences/i,
-    eisen: e([], [W, ["natuurkunde"], ["scheikunde"], ["biologie"]], ["Vaak een numerus fixus met selectie"]),
-  },
-  {
-    test: /diergeneeskunde/i,
-    eisen: e([], [W, ["natuurkunde"], ["scheikunde"], ["biologie"]], ["Numerus fixus met selectie"]),
-  },
-  { test: /natuurkunde|sterrenkunde|physics|astronom|nanobiolog/i, eisen: e([], [WB, ["natuurkunde"]]) },
-  { test: /^wiskunde|mathemat|econometr|technische wiskunde|actuari/i, eisen: e([], [WB]) },
-  {
-    test: /scheikund|chemi|molecula|moleculaire|life science|biotechnolog|biomedische technologie|biomedical engineering|klinische technologie|medische natuurwetenschappen|food technology/i,
-    eisen: e([], [WB, ["natuurkunde"], ["scheikunde"]]),
-  },
-  { test: /^informatica|computer science|computing science|data science|technische informatica/i, eisen: e([], [WB]) },
-  { test: /landschapsarchitectuur/i, eisen: e([], [W]) },
-  { test: /kunstmatige intelligentie|artificial intelligence|informatiekunde|information science/i, eisen: e([], [W]) },
-  {
-    test: /technische bedrijfskunde|creative technology|industrial engineering|technische bestuurskunde/i,
-    eisen: e([], [WB]),
-  },
-  {
-    test: /psycholog|econom|bedrijfskunde|business|finance|fiscal|bestuurskunde|sociolog|pedagog|onderwijskunde|criminolog|geografie|planolog|bedrijfs|commerc|management/i,
-    eisen: e([], [W]),
-  },
-  {
-    test: /werktuig|elektrotechniek|electrical|civiel|civil engineering|ruimtevaart|aerospace|mechanical|industrieel ontwerpen|industrial design|bouwkunde|^architecture|technische|engineering|maritieme techniek|advanced technology/i,
-    eisen: e([], [WB, ["natuurkunde"]]),
-  },
-  {
-    test: /biolog|gezondheidswetenschap|bewegingswetenschap|voeding|food|agro|bodem|environmental|aardwetenschap|earth|plant|animal|dier|natuurbeheer/i,
-    eisen: e([], [W, ["scheikunde"], ["biologie", "natuurkunde"]]),
-  },
-];
-
-// ---------------------------------------------------------------- hbo (met een havo-diploma)
-function hboRegel(o: Opleiding): Eisen | null {
-  const n = o.naam.toLowerCase();
-  // Kunst en sport: talent telt
-  if (
-    o.sector === "creatief" &&
-    /kunst|muziek|dans|theater|film|design|fotograf|mode|fashion|animat|illustrat|vormgev|art|academie/.test(n)
-  )
-    return e(["NT", "NG", "EM", "CM"], [], ["Toelatingsexamen of portfolio: je moet laten zien dat je talent hebt"]);
-  if (/lichamelijke opvoeding|\balo\b/.test(n)) return e(["NT", "NG", "EM", "CM"], [], ["Sportieve toelatingstest"]);
-  // Lerarenopleidingen: je vak zelf
-  if (/leraar|lerarenopleiding|docent/.test(n)) {
-    if (/wiskunde/.test(n)) return e([], [W]);
-    if (/natuurkunde/.test(n)) return e([], [["natuurkunde"], W]);
-    if (/scheikunde/.test(n)) return e([], [["scheikunde"], W]);
-    if (/biologie/.test(n)) return e([], [["biologie"]]);
-    if (/economie/.test(n)) return e([], [["economie", "bedrijfseconomie"], W]);
-    if (/geschiedenis/.test(n)) return e([], [["geschiedenis"]]);
-    if (/aardrijkskunde/.test(n)) return e([], [["aardrijkskunde"]]);
-    if (/frans/.test(n)) return e([], [["Frans"]]);
-    if (/duits/.test(n)) return e([], [["Duits"]]);
-    return e(["NT", "NG", "EM", "CM"], [], ["Vaak moet je het vak dat je wilt geven zelf in je pakket hebben gehad"]);
+/** Leesbare tekst van een eis: "biologie", "wiskunde A of B", "twee van: biologie, natuurkunde, scheikunde" */
+export function eisTekst(e: Eis): string {
+  if ("vrij" in e) return "geen extra vakken";
+  if ("geen" in e) return "geen toelatingsrecht";
+  if ("vak" in e) return e.vak;
+  if ("of" in e) {
+    const delen = e.of.map(eisTekst);
+    if (delen.length === 2 && wiskunde(delen[0], delen[1])) return `${delen[0]} of ${delen[1].slice(-1)}`;
+    return delen.map((d) => ("en" in e.of[0] && delen.length > 1 ? `(${d})` : d)).join(" of ");
   }
-  if (/pabo|leraar basisonderwijs|basisonderwijs/.test(n))
-    return e(
-      ["NT", "NG", "EM", "CM"],
-      [],
-      [
-        "Toelatingstoetsen voor geschiedenis, aardrijkskunde en natuur & techniek als je die vakken niet in je pakket had",
-      ],
-    );
-  switch (o.sector) {
-    case "techniek":
-    case "logistiek":
-      return e(["NT"], [W, ["natuurkunde"]]);
-    case "beta":
-      return e(["NT", "NG"], [W, ["scheikunde"]]);
-    case "ict":
-      return e(["NT", "NG", "EM"], [W]);
-    case "zorg":
-      return e(
-        ["NT", "NG"],
-        [["biologie"]],
-        /fysiotherap|mondzorg|verloskunde/.test(n) ? ["Vaak selectie (numerus fixus)"] : [],
-      );
-    case "natuur":
-      return e(["NT", "NG"], [["biologie", "scheikunde"]]);
-    case "economie":
-      return e(["NT", "NG", "EM"], [W]);
-    default:
-      return null;
+  if ("en" in e) return e.en.map((x) => ("of" in x && x.of.length > 2 ? `(${eisTekst(x)})` : eisTekst(x))).join(" + ");
+  return `${e.min === 2 ? "twee" : e.min} van: ${e.uit.map(eisTekst).join(", ")}`;
+}
+
+/** Voldoe je met deze vakken aan de eis? Zo nee: wat mis je (per onderdeel van een "en") */
+function check(e: Eis, vakken: Set<Vak>): { ok: boolean; mist: string[] } {
+  if ("vrij" in e) return { ok: true, mist: [] };
+  if ("geen" in e) return { ok: false, mist: [] };
+  if ("vak" in e) return vakken.has(e.vak) ? { ok: true, mist: [] } : { ok: false, mist: [e.vak] };
+  if ("of" in e)
+    return e.of.some((x) => check(x, vakken).ok) ? { ok: true, mist: [] } : { ok: false, mist: [eisTekst(e)] };
+  if ("en" in e) {
+    const mist = e.en.flatMap((x) => check(x, vakken).mist);
+    return { ok: mist.length === 0, mist };
   }
+  const gehaald = e.uit.filter((x) => check(x, vakken).ok).length;
+  return gehaald >= e.min ? { ok: true, mist: [] } : { ok: false, mist: [eisTekst(e)] };
 }
 
-/** Welke vakken heeft deze opleiding nodig? null = geen extra eisen bekend */
-export function eisenVoor(o: Opleiding): Eisen | null {
-  if (o.soort === "wo") return WO.find((r) => r.test.test(o.naam))?.eisen ?? null;
-  if (o.soort === "hbo") return hboRegel(o);
-  return null;
+/** Jouw vakken, aangevuld met de vaste vakken van je profiel(en) */
+export function jouwVakken(p: Pick<Profiel, "profielen" | "vakken">): Set<Vak> {
+  return new Set<Vak>([...p.vakken, ...p.profielen.flatMap((x) => PROFIEL_VAKKEN[x])]);
 }
-
-const cache = new WeakMap<Opleiding, Eisen | null>();
-function eisenGecacht(o: Opleiding) {
-  if (!cache.has(o)) cache.set(o, eisenVoor(o));
-  return cache.get(o)!;
-}
-
-const groepTekst = (g: Vak[]) =>
-  g.length === 2 && g[0].startsWith("wiskunde") && g[1].startsWith("wiskunde")
-    ? `${g[0]} of ${g[1].slice(-1)}`
-    : g.join(" of ");
 
 /** Mag je met jouw profiel naar deze opleiding? */
 export function toelating(
-  o: Opleiding,
-  p: Pick<Profiel, "vooropleiding" | "leerweg" | "profielen" | "vakken">,
+  o: Pick<Opleiding, "naam">,
+  p: Pick<Profiel, "vooropleiding" | "profielen" | "vakken">,
 ): Toelating {
-  const eisen = eisenGecacht(o);
+  const eisen = eisenVoor(o);
   const v = p.vooropleiding;
   if (!v) return { status: "onbekend", mist: [], reden: "Vul je diploma in om je toelating te checken", eisen };
-
-  // Soort onderwijs
-  if (o.soort === "wo" && v === "vmbo")
+  if (v === "vmbo")
     return { status: "nee", mist: [], reden: "Met vmbo kun je niet direct naar de universiteit.", eisen };
-  if (o.soort === "wo" && v !== "vwo")
+  if (v !== "vwo")
     return {
       status: "onbekend",
       mist: [],
-      reden:
-        "Met een hbo-propedeuse kun je naar de universiteit. Soms moet je dan nog een vak bijspijkeren: check de eisen bij de opleiding.",
+      reden: eisen
+        ? "Met een hbo-propedeuse mag je naar de universiteit, maar voor deze opleiding moet je misschien nog een vak bijspijkeren. Check de eisen bij de opleiding."
+        : "Met een hbo-propedeuse mag je naar de universiteit. Er gelden voor deze opleiding geen extra vakeisen.",
       eisen,
     };
-  if (o.soort === "hbo" && v === "vmbo")
-    return {
-      status: "nee",
-      mist: [],
-      reden: "Met vmbo kun je niet direct naar het hbo. Wel via mbo 4 of de havo.",
-      eisen,
-    };
+  if (!eisen)
+    return { status: "ja", mist: [], reden: "Geen extra vakken nodig: met elk vwo-profiel mag je erin.", eisen };
+  if (!p.profielen.length)
+    return { status: "onbekend", mist: [], reden: "Kies je profiel om te checken of je toelaatbaar bent.", eisen };
 
-  // Mbo-niveau en vmbo-leerweg
-  if (o.soort === "mbo") {
-    if (v === "vmbo" && p.leerweg === "basis" && (o.niveau === "mbo3" || o.niveau === "mbo4"))
-      return {
-        status: "nee",
-        mist: [],
-        reden: "Met de basisberoepsgerichte leerweg begin je op mbo 2. Daarna kun je doorstromen naar niveau 3 of 4.",
-        eisen,
-      };
-    return { status: "ja", mist: [], reden: "Je voldoet aan de toelatingseisen", eisen };
-  }
-
-  // Vakken (alleen met een havo/vwo-diploma; met mbo 4 hangt het af van je opleiding)
-  if (!eisen || (!eisen.vrij.length && !eisen.vakken.length))
+  const vakken = jouwVakken(p);
+  const uitslagen = p.profielen.map((pr) => ({ pr, eis: eisen[pr], ...check(eisen[pr], vakken) }));
+  const goed = uitslagen.find((u) => u.ok);
+  if (goed)
     return {
       status: "ja",
       mist: [],
-      reden: eisen?.notities.length ? "Geen profieleisen, wel let op" : "Geen extra vakken nodig",
+      reden:
+        "vrij" in goed.eis
+          ? `Je profiel ${goed.pr} geeft toegang.`
+          : `Met profiel ${goed.pr} heb je ${eisTekst(goed.eis)} nodig, en dat heb je.`,
       eisen,
     };
-  if (v === "mbo4")
+  const bijna = uitslagen.filter((u) => !("geen" in u.eis)).sort((a, b) => a.mist.length - b.mist.length)[0];
+  if (bijna)
     return {
-      status: "onbekend",
-      mist: [],
-      reden: "Met mbo 4 hangt het af van je opleiding: soms moet je een vak bijspijkeren",
+      status: "deficientie",
+      mist: bijna.mist,
+      reden: `Met profiel ${bijna.pr} mis je ${bijna.mist.join(" en ")}. Dat heet een deficiëntie: vaak kun je het nog wegwerken met een toets of cursus vóór de start.`,
       eisen,
     };
-  if (!p.profielen.length && !p.vakken.length)
-    return { status: "onbekend", mist: [], reden: "Vul je profiel en vakken in om dit te checken", eisen };
-  if (p.profielen.some((x) => eisen.vrij.includes(x)))
-    return { status: "ja", mist: [], reden: "Je profiel geeft toegang", eisen };
-  const mist = eisen.vakken.filter((g) => !g.some((vak) => p.vakken.includes(vak))).map(groepTekst);
-  if (!mist.length) return { status: "ja", mist, reden: "Je hebt de vakken die nodig zijn", eisen };
+  const pr = p.profielen.join(" of ");
   return {
-    status: "deficientie",
-    mist,
-    reden: `Je mist ${mist.join(" en ")}. Dat kun je vaak nog wegwerken met een toets of zomercursus.`,
+    status: "nee",
+    mist: [],
+    reden: `Profiel ${pr} geeft geen toelatingsrecht voor deze opleiding. De universiteit kan je wel toelaten als je met een toets laat zien dat je de vakken van een passend profiel beheerst (bijvoorbeeld als je ze als extra vak hebt gedaan).`,
     eisen,
   };
-}
-
-/** Leesbare samenvatting van de eisen, bijv. "NT vrij · anders: wiskunde A of B + natuurkunde" */
-export function eisenTekst(eisen: Eisen): string {
-  const delen: string[] = [];
-  if (eisen.vrij.length && eisen.vrij.length < 4) delen.push(`Vrij toegankelijk met ${eisen.vrij.join(" of ")}`);
-  if (eisen.vakken.length)
-    delen.push(`${eisen.vrij.length ? "anders " : ""}nodig: ${eisen.vakken.map(groepTekst).join(" + ")}`);
-  return delen.join(" · ");
 }

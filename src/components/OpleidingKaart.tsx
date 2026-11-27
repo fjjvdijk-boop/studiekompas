@@ -21,7 +21,7 @@ export function OpleidingKaart({
   return (
     <Link
       href={`/opleiding/${o.id}`}
-      className="kaart focus-ring group binnenkomen flex flex-col gap-4 p-5 transition-colors hover:border-ink/40"
+      className="kaart focus-ring group binnenkomen flex flex-col gap-4 p-4 transition-colors hover:border-ink/40 sm:p-5"
       style={{ animationDelay: `${Math.min(index, 12) * 25}ms` }}
     >
       <div className="flex items-start gap-3">
@@ -30,7 +30,7 @@ export function OpleidingKaart({
             <SectorLabel sector={o.sector} />
             <TaalChip taal={o.taal} />
           </div>
-          <h3 className="display text-[21px] leading-[1.15] group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
+          <h3 className="display text-[19px] leading-[1.15] sm:text-[21px] group-hover:underline group-hover:decoration-1 group-hover:underline-offset-4">
             {o.naam}
           </h3>
           <p className="mt-1 text-sm text-muted">
@@ -41,10 +41,16 @@ export function OpleidingKaart({
         {toonScore && <ScoreRing score={match.score} maat={44} />}
       </div>
       {match.toelating.status === "deficientie" && (
-        <p className="text-xs text-oranje">Je mist {match.toelating.mist.join(" en ")}</p>
+        <p className="w-fit rounded-md bg-oranje-soft px-2 py-1 text-xs font-medium text-oranje">
+          Je mist {match.toelating.mist.join(" en ")}
+        </p>
       )}
-      {match.toelating.status === "nee" && <p className="text-xs text-rood">Niet direct toelaatbaar met je diploma</p>}
-      <div className="mt-auto grid grid-cols-[1fr_1fr_auto] items-end gap-3 border-t border-line pt-3">
+      {match.toelating.status === "nee" && (
+        <p className="w-fit rounded-md bg-rood-soft px-2 py-1 text-xs font-medium text-rood">
+          Je profiel geeft geen toegang (alleen via een toets)
+        </p>
+      )}
+      <div className="mt-auto flex flex-wrap items-end gap-x-5 gap-y-3 border-t border-line pt-3">
         <div>
           <p className="text-[11px] font-medium text-muted">{k.thuisMogelijk ? "Thuis wonend" : "Op kamer"}</p>
           <p className="display text-lg tabular">{euro(k.advies)}</p>
@@ -55,7 +61,7 @@ export function OpleidingKaart({
             {geld.teLenen > 0 ? euro(geld.teLenen) : "€ 0"}
           </p>
         </div>
-        <div className="flex items-center gap-2.5">
+        <div className="ml-auto flex items-center gap-2.5">
           <StoplichtBadge licht={licht} minuten={reistijd} schatting={reistijdSchatting} />
           <FavorietKnop opleidingId={o.id} />
         </div>

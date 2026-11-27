@@ -88,6 +88,8 @@ export const VAKKEN = [
   "Frans",
   "Duits",
   "Spaans",
+  "Latijn",
+  "Grieks",
 ] as const;
 export type Vak = (typeof VAKKEN)[number];
 export type Wonen = "thuis" | "kamer" | "allebei";
